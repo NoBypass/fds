@@ -5,6 +5,7 @@ const schema = new Schema({
     password: { required: true, type: String },
     discord: { required: true, type: String },
     registrationDate: { required: true, type: Number },
+    token: { required: true, type: String },
     confirmed: { required: true, type: Boolean },
     settings: { required: false, type: Object }
 })

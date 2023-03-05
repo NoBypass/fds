@@ -24,9 +24,9 @@ async function handleRequest(routeObj: FinalRoute, req: any, res: any, method: s
 
     let result
     if (req.body == null) result = await routeObj.controller(req.params.param, method)
-    else result = await routeObj.controller(req.params.param, method, JSON.parse(req.body))
+    else result = await routeObj.controller(req.params.param, method, req.body)
     res.json({
-        result
+        ...result
     })
     log(`   -> Process ended after ${new Date().getTime() - processStart}ms`, `c_${result.success ? 'green' : 'red'}`)
 }

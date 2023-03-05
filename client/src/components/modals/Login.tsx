@@ -5,6 +5,7 @@ import {LoginInput} from "../small/LoginInput";
 import fastFetch from "../../functions/fast-fetch";
 import Alert from "../Alert";
 import {createUser, getMojangPlayer, getUser} from "../../functions/api";
+import {hash} from "../../functions/hash";
 
 type Input = {
     [key: string]: string | undefined
@@ -59,13 +60,12 @@ export default function Login(props: Props) {
             if (value.length > 16) return false
             try {
                 const data = await getMojangPlayer(value)
-                setUuid(data.result.uuid)
-                return data.result.success
+                setUuid(data.uuid)
+                return data.success
             } catch (err) {
                 return false
             }
         } else if (name === 'cPassword') {
-            console.log(value, loginInfo.password.data)
             return value === loginInfo.password.data
         } else if (name === 'discord') {
             let split = value.split('#')
@@ -108,12 +108,13 @@ export default function Login(props: Props) {
                 })
             }
         } else {
+            const hashedPwd = await hash(loginInfo.password.data)
+            if (!hashedPwd.success) throw new Error('Error while generating password hash')
             const data = await createUser({
-                uuid,
-                password: loginInfo.password.data,
+                password: hashedPwd.hash,
                 discord: loginInfo.discord.data,
                 stayLogged,
-            })
+            }, uuid)
             if (data.success) localStorage.setItem('token', data.token)
         }
     }

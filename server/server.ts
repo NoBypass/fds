@@ -12,9 +12,10 @@ const app = express()
 
 const onStart = async () => {
     await connectToDb(dbConfig)
-    app.use(cors())
 }
 onStart()
+app.use(cors())
+app.use(express.json())
 
 log('FDS Hub server', undefined, ['bg_blue', 'c_black'], false)
 console.log('')

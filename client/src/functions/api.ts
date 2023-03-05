@@ -8,8 +8,8 @@ export const getMojangPlayer = async (ign: string): Promise<any> => {
 export const getUser = async (uuid: string): Promise<any> => {
     return get(`user/${uuid}`)
 }
-export const createUser = async (body: any): Promise<any> => {
-    return create(`user/${body.uuid}`, body)
+export const createUser = async (body: any, uuid: string): Promise<any> => {
+    return create(`user/${uuid}`, body)
 }
 
 const get = async (route: string): Promise<any> => {
@@ -22,6 +22,9 @@ const get = async (route: string): Promise<any> => {
 const create = async (route: string, body: unknown) => {
     try { return await fetch(`${url}/${route}`, {
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify(body)
     }).then(r => r.json())
     } catch (e) { return {
