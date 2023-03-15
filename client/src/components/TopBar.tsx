@@ -20,7 +20,7 @@ export default function TopBar() {
     const [userModalOpen, setUserModalOpen] = useState(false)
     const [selectedSearch, setSelectedSearch] = useState(search[0])
 
-    const options = ['Home', 'Player', 'Leaderboard', 'Graphs / Comparison']
+    const options = ['Home', 'HypixelPlayer', 'Leaderboard', 'Graphs / Comparison']
 
     // TODO: If valid session token, open settings menu, otherwise open login/signup screen
     // TODO: Add handling for themes

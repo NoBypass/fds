@@ -15,12 +15,12 @@ export default async function Mojang(param: string, method: string): Promise<any
         .catch(e => {
             return {
                 success: false,
-                error: 'Player not found'
+                error: 'HypixelPlayer not found'
             }
         })
     if (mojangData?.id == null) return {
         success: false,
-        error: 'Player not found'
+        error: 'HypixelPlayer not found'
     }
 
     const skin = await fetch(`https://crafatar.com/avatars/${mojangData.id}`)
