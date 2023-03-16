@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.0.4'
+    id 'io.spring.dependency-management' version '1.1.0'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // spring dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // security dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.24.4'
+
+    // open api documentation
+    implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
+
+    // runtime only dependencies
+    runtimeOnly 'mysql:mysql-connector-java'
+
+    // test dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'com.h2database:h2:2.1.214'
+
+    // dev dependencies
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
