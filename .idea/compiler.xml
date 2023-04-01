@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="java-server" target="17" />
+      <module name="TodoList" target="17" />
+      <module name="TodoList.main" target="17" />
+      <module name="TodoList.test" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
