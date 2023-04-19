@@ -1,82 +1,87 @@
--- Setup & Creation
-set @OLD_FOREIGN_KEY_CHECKS = @@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS = 0;
-drop schema if exists fds;
-create schema if not exists fds default character set utf8;
-use fds;
+-- User & Database Deletion
+drop database if exists fds;
+drop schema if exists public cascade;
+drop user if exists fds_user;
+
+-- User & Database Creation
+create user fds_user with password '1234';
+create database fds;
+grant all privileges on database fds to fds_user;
+create schema public;
 
 -- Create Tables
-create table fds.mojangUser
+create table minecraft_skin
 (
-    id               int         not null auto_increment primary key,
-    uuid             varchar(32) not null unique,
-    name             varchar(16) not null,
-    minecraftSkin_id int,
-    foreign key (minecraftSkin_id) references fds.minecraftSkin (id)
+    id          serial primary key,
+    skin_base64 text not null
 );
 
-create table fds.user
+create table mojang_user
 (
-    hypixelPlayer_id   int         not null unique,
-    password           text        not null,
-    discord            varchar(37) not null,
-    registeredAt       datetime    not null,
-    isConfirmed        boolean     not null,
-    lastPasswordChange datetime    not null,
-    apiKey             varchar(36),
-    foreign key (hypixelPlayer_id) references fds.hypixelPlayer (id)
+    id                serial primary key,
+    uuid              varchar(32) not null unique,
+    name              varchar(16) not null,
+    minecraft_skin_id int,
+    foreign key (minecraft_skin_id) references minecraft_skin (id)
 );
 
-create table fds.dailyHypixelStats
+create table hypixel_player
 (
-    hypixelPlayer_id int not null unique,
-    playerData       json,
-    foreign key (hypixelPlayer_id) references fds.hypixelPlayer (id)
+    id                  serial primary key,
+    mojang_user_id      int       not null,
+    latest_player_stats json      not null,
+    latest_lookup       timestamp not null,
+    first_lookup        timestamp not null,
+    tracking            boolean   not null,
+    foreign key (mojang_user_id) references mojang_user (id)
 );
 
-create table fds.hypixelPlayer
+create table "user"
 (
-    id                int      not null auto_increment primary key,
-    mojangUser_id     int      not null,
-    latestPlayerStats json     not null,
-    latestLookup      datetime not null,
-    firstLookup       datetime not null,
-    tracking          boolean  not null,
-    foreign key (mojangUser_id) references fds.mojangUser (id)
+    hypixel_player_id    int         not null unique,
+    password             text        not null,
+    discord              varchar(37) not null,
+    registered_at        timestamp   not null,
+    is_confirmed         boolean     not null,
+    last_password_change timestamp   not null,
+    api_key              varchar(36),
+    foreign key (hypixel_player_id) references hypixel_player (id)
 );
 
-create table fds.discordUser
+create table daily_hypixel_stats
 (
-    hypixelPlayer_id int      not null,
-    level            int      not null default 0,
-    overflowXp       int      not null default 0,
-    dailiesStreak    int      not null default 0,
-    xpFromDailies    int      not null default 0,
-    lastDailyClaimed datetime not null,
-    minutesSpentInVc int      not null default 0,
-    messagesSent     int      not null default 0,
-    foreign key (hypixelPlayer_id) references fds.hypixelPlayer (id)
+    hypixel_player_id int not null unique,
+    player_data       json,
+    foreign key (hypixel_player_id) references hypixel_player (id)
 );
 
-create table fds.hypixelGamePlayer
+create table discord_user
 (
-    hypixelPlayer_id int not null,
-    hypixelGame_id   int not null,
-    primary key (hypixelPlayer_id, hypixelGame_id),
-    foreign key (hypixelPlayer_id) references fds.hypixelPlayer (mojangUser_id),
-    foreign key (hypixelGame_id) references fds.hypixelGame (id)
+    hypixel_player_id   int       not null,
+    level               int       not null,
+    overflow_xp         int       not null,
+    dailies_streak      int       not null,
+    xp_from_dailies     int       not null,
+    last_daily_claimed  timestamp not null,
+    minutes_spent_in_vc int       not null,
+    messages_sent       int       not null,
+    foreign key (hypixel_player_id) references hypixel_player (id)
 );
 
-create table fds.hypixelGame
+create table hypixel_game
 (
-    id       int     not null auto_increment primary key,
+    id       serial primary key,
     type     text    not null,
     verified boolean not null,
     special  boolean not null,
     data     json    not null
 );
 
-create table fds.minecraftSkin
+create table hypixel_game_player
 (
-    id int not null auto_increment primary key,
-    skinBase64 text not null
+    hypixel_player_id int not null,
+    hypixel_game_id   int not null,
+    primary key (hypixel_player_id, hypixel_game_id),
+    foreign key (hypixel_player_id) references hypixel_player (id),
+    foreign key (hypixel_game_id) references hypixel_game (id)
 );
