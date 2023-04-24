@@ -1,19 +1,20 @@
-import { ChannelType, Guild, PermissionFlagsBits, SlashCommandBuilder, TextChannel } from 'discord.js'
-import { SlashCommand } from '../types'
+import {ChannelType, PermissionFlagsBits, SlashCommandBuilder} from 'discord.js'
+import {SlashCommand} from '../types'
 import Embed from '../lib/Embed'
+import htmlToImage from 'html-to-image'
 
-const ClearCommand : SlashCommand = {
+const ClearCommand: SlashCommand = {
     command: new SlashCommandBuilder()
         .setName('daily')
         .setDescription('Claim your daily exp through this command')
         .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages),
 
     execute: interaction => {
-        const embed = new Embed({ interaction })
+        const embed = new Embed({interaction})
         const xpToGive = Math.round(Math.random() * 500)
 
-        embed.title(`${interaction.user.username} ${xpToGive < 400 && xpToGive > 100? 'claimed their daily reward': `got ${xpToGive > 450 || xpToGive < 50? 'very': ''} ${xpToGive < 100? 'un': ''}lucky`}`)
-        embed.description(`Received **${xpToGive}**xp`)
+        embed.title(`${interaction.user.username} ${xpToGive < 400 && xpToGive > 100 ? 'claimed their daily reward' : `got ${xpToGive > 450 || xpToGive < 50 ? 'very' : ''} ${xpToGive < 100 ? 'un' : ''}lucky`}`)
+        embed.description(`Received **+${xpToGive}** xp`)
 
         // TODO streaks
         // TODO check if level changed

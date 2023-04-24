@@ -1,7 +1,7 @@
 import {Redis} from "ioredis"
 import Resolver from "./_Resolver"
-import {GraphQLProperty} from "../../types/GraphQLProperty";
-import {firstLetterUpperCase} from "../../lib/common";
+import {GraphQLProperty} from "../../types/GraphQLProperty"
+import {firstLetterUpperCase} from "../../lib/common"
 
 export default class Updater extends Resolver {
     resolverType: 'mutation' = 'mutation'

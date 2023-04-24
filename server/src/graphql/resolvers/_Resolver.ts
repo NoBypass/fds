@@ -1,5 +1,5 @@
 import {Redis} from "ioredis"
-import {GraphQLProperty} from "../../types/GraphQLProperty";
+import {GraphQLProperty} from "../../types/GraphQLProperty"
 
 export default abstract class Resolver {
     readonly tableName: string

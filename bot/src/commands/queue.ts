@@ -255,7 +255,7 @@ const command : SlashCommand = {
                 )
         ),
 
-    execute: interaction => {
+    execute: async interaction => {
         const channel: TextChannel = getTextChannel(interaction, config.channels.lookingToPlay)
         const server = interaction.options.data[0]
         const mode = server.options?.[0]
@@ -263,23 +263,23 @@ const command : SlashCommand = {
         const region = mode?.options?.filter(option => option.name == 'region')[0]
         const competitiveness = mode?.options?.filter(option => option.name == 'competitiveness')[0]
 
-        let publicEmbed = new Embed({ channel })
+        let publicEmbed = new Embed({channel})
         publicEmbed.title(`${interaction.user.username} wants to play:`)
         publicEmbed.description(`<@${interaction.user.id}> did \`\`/queue\`\`\n
             **Server:** ${server.name}
             **Mode:** ${mode?.name}
-            **Submode:** ${submode?.value}
-            ${region != null?
-            `**Region:** ${region?.value}`:
+            **Submodule:** ${submode?.value}
+            ${region != null ?
+            `**Region:** ${region?.value}` :
             `**Competitiveness** ${competitiveness?.value}`}`)
-        channel.send({
-            content: `${mode?.name == 'bridge'? `<@${config.roles.bridge}->`: ''}${mode?.name == 'bedwars'? `<@${config.roles.bedwars}->`: ''}`,
+        await channel.send({
+            content: `${mode?.name == 'bridge' ? `<@${config.roles.bridge}->` : ''}${mode?.name == 'bedwars' ? `<@${config.roles.bedwars}->` : ''}`,
             embeds: [publicEmbed.get() as any]
         })
 
-        const privateEmbed = new Embed({ interaction })
+        const privateEmbed = new Embed({interaction})
         privateEmbed.title(`Created queue request in <#${channel.id}>`)
-        interaction.reply({ embeds: [privateEmbed.get() as any], ephemeral: true })
+        await interaction.reply({embeds: [privateEmbed.get() as any], ephemeral: true})
     }
 }
 

@@ -5,7 +5,7 @@ import Embed from "../lib/Embed"
 const command : SlashCommand = {
     command: new SlashCommandBuilder()
     .setName('test')
-    .setDescription('Shows the bot\'s ping and tests slash commands')
+    .setDescription('Shows the bots ping and tests slash commands')
     .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages),
 
     execute: interaction => {
