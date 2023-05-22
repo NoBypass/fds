@@ -2,30 +2,8 @@
 <project version="4">
   <component name="dataSourceStorageLocal" created-in="IU-231.9011.34">
     <data-source name="postgres@localhost" uuid="46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d">
-      <database-info product="PostgreSQL" version="14.7 (Ubuntu 14.7-0ubuntu0.22.04.1)" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.5.0" dbms="POSTGRES" exact-version="14.7" exact-driver-version="42.5">
-        <identifier-quote-string>&quot;</identifier-quote-string>
-      </database-info>
-      <case-sensitivity plain-identifiers="lower" quoted-identifiers="exact" />
-      <secret-storage>master_key</secret-storage>
-      <user-name>root</user-name>
-      <schema-mapping>
-        <introspection-scope>
-          <node negative="1">
-            <node kind="database" qname="@">
-              <node kind="schema" qname="@" />
-            </node>
-            <node kind="database" qname="fds">
-              <node kind="schema" qname="public" />
-            </node>
-            <node kind="database" qname="postgres">
-              <node kind="schema">
-                <name qname="public" />
-                <name qname="fds" />
-              </node>
-            </node>
-          </node>
-        </introspection-scope>
-      </schema-mapping>
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="POSTGRES" exact-version="0" />
+      <schema-mapping />
     </data-source>
   </component>
 </project>
