@@ -2,12 +2,23 @@
 
 ### Overview
 Included in this project are:
- - [React & Vite Frontend](#React-Frontend)
- - [Discord bot](#Discord-bot)
- - [Express Backend](#Express-Backend)
+ - [NextJS 13 Frontend](#NextJS-13-Frontend)
+ - [Discord v14 Bot](#Discord-Bot)
+ - [SpringBoot Backend](#SpringBoot-Backend)
+ - [RedisGraph Database](#RedisGraph-Database)
+ - [Docker](#Docker)
 
-### React Frontend
+### NextJS 13 Frontend
+*work in progress*
 
-### Express Backend
+### Discord Bot
+*work in progress*
 
-### Discord bot
+### SpringBoot Backend
+*work in progress*
+
+### RedisGraph Database
+*to document*
+
+### Docker
+*todo*

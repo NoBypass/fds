@@ -5,108 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0b3dc63d-6436-49fd-a178-0d6cdcae97b6" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/docs/discord_user_verification_process.drawio" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/ISSUE_TEMPLATE/bug_report.md" beforeDir="false" afterPath="$PROJECT_DIR$/.github/ISSUE_TEMPLATE/bug_report.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/fds.dYsBAA.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/fds.dYsBAA.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/fds.dYsBAA/schema/information_schema.FNRwLQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/fds.dYsBAA/schema/information_schema.FNRwLQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/fds.dYsBAA/schema/pg_catalog.0S1ZNQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/fds.dYsBAA/schema/pg_catalog.0S1ZNQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/fds.dYsBAA/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/fds.dYsBAA/schema/public.abK9xQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/postgres.edMnLQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/postgres.edMnLQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/postgres.edMnLQ/schema/fds.dYsBAA.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/postgres.edMnLQ/schema/fds.dYsBAA.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/postgres.edMnLQ/schema/information_schema.FNRwLQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/postgres.edMnLQ/schema/information_schema.FNRwLQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/postgres.edMnLQ/schema/pg_catalog.0S1ZNQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/postgres.edMnLQ/schema/pg_catalog.0S1ZNQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/postgres.edMnLQ/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/46b4e0e1-a4b8-447e-a48f-3dfccdfecf7d/storage_v2/_src_/database/postgres.edMnLQ/schema/public.abK9xQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/fds.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/fds.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/.env" beforeDir="false" afterPath="$PROJECT_DIR$/bot/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/bot/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/bot/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/bot/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/bot/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/commands/daily.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/commands/daily.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/commands/embed.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/commands/embed.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/commands/help.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/commands/help.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/commands/profile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/commands/profile.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/commands/queue.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/commands/queue.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/commands/test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/commands/test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/commands/verify.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/commands/verify.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/events/interactionCreate.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/events/interactionCreate.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/events/messageCreate.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/events/messageCreate.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/events/ready.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/events/ready.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/handlers/Command.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/handlers/Command.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/handlers/Event.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/handlers/Event.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/lib/Embed.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/lib/Embed.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/lib/api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/lib/common.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/lib/common.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/lib/log.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/lib/log.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/src/types.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bot/src/types.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/bot/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/client/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/postcss.config.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/client/postcss.config.cjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/public/favicon.svg" beforeDir="false" afterPath="$PROJECT_DIR$/client/public/favicon.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/App.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/assets/fonts/GoodTiming.ttf" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/assets/fonts/GoodTiming.ttf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/assets/graphics/bg.png" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/assets/graphics/bg.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/assets/graphics/logo.svg" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/assets/graphics/logo.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/Alert.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Alert.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/Foldable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Foldable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/Modal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Modal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/SelectionBox.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/SelectionBox.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/SourceBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/SourceBar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/TopBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/TopBar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/modals/Login.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/modals/Login.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/modals/Settings.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/modals/Settings.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/small/LoginButton.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/small/LoginButton.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/small/LoginInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/small/LoginInput.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/functions/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/functions/api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/functions/fast-fetch.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/functions/fast-fetch.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/functions/generate-token.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/functions/generate-token.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/functions/hash.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/functions/hash.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/main.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/tailwind.config.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/client/tailwind.config.cjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/tsconfig.node.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/tsconfig.node.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/vite.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/create-database.sql" beforeDir="false" afterPath="$PROJECT_DIR$/database/create-database.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/erd.uml" beforeDir="false" afterPath="$PROJECT_DIR$/database/erd.uml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/server/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/config/redis.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/config/redis.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/resolver.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/resolver.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/resolvers/Creator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/resolvers/Creator.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/resolvers/Deleter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/resolvers/Deleter.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/resolvers/Getter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/resolvers/Getter.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/resolvers/Updater.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/resolvers/Updater.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/resolvers/_Resolver.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/resolvers/_Resolver.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/schema.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/schema.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/types/DiscordUser.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/types/DiscordUser.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/types/Guild.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/types/Guild.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/types/HypixelPlayer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/types/HypixelPlayer.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/types/MinecraftSkin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/types/MinecraftSkin.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/types/MojangUser.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/types/MojangUser.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/graphql/types/_Type.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/graphql/types/_Type.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/lib/common.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/lib/common.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/types/GraphQLProperty.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/types/GraphQLProperty.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/types/Resolver.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/types/Resolver.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -148,14 +48,14 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "dev",
-    "last_opened_file_path": "C:/dev/graphql-handler",
+    "last_opened_file_path": "//wsl$/Ubuntu/home/nobypass/dev/fds",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "preferences.pluginManager",
-    "ts.external.directory.path": "C:\\dev\\fds\\bot\\node_modules\\typescript\\lib",
+    "ts.external.directory.path": "C:\\Users\\iwena\\AppData\\Local\\JetBrains\\Toolbox\\apps\\IDEA-U\\ch-0\\231.9011.34\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -182,6 +82,7 @@
       <workItem from="1682524498145" duration="3886000" />
       <workItem from="1682697569469" duration="21000" />
       <workItem from="1683487195520" duration="96000" />
+      <workItem from="1684776094987" duration="331000" />
     </task>
     <servers />
   </component>
