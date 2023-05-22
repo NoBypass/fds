@@ -20,7 +20,7 @@ export default function SelectionBox(props: Props) {
 
     return (
         <Listbox value={selected} onChange={(v) => setSelected(v)}>
-            <Listbox.Button className="px-2 rounded-r-full h-8 -skew-x-20 flex items-center justify-center hover:shadow-md duration-100 hover:shadow-blue-600/[.2] hover:bg-blue-600/[.2] cursor-default shadow-md sm:text-sm content-between">
+            <Listbox.Button className="px-2 rounded-r-full h-8 -skew-x-20 flex discordUsers-center justify-center hover:shadow-md duration-100 hover:shadow-blue-600/[.2] hover:bg-blue-600/[.2] cursor-default shadow-md sm:text-sm content-between">
                 <span className="skew-x-20 h-5">{selected.name}</span>
                 <span className="skew-x-20 pointer-events-none">
                     <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
