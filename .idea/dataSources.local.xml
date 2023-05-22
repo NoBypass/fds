@@ -19,8 +19,8 @@
             </node>
             <node kind="database" qname="postgres">
               <node kind="schema">
-                <name qname="fds" />
                 <name qname="public" />
+                <name qname="fds" />
               </node>
             </node>
           </node>
