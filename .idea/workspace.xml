@@ -4,7 +4,76 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0b3dc63d-6436-49fd-a178-0d6cdcae97b6" name="Changes" comment="backend submodule" />
+    <list default="true" id="0b3dc63d-6436-49fd-a178-0d6cdcae97b6" name="Changes" comment="backend submodule">
+      <change afterPath="$PROJECT_DIR$/client/src/app.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/lib/components/CommandPalette.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/lib/components/Divider.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/lib/components/ResponsiveContainer.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/lib/components/Text.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/lib/icons/MagnifyIcon.svelte" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/routes/+layout.svelte" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/ISSUE_TEMPLATE/bug_report.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/commands/daily.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/commands/embed.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/commands/help.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/commands/profile.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/commands/queue.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/commands/test.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/commands/verify.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/events/interactionCreate.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/events/messageCreate.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/events/ready.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/handlers/Command.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/handlers/Event.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/lib/Embed.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/lib/api.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/lib/common.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/lib/log.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/src/types.d.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/postcss.config.cjs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/public/favicon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/App.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/App.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/assets/fonts/GoodTiming.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/assets/graphics/bg.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/assets/graphics/logo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/Alert.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/Foldable.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/Modal.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/SelectionBox.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/SourceBar.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/TopBar.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/modals/Login.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/modals/Settings.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/small/LoginButton.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/small/LoginInput.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/functions/api.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/functions/fast-fetch.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/functions/generate-token.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/functions/hash.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/index.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/main.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/tailwind.config.cjs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/tsconfig.node.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/vite.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/discord_user_verification_process.drawio" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fds-backend" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,13 +83,21 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="TypeScript File" />
+        <option value="+layout" />
+        <option value="CSS File" />
+        <option value="MagnifyIcon" />
+        <option value="Modal" />
+        <option value="CommandPalette" />
+        <option value="ResponsiveContainer" />
+        <option value="Text" />
+        <option value="Divider" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="main" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -40,23 +117,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "//wsl$/Ubuntu/home/nobypass/dev/fds",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "ts.external.directory.path": "C:\\Users\\iwena\\AppData\\Local\\JetBrains\\Toolbox\\apps\\IDEA-U\\ch-0\\231.9011.34\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;reimagined&quot;,
+    &quot;last_opened_file_path&quot;: &quot;//wsl$/Ubuntu/home/nobypass/dev/fds&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\iwena\\AppData\\Local\\JetBrains\\Toolbox\\apps\\IDEA-U\\ch-0\\231.9011.34\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\nobyp\WebstormProjects\fds\bot\src\commands" />
@@ -64,6 +142,23 @@
     <key name="MoveFile.RECENT_KEYS">
       <recent name="\\wsl$\Ubuntu\home\nobypass\.DEV\fds\docs" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/client/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="wsl://Ubuntu@/home/nobypass/.nvm/versions/node/v18.16.0/bin/node" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.dev" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -81,10 +176,23 @@
       <workItem from="1682697569469" duration="21000" />
       <workItem from="1683487195520" duration="96000" />
       <workItem from="1684776094987" duration="331000" />
+      <workItem from="1690211425496" duration="17376000" />
+      <workItem from="1690280929809" duration="19340000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>
