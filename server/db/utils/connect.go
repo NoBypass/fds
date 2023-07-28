@@ -14,12 +14,13 @@ func ConnectDB() (neo4j.DriverWithContext, context.Context, error) {
 		return nil, ctx, err
 	}
 
+	ctx = context.WithValue(ctx, "driver", driver)
 	return driver, ctx, nil
 }
 
-func CloseDB(driver neo4j.DriverWithContext, ctx context.Context) {
-	err := driver.Close(ctx)
-	if err != nil {
-		return
-	}
-}
+//func CloseDB(driver neo4j.DriverWithContext, ctx context.Context) {
+//	err := driver.Close(ctx)
+//	if err != nil {
+//		return
+//	}
+//}

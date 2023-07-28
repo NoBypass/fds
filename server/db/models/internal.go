@@ -9,7 +9,7 @@ type Account struct {
 	JoinedAt int64  `json:"joined_at"`
 }
 
-type DiscordAccount struct {
+type Discord struct {
 	ID          string `json:"id"`
 	DiscordID   string `json:"discord_id"`
 	Name        string `json:"name"`
@@ -24,4 +24,16 @@ type DiscordAccount struct {
 type IsLinkedTo struct {
 	ID       string `json:"id"`
 	LinkedAt int64  `json:"linked_at"`
+}
+
+// Dto
+
+type AccountDto struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type DiscordDto struct {
+	DiscordID string `json:"discord_id"`
+	Name      string `json:"name"`
 }
