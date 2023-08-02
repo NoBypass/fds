@@ -13,10 +13,9 @@ func main() {
 	http.Handle("/graphql", handlers.GraphQLHandler(&schemas.RootSchema))
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
+		fmt.Println("Error starting server:", err)
 		return
 	}
-
-	fmt.Println("Server is running on port 8080")
 
 	// dbutils.CloseDB(driver, ctx)
 }

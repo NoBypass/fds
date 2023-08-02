@@ -5,7 +5,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"server/db/mappers"
 	"server/db/models"
-	dbutils "server/db/utils"
+	"server/utils"
 )
 
 func FindDiscordByDiscordId(ctx context.Context, driver neo4j.DriverWithContext, discordIdInput string) (*models.Discord, error) {
@@ -25,7 +25,7 @@ func CreateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord 
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"CREATE (d:Discord { id: $id, discord_id: $discord_id, name: $name, level: $level, xp: $xp, streak: $streak, last_daily_at: $last_daily_at }) RETURN d",
 		map[string]any{
-			"id":            dbutils.GenerateUUID(discord.DiscordID, discord.Name),
+			"id":            utils.GenerateUUID(discord.DiscordID, discord.Name),
 			"discord_id":    discord.DiscordID,
 			"name":          discord.Name,
 			"level":         0,
