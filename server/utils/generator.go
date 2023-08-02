@@ -1,4 +1,4 @@
-package dbutils
+package utils
 
 import (
 	"encoding/base64"
@@ -18,6 +18,6 @@ func GenerateUUID(args ...any) string {
 	return encoded
 }
 
-func GenerateJoinedAt() int64 {
+func GetNowInMs() int64 {
 	return time.Now().UnixMilli()
 }

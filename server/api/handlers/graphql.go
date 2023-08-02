@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
-	"log"
 	"net/http"
-	dbutils "server/db/utils"
+	"server/utils"
 )
 
 func GraphQLHandler(schema *graphql.Schema) http.Handler {
@@ -19,7 +18,7 @@ func GraphQLHandler(schema *graphql.Schema) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// If-Else statement to use GraphiQL along with the GraphQL handler
 		if r.Method == "POST" {
-			_, ctx, _ := dbutils.ConnectDB()
+			_, ctx, _ := utils.ConnectDB()
 
 			var requestBody struct {
 				Query string `json:"query"`
@@ -34,13 +33,14 @@ func GraphQLHandler(schema *graphql.Schema) http.Handler {
 				RequestString: requestBody.Query,
 				Context:       ctx,
 			})
-			if len(result.Errors) > 0 {
-				log.Printf("wrong result, unexpected errors: %v", result.Errors)
+			if len(result.Errors) != 0 {
+				http.Error(w, result.Errors[0].Message, http.StatusInternalServerError)
 				return
 			}
 
 			err := json.NewEncoder(w).Encode(result)
 			if err != nil {
+				http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
 				return
 			}
 		} else {

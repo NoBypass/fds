@@ -34,8 +34,9 @@ var rootMutation = graphql.NewObject(
 					return "New message created: " + content, nil
 				},
 			},
-			"createAccount": CreateAccount,
 			"createDiscord": CreateDiscord,
+			"signin":        Signin,
+			// "resetPassword": ResetPassword,
 		},
 	},
 )

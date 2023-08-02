@@ -3,10 +3,18 @@ package models
 // Nodes
 
 type Account struct {
-	ID       string `json:"id"`
+	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
-	JoinedAt int64  `json:"joined_at"`
+	JoinedAt string `json:"joined_at"`
+}
+
+type Signin struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	JoinedAt string `json:"joined_at"`
+	Token    string `json:"token"`
 }
 
 type Discord struct {
@@ -31,6 +39,7 @@ type IsLinkedTo struct {
 type AccountDto struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Remember bool   `json:"remember"`
 }
 
 type DiscordDto struct {

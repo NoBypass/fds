@@ -7,7 +7,7 @@ import (
 	"server/db/repository"
 )
 
-var DiscordType = graphql.NewObject(
+var discordType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Discord",
 		Fields: graphql.Fields{
@@ -37,7 +37,7 @@ var DiscordType = graphql.NewObject(
 )
 
 var DiscordQueryByDiscordId = &graphql.Field{
-	Type: DiscordType,
+	Type: discordType,
 	Args: graphql.FieldConfigArgument{
 		"discord_id": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
@@ -49,7 +49,7 @@ var DiscordQueryByDiscordId = &graphql.Field{
 }
 
 var CreateDiscord = &graphql.Field{
-	Type: DiscordType,
+	Type: discordType,
 	Args: graphql.FieldConfigArgument{
 		"discord_id": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),

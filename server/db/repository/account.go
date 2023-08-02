@@ -2,56 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"server/db/mappers"
 	"server/db/models"
-	dbutils "server/db/utils"
+	"server/utils"
+	"strconv"
 )
-
-func CreateAccount(ctx context.Context, driver neo4j.DriverWithContext, account *models.AccountDto) (*models.Account, error) {
-	result, err := neo4j.ExecuteQuery(ctx, driver,
-		"CREATE (a:Account { id: $id, username: $username, password: $password, joined_at: $joined_at }) RETURN a",
-		map[string]any{
-			"id":        dbutils.GenerateUUID(account.Username, account.Password),
-			"username":  account.Username,
-			"password":  account.Password,
-			"joined_at": dbutils.GenerateJoinedAt(),
-		}, neo4j.EagerResultTransformer)
-	if err != nil {
-		return nil, err
-	}
-
-	accountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := neo4j.GetProperty[string](accountNode, "id")
-	if err != nil {
-		return nil, err
-	}
-
-	username, err := neo4j.GetProperty[string](accountNode, "username")
-	if err != nil {
-		return nil, err
-	}
-
-	password, err := neo4j.GetProperty[string](accountNode, "password")
-	if err != nil {
-		return nil, err
-	}
-
-	joinedAt, err := neo4j.GetProperty[int64](accountNode, "joined_at")
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.Account{
-		ID:       id,
-		Username: username,
-		Password: password,
-		JoinedAt: joinedAt,
-	}, nil
-}
 
 func FindAccountByName(ctx context.Context, driver neo4j.DriverWithContext, name string) (*models.Account, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
@@ -63,35 +21,66 @@ func FindAccountByName(ctx context.Context, driver neo4j.DriverWithContext, name
 		return nil, err
 	}
 
-	accountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
+	return mappers.ResultToAccount(result)
+}
+
+func Signin(ctx context.Context, driver neo4j.DriverWithContext, accountDto *models.AccountDto) (*models.Signin, error) {
+	result, err := neo4j.ExecuteQuery(ctx, driver,
+		"MATCH (a:Account { username: $username }) RETURN a",
+		map[string]any{
+			"username": accountDto.Username,
+		}, neo4j.EagerResultTransformer)
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := neo4j.GetProperty[string](accountNode, "id")
+	if result.Records == nil || len(result.Records) == 0 {
+		password, err := utils.Hash(accountDto.Password)
+		if err != nil {
+			return nil, err
+		}
+
+		result, err = neo4j.ExecuteQuery(ctx, driver,
+			"CREATE (a:Account { username: $username, password: $password, joined_at: $joined_at }) RETURN a",
+			map[string]any{
+				"username":  accountDto.Username,
+				"password":  password,
+				"joined_at": strconv.FormatInt(utils.GetNowInMs(), 10),
+			}, neo4j.EagerResultTransformer)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	account, err := mappers.ResultToAccount(result)
 	if err != nil {
 		return nil, err
 	}
 
-	username, err := neo4j.GetProperty[string](accountNode, "username")
-	if err != nil {
-		return nil, err
+	ok := utils.CompareHash(accountDto.Password, account.Password)
+	if !ok {
+		return nil, errors.New("invalid password")
 	}
 
-	password, err := neo4j.GetProperty[string](accountNode, "password")
-	if err != nil {
-		return nil, err
+	expiresAt := utils.GetNowInMs() + 60*60*24*7
+	if accountDto.Remember {
+		expiresAt = utils.GetNowInMs() + 60*60*24*30
 	}
 
-	joinedAt, err := neo4j.GetProperty[int64](accountNode, "joined_at")
-	if err != nil {
-		return nil, err
-	}
+	token, err := utils.GenerateJWT(utils.CustomClaims{
+		UserID: account.ID,
+		Role:   "user",
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expiresAt,
+			IssuedAt:  utils.GetNowInMs(),
+		},
+	})
 
-	return &models.Account{
-		ID:       id,
-		Username: username,
-		Password: password,
-		JoinedAt: joinedAt,
+	return &models.Signin{
+		ID:       account.ID,
+		Username: account.Username,
+		Password: account.Password,
+		JoinedAt: account.JoinedAt,
+		Token:    token,
 	}, nil
 }
