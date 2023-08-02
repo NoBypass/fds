@@ -1,5 +1,5 @@
 <script lang="ts">
-    export let vertical: boolean = true
+    export let vertical = true
     export let tw = ''
 
     $: length = vertical
