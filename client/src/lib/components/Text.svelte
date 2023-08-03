@@ -1,8 +1,8 @@
 <script lang="ts">
-    export let b: boolean = false
+    export let b = false
     export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md'
     export let type: 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = 'p'
-    export let tw: string = ''
+    export let tw = ''
 
     const sizes = {
         xs: 'text-xs',
@@ -38,6 +38,10 @@
 
     h6 {
         @apply text-xs;
+    }
+
+    p {
+        @apply opacity-70;
     }
 </style>
 

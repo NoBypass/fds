@@ -1,11 +1,22 @@
 <script lang="ts">
+    import { createEventDispatcher } from 'svelte'
+
+    export let rounded = false
+    export let color: 'primary' | 'neutral' | 'transparent' = 'primary'
+
+    const colors = {
+        primary: 'bg-purple-500 hover:bg-purple-600 shadow-purple-500/50 text-white shadow-md',
+        neutral: 'bg-white hover:bg-gray-200 shadow-gray-500/50 text-gray-800 shadow-md',
+        transparent: 'bg-transparent text-white'
+    }
+
     let buttonRef = null
-    let maxW = 0
-
+    let dispatch = createEventDispatcher()
+    
     const handleClick = (e) => {
-        if (buttonRef) {
-            maxW = buttonRef.clientWidth
 
+        dispatch('click', e)
+        if (buttonRef) {
             const ripple = document.createElement('span')
             ripple.style.left = `${e.offsetX}px`
             ripple.style.top = `${e.offsetY}px`
@@ -14,6 +25,7 @@
             buttonRef.appendChild(ripple)
             setTimeout(() => ripple.remove(), 400)
         }
+
     }
 </script>
 
@@ -33,8 +45,8 @@
 <button bind:this={buttonRef}
         on:click={handleClick}
         type="button"
-        class="overflow-hidden bg-purple-500 text-white rounded-md shadow-md shadow-purple-500/50 hover:bg-purple-600 transition duration-150 relative">
-    <div class="w-full h-full px-5 py-1.5">
+        class="{colors[color]} z-10	overflow-hidden {rounded ? 'rounded-full' : 'rounded-md'} transition duration-150 relative">
+    <div class="h-full px-5 py-1.5">
         <slot />
     </div>
 </button>
