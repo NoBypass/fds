@@ -9,6 +9,7 @@
     import Modal from '$lib/components/Modal.svelte'
     import loginBg from '$lib/assets/login-bg.png'
     import Input from '$lib/components/Input.svelte'
+    import Checkbox from '$lib/components/Checkbox.svelte'
 
     let inputRef
     let showCommandPalette = false
@@ -44,7 +45,7 @@
 <CommandPalette on:close={closeCommandPalette} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
 
 <ResponsiveContainer>
-    <Modal open={true} on:close={hideSigninModal} tw="w-2/3 h-160 flex space-between">
+    <Modal open={showSigninModal} on:close={hideSigninModal} tw="w-2/3 h-160 flex space-between">
         <img src={loginBg}
              alt="background"
              class="w-1/2 h-full object-none z-20"
@@ -59,11 +60,12 @@
 
                 <div>
                     <Input light rounded placeholder="Minecraft username" tw="mt-12 w-full" />
-                    <Input light rounded placeholder="Password" tw="mt-12 w-full" />
+                    <Input light rounded placeholder="Password" tw="mt-10 w-full" />
+                    <Checkbox tw="mt-10"><Text size="md">Remember me!</Text></Checkbox>
                 </div>
 
                 <div class="grid w-full grid-cols-2 grid-rows-1 gap-32 mt-12 h-10 place-self-end">
-                    <Button rounded color="transparent"><Text b>Cancel</Text></Button>
+                    <Button on:click={hideSigninModal} rounded color="transparent"><Text b>Cancel</Text></Button>
                     <Button rounded color="neutral"><Text b>Continue</Text></Button>
                 </div>
             </div>
