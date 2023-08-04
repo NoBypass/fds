@@ -1,10 +1,15 @@
 <script>
+    import { createEventDispatcher } from 'svelte'
+
     export let tw = ''
 
     let checked = false
 
+    const dispatch = createEventDispatcher()
+
     const change = (e) => {
         checked = e.target.checked
+        dispatch('change', e)
     }
 </script>
 

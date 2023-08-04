@@ -13,8 +13,8 @@
 <main class="flex items-center justify-center">
     <div class="w-full mt-[30vh] flex justify-center">
         <Input bind:this={inputRef} placeholder="Search for a Player / Guild / Leaderboard..." rounded tw="w-4/5">
-            <MagnifyIcon slot="leftIcon" tw="w-5 h-5 text-neutral-400" />
-            <Text slot="rightIcon" b type="h6" tw="text-neutral-400">CTRL+K</Text>
+            <MagnifyIcon slot="left" tw="w-5 h-5 text-neutral-400" />
+            <Text slot="right" b type="h6" tw="text-neutral-400">CTRL+K</Text>
         </Input>
     </div>
 </main>

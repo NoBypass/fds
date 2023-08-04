@@ -3,6 +3,7 @@
 
     export let rounded = false
     export let color: 'primary' | 'neutral' | 'transparent' = 'primary'
+    export let disabled = false
 
     const colors = {
         primary: 'bg-purple-500 hover:bg-purple-600 shadow-purple-500/50 text-white shadow-md',
@@ -45,7 +46,8 @@
 <button bind:this={buttonRef}
         on:click={handleClick}
         type="button"
-        class="{colors[color]} z-10	overflow-hidden {rounded ? 'rounded-full' : 'rounded-md'} transition duration-150 relative">
+        disabled={disabled}
+        class="{disabled ? colors[color].split(' ').filter((c) => !c.startsWith('hover:')).join(' ') : colors[color]} {disabled ? 'opacity-70' : ''} z-10 overflow-hidden {rounded ? 'rounded-full' : 'rounded-md'} transition duration-150 relative">
     <div class="h-full px-5 py-1.5">
         <slot />
     </div>
