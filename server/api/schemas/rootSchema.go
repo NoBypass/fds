@@ -14,6 +14,7 @@ var rootQuery = graphql.NewObject(
 			},
 			"account": AccountQueryByUsername,
 			"discord": DiscordQueryByDiscordId,
+			"player":  PlayerQueryByName,
 		},
 	},
 )
@@ -34,8 +35,9 @@ var rootMutation = graphql.NewObject(
 					return "New message created: " + content, nil
 				},
 			},
-			"createDiscord": CreateDiscord,
-			"signin":        Signin,
+			"registerPlayer": RegisterPlayer,
+			"createDiscord":  CreateDiscord,
+			"signin":         Signin,
 			// "resetPassword": ResetPassword,
 		},
 	},
