@@ -21,17 +21,8 @@ func FindPlayerByName(ctx context.Context, driver neo4j.DriverWithContext, name 
 		return nil, err
 	}
 
-	if result.Records == nil || len(result.Records) == 0 {
-		return nil, errors.New("player not found")
-	}
-
-	return mappers.ResultToPlayer(result)
-}
-
-func RegisterPlayer(ctx context.Context, driver neo4j.DriverWithContext, name string) (*models.Player, error) {
-	_, err := FindPlayerByName(ctx, driver, name)
-	if err == nil {
-		return nil, errors.New("player already registered")
+	if result.Records != nil || len(result.Records) > 0 {
+		return mappers.ResultToPlayer(result)
 	}
 
 	var url = "https://api.mojang.com/users/profiles/minecraft/" + name
@@ -49,7 +40,7 @@ func RegisterPlayer(ctx context.Context, driver neo4j.DriverWithContext, name st
 		log.Fatalf("Error decoding JSON: %v", err)
 	}
 
-	result, err := neo4j.ExecuteQuery(ctx, driver,
+	result, err = neo4j.ExecuteQuery(ctx, driver,
 		"CREATE (p:Player { name: $name, uuid: $uuid }) RETURN p",
 		map[string]any{
 			"name": playerDto.Name,

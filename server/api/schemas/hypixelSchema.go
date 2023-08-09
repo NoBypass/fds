@@ -34,15 +34,3 @@ var PlayerQueryByName = &graphql.Field{
 		return repository.FindPlayerByName(p.Context, p.Context.Value("driver").(neo4j.DriverWithContext), p.Args["name"].(string))
 	},
 }
-
-var RegisterPlayer = &graphql.Field{
-	Type: playerType,
-	Args: graphql.FieldConfigArgument{
-		"name": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.RegisterPlayer(p.Context, p.Context.Value("driver").(neo4j.DriverWithContext), p.Args["name"].(string))
-	},
-}
