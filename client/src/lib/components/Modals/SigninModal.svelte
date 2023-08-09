@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import loginBg from '$lib/assets/login-bg.png'
     import Button from '$lib/components/Button.svelte'
     import Input from '$lib/components/Input.svelte'
@@ -7,6 +7,8 @@
     import Text from '$lib/components/Text.svelte'
     import { createEventDispatcher } from 'svelte'
     import Spinner from '$lib/components/Spinner.svelte'
+    import { makeGraphQLRequest } from '$lib/api/graphql.js'
+    import type { Player } from '$lib/types/hypixel'
 
     export let open = false
 
@@ -18,65 +20,97 @@
     const pwdChecks = [
         {
             name: 'Password must be between 1 and 32 characters long',
-            check: () => form.password.length > 0 && form.password.length <= 32
+            check: () => password.length > 0 && password.length <= 32
+        },
+        {
+            name: 'Password must be at least 8 characters long',
+            check: () => password.length >= 8
         },
         {
             name: 'Password must contain at least one uppercase letter',
-            check: () => /[A-Z]/.test(form.password)
+            check: () => /[A-Z]/.test(password)
         },
         {
             name: 'Password must contain at least one lowercase letter',
-            check: () => /[a-z]/.test(form.password)
+            check: () => /[a-z]/.test(password)
         },
         {
             name: 'Password must contain at least one number',
-            check: () => /[0-9]/.test(form.password)
+            check: () => /[0-9]/.test(password)
         },
         {
             name: 'Password must contain at least one special character',
-            check: () => /[!@#$%^&*()\-_=+{}[\]:;"'<>,.?/\\|~`]/.test(form.password)
+            check: () => /[!@#$%^&*()\-_=+{}[\]:;"'<>,.?/\\|~`]/.test(password)
         },
         {
             name: 'Password must not contain any spaces',
-            check: () => !form.password.includes(' ')
+            check: () => !password.includes(' ')
         }
     ]
     const usrChecks = [
         {
             name: 'Username must be between 1 and 16 characters long',
-            check: () => form.username.length > 0 && form.username.length <= 16
+            check: () => username.length > 0 && username.length <= 16
         },
         {
             name: 'Username must only contain letters, numbers, and underscores',
-            check: () => /^[a-zA-Z0-9_]+$/.test(form.username)
+            check: () => /^[a-zA-Z0-9_]+$/.test(username)
         }
     ]
-    const form = {
-        username: '',
-        password: '',
-        remember: false
+    let lastUsrChange = 0
+    let playerStatus = null
+    let username = ''
+    let password = ''
+    let remember = false
+
+    $: {
+        if (username !== '') {
+            lastUsrChange = Date.now()
+
+            playerStatus = 'loading'
+            setTimeout(() => {
+                if (Date.now() - lastUsrChange >= 500 && errors.username === '' && username !== '') {
+                    fetchPlayer()
+                } else playerStatus = null
+            }, 600)
+        }
+    }
+
+    const fetchPlayer = async () => {
+        await makeGraphQLRequest<Player>(`query {
+            player(name: "${username}") {
+                name
+            }
+        }`).then(res => {
+            if (typeof res !== 'string' && res.data.player.name) {
+                playerStatus = 'success'
+            } else {
+                playerStatus = null
+                errors.username = 'Player not found'
+            }
+        })
     }
 
     $: {
         isValid = pwdChecks.every(check => check.check()) && usrChecks.every(check => check.check())
-        errors.password = pwdChecks.filter(check => !check.check())[0]?.name
-        errors.username = usrChecks.filter(check => !check.check())[0]?.name
-        if (form.password.length === 0) errors.password = ''
-        if (form.username.length === 0) errors.username = ''
-        if (!errors.password) errors.password = ''
-        if (!errors.username) errors.username = ''
+        const pwd = pwdChecks.filter(check => !check.check())[0]?.name
+        errors.password = pwd ? pwd : ''
+        const usr = usrChecks.filter(check => !check.check())[0]?.name
+        errors.username = usr ? usr : ''
+        if (password.length === 0) errors.password = ''
+        if (username.length === 0) errors.username = ''
     }
 
     const handleUsername = (e) => {
-        form.username = e.detail.target.value
+        username = e.detail.target.value
     }
 
     const handlePassword = (e) => {
-        form.password = e.detail.target.value
+        password = e.detail.target.value
     }
 
     const handleRemember = (e) => {
-        form.remember = e.detail.target.checked
+        remember = e.detail.target.checked
     }
 
     const dispatch = createEventDispatcher()
@@ -100,14 +134,14 @@
             </div>
 
             <div>
-                <Input color={errors.username.length !== 0 ? 'error' : form.username.length === 0 ? 'neutral' : 'success'}
+                <Input color={errors.username.length !== 0 ? 'error' : username.length === 0 ? 'neutral' : playerStatus === 'loading' ? 'warning' : 'success'}
                        on:change={handleUsername}
                        light rounded placeholder="Minecraft username" tw="mt-12 w-full">
-                    <Spinner slot="right" tw="hidden" />
+                    <Spinner color="warning" slot="right" tw="{playerStatus !== 'loading' ? 'hidden' : ''}" />
                 </Input>
                 <Text tw="mt-2" color="error" b>{errors.username}</Text>
 
-                <Input color={errors.password.length !== 0 ? 'error' : form.password.length === 0 ? 'neutral' : 'success'}
+                <Input color={errors.password.length !== 0 ? 'error' : password.length === 0 ? 'neutral' : 'success'}
                        on:change={handlePassword} light rounded placeholder="Password" tw="mt-10 w-full" />
                 <Text tw="mt-2" color="error" b>{errors.password}</Text>
 
