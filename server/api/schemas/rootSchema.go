@@ -14,6 +14,7 @@ var rootQuery = graphql.NewObject(
 			},
 			"account": AccountQueryByUsername,
 			"discord": DiscordQueryByDiscordId,
+			"player":  PlayerQueryByName,
 		},
 	},
 )

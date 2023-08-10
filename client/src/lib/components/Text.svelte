@@ -1,8 +1,10 @@
 <script lang="ts">
-    export let b: boolean = false
+    export let b = false
+    export let o = false
     export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md'
     export let type: 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = 'p'
-    export let tw: string = ''
+    export let tw = ''
+    export let color: 'neutral' | 'error' = 'neutral'
 
     const sizes = {
         xs: 'text-xs',
@@ -12,7 +14,12 @@
         xl: 'text-xl',
     }
 
-    const className = `${sizes[size]} ${tw} ${b ? 'font-bold' : ''}`
+    const colors = {
+        neutral: '',
+        error: 'text-rose-700',
+    }
+
+    const className = `${sizes[size]} ${colors[color]} ${tw} ${o ? 'opacity-70' : ''} ${b ? 'font-bold' : ''}`
 </script>
 
 <style>
