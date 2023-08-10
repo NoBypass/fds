@@ -26,6 +26,10 @@ export default {
       borderWidth: {
         '3': '3px',
       },
+      screens: {
+        '2xl': '1536px',
+        '3xl': '1920px',
+      }
     },
   },
   plugins: [],

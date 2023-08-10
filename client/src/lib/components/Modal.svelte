@@ -1,6 +1,7 @@
 <script>
     import { createEventDispatcher, onMount } from 'svelte'
     import { browser } from '$app/environment'
+    import ResponsiveContainer from '$lib/components/ResponsiveContainer.svelte'
 
     export let open = false
     export let tw = ''
@@ -40,7 +41,9 @@
 
 <div class="{open ? 'scale-100 opacity-100' : 'scale-0 opacity-0'} transition-all duration-200 ease-in-out z-50 top-0 left-0 absolute w-full h-screen full flex items-center justify-center bg-black/50"
      style="backdrop-filter: blur(4px)">
-    <div bind:this={modalRef} class="{tw} bg-neutral-950 rounded-2xl relative overflow-hidden">
-        <slot />
-    </div>
+    <ResponsiveContainer size="2xl">
+        <div bind:this={modalRef} class="{tw} bg-neutral-950 rounded-2xl relative overflow-hidden">
+            <slot />
+        </div>
+    </ResponsiveContainer>
 </div>

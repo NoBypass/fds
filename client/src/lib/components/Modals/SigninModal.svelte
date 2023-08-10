@@ -57,22 +57,29 @@
             check: () => /^[a-zA-Z0-9_]+$/.test(username)
         }
     ]
-    let lastUsrChange = 0
+    let prev = {
+        at: 0,
+        val: ''
+    }
+
     let playerStatus = null
     let username = ''
     let password = ''
     let remember = false
 
     $: {
-        if (username !== '') {
-            lastUsrChange = Date.now()
+        if (username !== '' && username != prev.val) {
+            prev.at = Date.now()
+            prev.val = username
 
             playerStatus = 'loading'
+            const delay = 700
+
             setTimeout(() => {
-                if (Date.now() - lastUsrChange >= 500 && errors.username === '' && username !== '') {
+                if (Date.now() - prev.at >= delay && errors.username === '') {
                     fetchPlayer()
                 } else playerStatus = null
-            }, 600)
+            }, delay)
         }
     }
 
@@ -82,7 +89,7 @@
                 name
             }
         }`).then(res => {
-            if (typeof res !== 'string' && res.data.player.name) {
+            if (typeof res !== 'string' && res.data.player && res.data.player.name) {
                 playerStatus = 'success'
             } else {
                 playerStatus = null
@@ -118,37 +125,42 @@
         open = false
         dispatch('close')
     }
+
+    $: userinputcolor = errors.username.length !== 0 ? 'error' : username.length === 0 ? 'neutral' : playerStatus === 'loading' ? 'warning' : 'success'
 </script>
 
-<Modal open={open} on:close={close} tw="w-2/3 h-160 flex space-between">
+<Modal open={open} on:close={close} tw="h-160 flex space-between">
     <img src={loginBg}
          alt="background"
-         class="w-1/2 h-full object-none z-20"
+         class="w-1/2 h-full object-none z-20 md:block hidden"
          style="-webkit-mask-image:-webkit-gradient(linear, left bottom, right bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
                 mask-image: linear-gradient(to right, rgba(0,0,0,1), rgba(0,0,0,0));">
     <div class="w-full">
-        <div class="p-12 z-30 relative w-full h-full grid grid-cols-1 grid-rows-3">
+        <div class="md:p-6 lg:p-12 p-12 z-30 relative w-full h-full grid grid-cols-1 grid-rows-3">
             <div>
                 <Text type="h1" size="xl" b>Login/Register</Text>
                 <Text o tw="mt-4">You can both register a new account and log into an existing account via the same form.</Text>
             </div>
 
             <div>
-                <Input color={errors.username.length !== 0 ? 'error' : username.length === 0 ? 'neutral' : playerStatus === 'loading' ? 'warning' : 'success'}
+                <Input color={userinputcolor}
                        on:change={handleUsername}
                        light rounded placeholder="Minecraft username" tw="mt-12 w-full">
-                    <Spinner color="warning" slot="right" tw="{playerStatus !== 'loading' ? 'hidden' : ''}" />
+                    <div slot="right">
+                        <img src="https://minotar.net/avatar/{username}" alt="mc-head" class="h-6 w-6 rounded-md {userinputcolor === 'success' ? '' : 'hidden'}">
+                        <Spinner color="warning" tw="{playerStatus !== 'loading' ? 'hidden' : ''}" />
+                    </div>
                 </Input>
                 <Text tw="mt-2" color="error" b>{errors.username}</Text>
 
-                <Input color={errors.password.length !== 0 ? 'error' : password.length === 0 ? 'neutral' : 'success'}
+                <Input password color={errors.password.length !== 0 ? 'error' : password.length === 0 ? 'neutral' : 'success'}
                        on:change={handlePassword} light rounded placeholder="Password" tw="mt-10 w-full" />
                 <Text tw="mt-2" color="error" b>{errors.password}</Text>
 
                 <Checkbox on:change={handleRemember} tw="mt-10"><Text size="md">Remember me!</Text></Checkbox>
             </div>
 
-            <div class="grid w-full grid-cols-2 grid-rows-1 gap-32 mt-12 h-10 place-self-end">
+            <div class="grid w-full grid-cols-2 grid-rows-1 mt-12 h-10 place-self-end">
                 <Button on:click={close} rounded color="transparent"><Text b>Cancel</Text></Button>
                 <Button disabled={!isValid} rounded color="neutral"><Text b>Continue</Text></Button>
             </div>
