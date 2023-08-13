@@ -7,16 +7,21 @@
     import Divider from '$lib/components/Divider.svelte'
     import Button from '$lib/components/Button.svelte'
     import SigninModal from '$lib/components/Modals/SigninModal.svelte'
-    import type { SigninInfo } from '$lib/types/signin'
-    import { signin } from '$lib/api/signin'
+    import { signin } from '$lib/services/signin'
     import ConfirmationModal from '$lib/components/Modals/ConfirmationModal.svelte'
     import SuccessModal from '$lib/components/Modals/SuccessModal.svelte'
+    import Avatar from '$lib/components/Avatar.svelte'
 
     let inputRef
     let showCommandPalette = false
     let showSigninModal = false
     let showSuccessModal = false
     let showConfirmationModal = false
+    let token: string | undefined = undefined
+
+    $: if (typeof localStorage !== 'undefined') {
+        token = localStorage.getItem('token')
+    }
 
     const links = [
         'Search', 'Dashboard', 'SkyBlock'
@@ -40,6 +45,7 @@
 
     const hideSuccessModal = () => {
         showSuccessModal = false
+        token = localStorage.getItem('token')
     }
 
     const hideConfirmationModal = () => {
@@ -49,11 +55,15 @@
     const submitInfo = async (info: CustomEvent) => {
         const res = await signin(info.detail)
         let token
-        if (typeof res !== 'string') token = res.data.token
+        let self
+        if (typeof res !== 'string') {
+            token = res.data.token
+            self = res.data.username
+        }
 
         if (token) {
             localStorage.setItem('token', token)
-            console.log(token)
+            localStorage.setItem('self', self)
             showSuccessModal = true
         } else {
             showConfirmationModal = true
@@ -98,7 +108,11 @@
                 {/each}
             </ul>
             <Divider vertical tw="h-6" />
-            <Button on:click={openSigninModal}>Login</Button>
+            {#if (!token)}
+                <Button on:click={openSigninModal}>Login</Button>
+            {:else}
+                <Avatar />
+            {/if}
         </div>
     </nav>
 
