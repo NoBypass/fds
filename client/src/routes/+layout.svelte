@@ -11,6 +11,8 @@
     import ConfirmationModal from '$lib/components/Modals/ConfirmationModal.svelte'
     import SuccessModal from '$lib/components/Modals/SuccessModal.svelte'
     import Avatar from '$lib/components/Avatar.svelte'
+    import Dropdown from '$lib/components/Dropdown.svelte'
+    import DropdownItem from '$lib/components/DropdownItem.svelte'
 
     let inputRef
     let showCommandPalette = false
@@ -111,7 +113,13 @@
             {#if (!token)}
                 <Button on:click={openSigninModal}>Login</Button>
             {:else}
-                <Avatar />
+                <Dropdown>
+                    <Avatar slot="trigger" />
+                    <ul slot="content">
+                        <DropdownItem>Settings</DropdownItem>
+                        <DropdownItem color="danger">Logout</DropdownItem>
+                    </ul>
+                </Dropdown>
             {/if}
         </div>
     </nav>
