@@ -54,6 +54,12 @@
         showConfirmationModal = true
     }
 
+    const logout = () => {
+        localStorage.removeItem('token')
+        localStorage.removeItem('self')
+        token = undefined
+    }
+
     const submitInfo = async (info: CustomEvent) => {
         const res = await signin(info.detail)
         let token
@@ -117,7 +123,7 @@
                     <Avatar slot="trigger" />
                     <ul slot="content">
                         <DropdownItem>Settings</DropdownItem>
-                        <DropdownItem color="danger">Logout</DropdownItem>
+                        <DropdownItem on:click={logout} color="danger">Logout</DropdownItem>
                     </ul>
                 </Dropdown>
             {/if}
