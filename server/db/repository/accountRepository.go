@@ -11,7 +11,7 @@ import (
 	"strconv"
 )
 
-func FindAccountByName(ctx context.Context, driver neo4j.DriverWithContext, name string) (*models.Account, error) {
+func FindAccountByName(ctx context.Context, driver neo4j.DriverWithContext, name string) (*models.Account, error) { // TODO remove in order to use only FindAccountByToken
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"MATCH (a:Account { username: $username }) RETURN a",
 		map[string]any{
@@ -68,8 +68,8 @@ func Signin(ctx context.Context, driver neo4j.DriverWithContext, accountDto *mod
 	}
 
 	token, err := utils.GenerateJWT(utils.CustomClaims{
-		UserID: account.ID,
-		Role:   "user",
+		Username: account.Username,
+		Role:     "user",
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiresAt,
 			IssuedAt:  utils.GetNowInMs(),

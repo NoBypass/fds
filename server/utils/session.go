@@ -1,12 +1,13 @@
 package utils
 
 import (
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 )
 
 type CustomClaims struct {
-	UserID int64  `json:"user_id"`
-	Role   string `json:"role"`
+	Username string `json:"username"`
+	Role     string `json:"role"`
 	jwt.StandardClaims
 }
 
@@ -19,4 +20,21 @@ func GenerateJWT(claims CustomClaims) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func ParseJWT(tokenString string) (*CustomClaims, error) {
+	claims := &CustomClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("your-secret-key"), nil // TODO use env variable
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+
+	return claims, nil
 }
