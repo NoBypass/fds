@@ -19,5 +19,5 @@
             {/if}
         </span>
     {/if}
-    <img src="https://minotar.net/avatar/{self}" alt="mc-head" class="{twMerge(`rounded-xl outline outline-2 outline-offset-2 ${status === 'on' ? 'outline-emerald-500' : status === 'idle' ? 'outline-amber-300' : 'outline-neutral-800' } h-9 w-9`, tw)}">
+    <img src="https://minotar.net/avatar/{self}" alt="mc-head" class="{twMerge(`rounded-xl outline outline-2 outline-offset-2 ${status === 'on' ? 'outline-emerald-500' : status === 'idle' ? 'outline-amber-300' : 'outline-neutral-800' } h-8 w-8`, tw)}">
 </div>
