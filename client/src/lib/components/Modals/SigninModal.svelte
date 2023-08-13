@@ -40,7 +40,7 @@
         },
         {
             name: 'Password must contain at least one special character',
-            check: () => /[!@#$%^&*()\-_=+{}[\]:;"'<>,.?/\\|~`]/.test(password)
+            check: () => /[!@#$%^&*()\-_=+{}[\]:;'<>,.?/\\|~`]/.test(password)
         },
         {
             name: 'Password must not contain any spaces',

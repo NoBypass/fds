@@ -3,8 +3,8 @@ import { makeGraphQLRequest } from '$lib/api/graphql'
 
 export const signin = async (info: SigninInfo) => {
     return makeGraphQLRequest<SigninRes>(`mutation {
-        signin(username: $username, password: $password, remember: $remember) {
+        signin(username: "${info.username}", password: "${info.password}", remember: ${info.remember}) {
             token
         }
-    }`, info)
+    }`)
 }

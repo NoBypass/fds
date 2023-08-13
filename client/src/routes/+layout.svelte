@@ -46,8 +46,8 @@
         showConfirmationModal = true
     }
 
-    const submitInfo = async (info: SigninInfo) => {
-        const res = await signin(info)
+    const submitInfo = async (info: CustomEvent) => {
+        const res = await signin(info.detail)
         let token
         if (typeof res !== 'string') token = res.data.token
 

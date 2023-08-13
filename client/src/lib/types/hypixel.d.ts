@@ -11,6 +11,7 @@ export interface Player {
 export type GraphQLRes <T> = {
     headers: {
         status: number
+        queryName: string
     }
     data: T
 } | string
