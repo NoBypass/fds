@@ -89,7 +89,8 @@
                 name
             }
         }`).then(res => {
-            if (typeof res !== 'string' && res.data.player && res.data.player.name) {
+            console.log(res)
+            if (typeof res !== 'string' && res.data && res.data.name) {
                 playerStatus = 'success'
             } else {
                 playerStatus = null
@@ -154,7 +155,9 @@
                        on:change={handleUsername}
                        light rounded placeholder="Minecraft username" tw="mt-12 w-full">
                     <div slot="right">
-                        <img src="https://minotar.net/avatar/{username}" alt="mc-head" class="h-6 w-6 rounded-md {userinputcolor === 'success' ? '' : 'hidden'}">
+                        {#if (playerStatus === 'success')}
+                            <img src="https://minotar.net/avatar/{username}" alt="mc-head" class="h-6 w-6 rounded-md {userinputcolor === 'success' ? '' : 'hidden'}">
+                        {/if}
                         <Spinner color="warning" tw="{playerStatus !== 'loading' ? 'hidden' : ''}" />
                     </div>
                 </Input>
