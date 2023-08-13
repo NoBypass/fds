@@ -1,5 +1,5 @@
 <script>
-    import MagnifyIcon from '$lib/icons/MagnifyIcon.svelte'
+    import MagnifyIcon from '$lib/assets/icons/MagnifyIcon.svelte'
     import Input from '$lib/components/Input.svelte'
     import Text from '$lib/components/Text.svelte'
 

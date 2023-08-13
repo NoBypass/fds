@@ -1,16 +1,22 @@
-<script>
+<script lang="ts">
     import './../app.css'
-    import MagnifyIcon from '$lib/icons/MagnifyIcon.svelte'
+    import MagnifyIcon from '$lib/assets/icons/MagnifyIcon.svelte'
     import CommandPalette from '$lib/components/CommandPalette.svelte'
     import ResponsiveContainer from '$lib/components/ResponsiveContainer.svelte'
     import Text from '$lib/components/Text.svelte'
     import Divider from '$lib/components/Divider.svelte'
     import Button from '$lib/components/Button.svelte'
     import SigninModal from '$lib/components/Modals/SigninModal.svelte'
+    import type { SigninInfo } from '$lib/types/signin'
+    import { signin } from '$lib/api/signin'
+    import ConfirmationModal from '$lib/components/Modals/ConfirmationModal.svelte'
+    import SuccessModal from '$lib/components/Modals/SuccessModal.svelte'
 
     let inputRef
     let showCommandPalette = false
     let showSigninModal = false
+    let showSuccessModal = false
+    let showConfirmationModal = false
 
     const links = [
         'Search', 'Dashboard', 'SkyBlock'
@@ -20,7 +26,7 @@
         showCommandPalette = !showCommandPalette
     }
 
-    const closeCommandPalette = () => {
+    const hideCommandPalette = () => {
         showCommandPalette = false
     }
 
@@ -31,6 +37,28 @@
     const hideSigninModal = () => {
         showSigninModal = false
     }
+
+    const hideSuccessModal = () => {
+        showSuccessModal = false
+    }
+
+    const hideConfirmationModal = () => {
+        showConfirmationModal = true
+    }
+
+    const submitInfo = async (info: SigninInfo) => {
+        const res = await signin(info)
+        let token
+        if (typeof res !== 'string') token = res.data.token
+
+        if (token) {
+            localStorage.setItem('token', token)
+            console.log(token)
+            showSuccessModal = true
+        } else {
+            showConfirmationModal = true
+        }
+    }
 </script>
 
 <style>
@@ -39,10 +67,12 @@
     }
 </style>
 
-<CommandPalette on:close={closeCommandPalette} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
+<CommandPalette on:close={hideCommandPalette} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
 
 <ResponsiveContainer>
-    <SigninModal on:close={hideSigninModal} open={showSigninModal} />
+    <SigninModal on:close={hideSigninModal} open={showSigninModal} on:submit={submitInfo} />
+    <SuccessModal open={showSuccessModal} on:close={hideSuccessModal} />
+    <ConfirmationModal open={showConfirmationModal} on:close={hideConfirmationModal} />
 
     <nav class="grid grid-rows-none grid-cols-6 w-full h-20">
 

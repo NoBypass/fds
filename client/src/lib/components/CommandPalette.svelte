@@ -1,8 +1,8 @@
 <script lang="ts">
     import ResponsiveContainer from '$lib/components/ResponsiveContainer.svelte'
-    import { createEventDispatcher, onMount } from 'svelte'
     import { browser } from '$app/environment'
-    import MagnifyIcon from '$lib/icons/MagnifyIcon.svelte'
+    import MagnifyIcon from '$lib/assets/icons/MagnifyIcon.svelte'
+    import { createEventDispatcher, onMount } from 'svelte'
 
     export let open = false
 

@@ -125,6 +125,13 @@
         open = false
         dispatch('close')
     }
+    const submit = () => {
+        dispatch('submit', {
+            username,
+            password,
+            remember
+        })
+    }
 
     $: userinputcolor = errors.username.length !== 0 ? 'error' : username.length === 0 ? 'neutral' : playerStatus === 'loading' ? 'warning' : 'success'
 </script>
@@ -162,7 +169,7 @@
 
             <div class="grid w-full grid-cols-2 grid-rows-1 mt-12 h-10 place-self-end">
                 <Button on:click={close} rounded color="transparent"><Text b>Cancel</Text></Button>
-                <Button disabled={!isValid} rounded color="neutral"><Text b>Continue</Text></Button>
+                <Button on:click={submit} disabled={!isValid} rounded color="neutral"><Text b>Continue</Text></Button>
             </div>
         </div>
         <img src={loginBg} alt="background" class="saturate-150 absolute w-full h-full object-none blur-[100px]  z-10 left-0 top-0">

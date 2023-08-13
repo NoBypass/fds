@@ -9,5 +9,8 @@ export interface Player {
 }
 
 export type GraphQLRes <T> = {
+    headers: {
+        status: number
+    }
     data: T
 } | string

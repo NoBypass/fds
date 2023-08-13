@@ -11,7 +11,12 @@ export const makeGraphQLRequest = async <T> (query: string, variables?: any): Pr
             })
         })
 
-        return await res.json() as GraphQLRes<Partial<T>>
+        return {
+            headers: {
+                status: res.status
+            },
+            data: await res.json() as Partial<T>
+        }
     } catch (error) {
         return 'GraphQL request failed: ' + error
     }
