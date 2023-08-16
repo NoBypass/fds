@@ -5,7 +5,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 	"net/http"
-	"server/utils"
+	"server/src/utils"
 )
 
 func GraphQLHandler(schema *graphql.Schema) http.Handler {

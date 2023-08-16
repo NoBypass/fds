@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/db/mappers"
-	"server/db/models"
-	"server/utils"
+	"server/src/db/mappers"
+	"server/src/db/models"
+	"server/src/utils"
 )
 
 func FindDiscordByDiscordId(ctx context.Context, driver neo4j.DriverWithContext, discordIdInput string) (*models.Discord, error) {

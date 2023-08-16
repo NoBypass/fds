@@ -3,7 +3,7 @@ package mappers
 import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
-	"server/db/models"
+	"server/src/db/models"
 )
 
 func ResultToAccount(result *neo4j.EagerResult) (*models.Account, error) {
