@@ -11,7 +11,7 @@ var playerType = graphql.NewObject(
 		Name: "Player",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
-				Type: graphql.String,
+				Type: graphql.ID,
 			},
 			"uuid": &graphql.Field{
 				Type: graphql.String,

@@ -1,0 +1,2 @@
+graphql: src/graph/schemas        # Path to the GraphQL schema files
+generated: src/graph/generated    # Path of where to generate the go files

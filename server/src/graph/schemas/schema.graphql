@@ -1,0 +1,10 @@
+type Query {
+    account(name: String!): Account
+    discord(discordId: String!): Discord
+    player(name: String!): Player
+}
+
+type Mutation {
+    signin(name: String!, password: String!, remember: Boolean): Signin
+    createDiscord(discordId: String!, name: String!): Discord
+}
