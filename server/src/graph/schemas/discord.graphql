@@ -1,0 +1,8 @@
+type Discord {
+    uuid: String!
+    name: String!
+    level: Int
+    xp: Int
+    streak: Int
+    lastDailyAt: String
+}

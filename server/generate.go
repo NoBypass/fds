@@ -5,6 +5,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+	"server/src/utils"
 	"strings"
 )
 
@@ -13,48 +14,47 @@ type Config struct {
 	Generated string `yaml:"generated"`
 }
 
-type Argument struct {
-	Name     string
-	Type     string
-	Required bool
-}
-
-type Action struct {
-	Name    string
-	Args    []Argument
-	Returns string
-}
-
-type Type struct {
-	Name string
-	Type string
-}
-
-type Schema struct {
-	Mutations []Action
-	Queries   []Action
-	Types     map[string]Type
-}
-
-func stringToSchema(content string) (Schema, error) {
-	// TODO
-	return Schema{}, nil
-}
-
 //go:generate go run generate.go
 
 func main() {
+	fmt.Println("Reading Config")
+
 	config, err := readConfig()
 	if err != nil {
 		fmt.Println("Error reading config:", err)
 		return
 	}
 
+	fmt.Println("Starting with config:", config)
+	fmt.Println("Searching GraphQL directory for files")
+
 	files, err := os.ReadDir(config.GraphQL)
 	if err != nil {
 		fmt.Println("Error reading GraphQL directory:", err)
 		return
 	}
+
+	fmt.Println("Found", len(files), "files")
+	fmt.Println("Finding root schema")
+
+	var rootSchema string
+	var originalRootSchema string
+	for _, fileInfo := range files {
+		if fileInfo.IsDir() || !strings.HasSuffix(fileInfo.Name(), ".graphql") || !strings.HasPrefix(fileInfo.Name(), "schema") {
+			continue
+		}
+
+		graphqlContent, err := os.ReadFile(filepath.Join(config.GraphQL, fileInfo.Name()))
+		if err != nil {
+			fmt.Println("Error reading GraphQL file:", err)
+			return
+		}
+
+		originalRootSchema = string(graphqlContent)
+		rootSchema = utils.GenerateRootSchema(string(graphqlContent))
+	}
+
+	fmt.Println("Root schema found, generating files")
 
 	for _, fileInfo := range files {
 		if fileInfo.IsDir() || !strings.HasSuffix(fileInfo.Name(), ".graphql") {
@@ -68,28 +68,17 @@ func main() {
 			fmt.Println("Error reading GraphQL file:", err)
 			return
 		}
-		graphqlContentSchema, err := stringToSchema(string(graphqlContent))
 		if err != nil {
 			fmt.Println("Error converting GraphQL file to schema:", err)
 			return
 		}
 
-		content := "// Code automatically generated; DO NOT EDIT.\n\n"
+		content := "package generated\n\n// Code automatically generated; DO NOT EDIT.\n\n"
 
 		if strings.HasPrefix(fileInfo.Name(), "schema") {
-			rootSchema, err := generateRootSchema(graphqlContentSchema)
-			if err != nil {
-				fmt.Println("Error generating root schema:", err)
-				return
-			}
 			content += rootSchema
 		} else {
-			schema, err := generateSchema(graphqlContentSchema)
-			if err != nil {
-				fmt.Println("Error generating schema:", err)
-				return
-			}
-			content += schema
+			content += utils.GenerateSchema(string(graphqlContent), originalRootSchema)
 		}
 
 		goFile, err := os.Create(goFilePath)
@@ -103,19 +92,9 @@ func main() {
 		if err != nil {
 			fmt.Println("Error writing to Go file:", err)
 		}
+
+		fmt.Println("Generated file:", fileInfo.Name())
 	}
-}
-
-func generateRootSchema(schema Schema) (string, error) {
-	var res string = "package generated\n\nimport \"github.com/graphql-go/graphql\"\n\n"
-
-	res += "var RootSchema, _ = graphql.NewSchema(\n\tgraphql.SchemaConfig{\n\t\tQuery:    rootQuery,\n\t\tMutation: rootMutation,\n\t},\n)"
-	return res, nil
-}
-
-func generateSchema(schema Schema) (string, error) {
-	// TODO
-	return "", nil
 }
 
 func readConfig() (*Config, error) {
