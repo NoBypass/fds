@@ -44,16 +44,21 @@ func GenerateSchema(schema string, root string) string {
 	structs := make(map[string]string)
 	types := make(map[string]string)
 	actions := make(map[string]string)
+	mappers := make(map[string]string)
+	mappersReturn := make(map[string]string)
 
 	for _, line := range lines {
 		if strings.HasPrefix(line, "type ") {
 			current = strings.Split(line, " ")[1]
 			returnTypes = append(returnTypes, current)
 
+			mappers[current] = "func ResultTo" + current + "(result *neo4j.EagerResult) (*" + current + ", error) {\taccountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], \"a\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\n"
 			structs[current] = "type " + current + " struct {\n"
+			mappersReturn[current] = "\treturn &" + current + "{\n"
 			types[current] = "var " + FirstLower(current) + "Type = graphql.NewObject(\n\tgraphql.ObjectConfig{\n\t\tName: \"" + current + "\",\n\t\tFields: graphql.Fields{\n"
 		} else if strings.HasPrefix(line, "}") {
 			structs[current] = structs[current] + "}\n"
+			mappers[current] = mappers[current] + mappersReturn[current] + "\t}, nil\n}\n"
 			types[current] = types[current] + "\t\t},\n\t},\n)\n"
 		} else if propertyRegex.MatchString(line) {
 			property := strings.Trim(strings.Split(line, ":")[0], " ")
@@ -67,8 +72,11 @@ func GenerateSchema(schema string, root string) string {
 
 			graphqlType := strings.Replace(strings.Trim(strings.Split(line, ":")[1], " "), "\r", "", -1)
 			goType := strings.Replace(strings.ToLower(graphqlType), "!", "", -1)
+			if strings.HasPrefix(goType, "int") {
+				goType = "int64"
+			}
 			isRequired := strings.Contains(graphqlType, "!")
-			if isRequired {
+			if !isRequired {
 				goType = "*" + goType
 			}
 
@@ -79,6 +87,14 @@ func GenerateSchema(schema string, root string) string {
 				graphqlType = "graphql." + graphqlType
 			}
 			types[current] = types[current] + "\t\t\t\"" + jsonProperty + "\": &graphql.Field{\n\t\t\t\tType: " + graphqlType + ",\n\t\t\t},\n"
+
+			goType = strings.Replace(goType, "*", "", -1)
+			mappers[current] = mappers[current] + fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](accountNode, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\n", property, goType, jsonProperty)
+
+			if !isRequired {
+				property = "&" + property
+			}
+			mappersReturn[current] = mappersReturn[current] + "\t\t" + goProperty + ": " + property + ",\n"
 		}
 	}
 
@@ -138,5 +154,6 @@ func GenerateSchema(schema string, root string) string {
 		"\n\n" + JoinMap(structs, "\n") +
 		"\n\n" + JoinMap(types, "\n") +
 		"\n\n" + JoinMap(actions, "\n") +
+		"\n\n" + JoinMap(mappers, "\n") +
 		"\n\n"
 }
