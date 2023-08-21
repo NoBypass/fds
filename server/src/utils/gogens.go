@@ -6,6 +6,20 @@ import (
 	"strings"
 )
 
+type Field struct {
+	JsonName    string
+	GoName      string
+	GoType      string
+	GraphQLType string
+	GraphQLName string
+	IsRequired  bool
+}
+
+type Type struct {
+	Name   string
+	Fields []Field
+}
+
 func GenerateRootSchema(schema string) string {
 	lines := strings.Split(schema, "\n")
 	actionRegex := regexp.MustCompile(`^.+\(.+\): .+$`)
@@ -38,14 +52,25 @@ func GenerateRootSchema(schema string) string {
 
 func GenerateSchema(schema string, root string) string {
 	lines := strings.Split(schema, "\n")
+	l := make([]string, 0)
 	propertyRegex := regexp.MustCompile(`^.+.+: .+$`)
+	types2 := schemaToType(schema)
 	var current string
 	var returnTypes []string
+
 	structs := make(map[string]string)
 	types := make(map[string]string)
 	actions := make(map[string]string)
 	mappers := make(map[string]string)
 	mappersReturn := make(map[string]string)
+
+	for _, t := range types2 {
+		l = append(l, fmt.Sprintf("type %s struct {", t.Name))
+		for _, field := range t.Fields {
+			l = append(l, fmt.Sprintf("\t%s %s `json:\"%s\"`", field.GoName, field.GoType, field.JsonName))
+		}
+		l = append(l, "}\n")
+	}
 
 	for _, line := range lines {
 		if strings.HasPrefix(line, "type ") {
@@ -150,10 +175,48 @@ func GenerateSchema(schema string, root string) string {
 		}
 	}
 
-	return "import (\n\t\"github.com/graphql-go/graphql\"\n\t\"server/src/db/repository\"\n)" +
+	return "import (\n\t\"github.com/graphql-go/graphql\"\n\t\"github.com/neo4j/neo4j-go-driver/v5/neo4j\"\n\t\"server/src/db/repository\"\n)" +
 		"\n\n" + JoinMap(structs, "\n") +
 		"\n\n" + JoinMap(types, "\n") +
 		"\n\n" + JoinMap(actions, "\n") +
 		"\n\n" + JoinMap(mappers, "\n") +
 		"\n\n"
+}
+
+func schemaToType(schema string) map[string]Type {
+	lines := strings.Split(schema, "\n")
+	propertyRegex := regexp.MustCompile(`^.+.+: .+$`)
+	fieldIndex := 0
+	var res map[string]Type
+	var current string
+
+	for _, line := range lines {
+		if strings.HasPrefix(line, "type ") {
+			current = strings.Split(line, " ")[1]
+			res[current] = Type{
+				Name: current,
+			}
+		} else if propertyRegex.MatchString(line) {
+			property := strings.Trim(strings.Split(line, ":")[0], " ")
+			goProperty := FirstUpper(property)
+			jsonProperty := convertCamelToSnake(property)
+			graphqlType := strings.Replace(strings.Trim(strings.Split(line, ":")[1], " "), "\r", "", -1)
+			goType := strings.Replace(strings.ToLower(graphqlType), "!", "", -1)
+
+			res[current].Fields[fieldIndex] = Field{
+				JsonName:    jsonProperty,
+				GoName:      goProperty,
+				GoType:      goType,
+				GraphQLType: graphqlType,
+				GraphQLName: property,
+				IsRequired:  strings.Contains(graphqlType, "!"),
+			}
+
+			fieldIndex++
+		} else if strings.HasPrefix(line, "}") {
+			fieldIndex = 0
+		}
+	}
+
+	return res
 }

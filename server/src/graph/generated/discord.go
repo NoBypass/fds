@@ -9,13 +9,14 @@ import (
 )
 
 type Discord struct {
-	Uuid        string  `json:"uuid"`
-	Name        string  `json:"name"`
-	Level       *int64  `json:"level"`
-	Xp          *int64  `json:"xp"`
-	Streak      *int64  `json:"streak"`
+	Uuid string `json:"uuid"`
+	Name string `json:"name"`
+	Level *int64 `json:"level"`
+	Xp *int64 `json:"xp"`
+	Streak *int64 `json:"streak"`
 	LastDailyAt *string `json:"last_daily_at"`
 }
+
 
 var discordType = graphql.NewObject(
 	graphql.ObjectConfig{
@@ -43,17 +44,6 @@ var discordType = graphql.NewObject(
 	},
 )
 
-var DiscordQuery = &graphql.Field{
-	Type: discordType,
-	Args: graphql.FieldConfigArgument{
-		"discordId": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.DiscordQuery(p)
-	},
-}
 
 var CreateDiscordMutation = &graphql.Field{
 	Type: discordType,
@@ -70,8 +60,20 @@ var CreateDiscordMutation = &graphql.Field{
 	},
 }
 
-func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
-	accountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
+var DiscordQuery = &graphql.Field{
+	Type: discordType,
+	Args: graphql.FieldConfigArgument{
+		"discordId": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		return repository.DiscordQuery(p)
+	},
+}
+
+
+func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {	accountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
 	if err != nil {
 		return nil, err
 	}
@@ -107,11 +109,13 @@ func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
 	}
 
 	return &Discord{
-		Uuid:        UUID,
-		Name:        name,
-		Level:       &level,
-		Xp:          &xp,
-		Streak:      &streak,
+		Uuid: UUID,
+		Name: name,
+		Level: &level,
+		Xp: &xp,
+		Streak: &streak,
 		LastDailyAt: &lastDailyAt,
 	}, nil
 }
+
+
