@@ -59,7 +59,7 @@ func JoinMap(input map[string]string, separator string) string {
 	return strings.Join(contents, separator)
 }
 
-func InsertAtIndex(arr []string, index int, element string) []string {
+func AppendAt(arr []string, element string, index int) []string {
 	newArr := make([]string, len(arr)+1)
 
 	copy(newArr[:index], arr[:index])

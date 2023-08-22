@@ -13,12 +13,11 @@ type Player struct {
 	Name string `json:"name"`
 }
 
-
 var playerType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Player",
 		Fields: graphql.Fields{
-			"uuid": &graphql.Field{
+			"UUID": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 			},
 			"name": &graphql.Field{
@@ -28,21 +27,8 @@ var playerType = graphql.NewObject(
 	},
 )
 
-
-var PlayerQuery = &graphql.Field{
-	Type: playerType,
-	Args: graphql.FieldConfigArgument{
-		"name": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.PlayerQuery(p)
-	},
-}
-
-
-func ResultToPlayer(result *neo4j.EagerResult) (*Player, error) {	accountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
+func ResultToPlayer(result *neo4j.EagerResult) (*Player, error) {
+	accountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
 	if err != nil {
 		return nil, err
 	}
@@ -62,5 +48,3 @@ func ResultToPlayer(result *neo4j.EagerResult) (*Player, error) {	accountNode, _
 		Name: name,
 	}, nil
 }
-
-

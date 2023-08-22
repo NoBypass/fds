@@ -5,24 +5,22 @@ package generated
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/src/db/repository"
 )
 
 type Discord struct {
-	Uuid string `json:"uuid"`
-	Name string `json:"name"`
-	Level *int64 `json:"level"`
-	Xp *int64 `json:"xp"`
-	Streak *int64 `json:"streak"`
-	LastDailyAt *string `json:"last_daily_at"`
+	Uuid        string `json:"uuid"`
+	Name        string `json:"name"`
+	Level       int64  `json:"level"`
+	Xp          int64  `json:"xp"`
+	Streak      int64  `json:"streak"`
+	LastDailyAt string `json:"last_daily_at"`
 }
-
 
 var discordType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Discord",
 		Fields: graphql.Fields{
-			"uuid": &graphql.Field{
+			"UUID": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 			},
 			"name": &graphql.Field{
@@ -37,43 +35,15 @@ var discordType = graphql.NewObject(
 			"streak": &graphql.Field{
 				Type: graphql.Int,
 			},
-			"last_daily_at": &graphql.Field{
+			"lastDailyAt": &graphql.Field{
 				Type: graphql.String,
 			},
 		},
 	},
 )
 
-
-var CreateDiscordMutation = &graphql.Field{
-	Type: discordType,
-	Args: graphql.FieldConfigArgument{
-		"discordId": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-		"name": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.CreateDiscordMutation(p)
-	},
-}
-
-var DiscordQuery = &graphql.Field{
-	Type: discordType,
-	Args: graphql.FieldConfigArgument{
-		"discordId": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.DiscordQuery(p)
-	},
-}
-
-
-func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {	accountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
+func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
+	accountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
 	if err != nil {
 		return nil, err
 	}
@@ -109,13 +79,11 @@ func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {	accountNode,
 	}
 
 	return &Discord{
-		Uuid: UUID,
-		Name: name,
-		Level: &level,
-		Xp: &xp,
-		Streak: &streak,
-		LastDailyAt: &lastDailyAt,
+		Uuid:        UUID,
+		Name:        name,
+		Level:       level,
+		Xp:          xp,
+		Streak:      streak,
+		LastDailyAt: lastDailyAt,
 	}, nil
 }
-
-
