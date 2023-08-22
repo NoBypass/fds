@@ -57,15 +57,10 @@ func GenerateSchema(schema string, root string) string {
 	actions := make(map[string]string)
 
 	for _, t := range newSchema {
-		structs := make([]string, 0)
-		types := make([]string, 0)
-		maps := make([]string, 0)
-		returns := make([]string, 0)
-
-		structs = append(structs, fmt.Sprintf("type %s struct {", t.Name))
-		types = append(types, fmt.Sprintf("var %sType = graphql.NewObject(\n\tgraphql.ObjectConfig{\n\t\tName: \"%s\",\n\t\tFields: graphql.Fields{", FirstLower(t.Name), t.Name))
-		maps = append(maps, fmt.Sprintf("func ResultTo%s(result *neo4j.EagerResult) (*%s, error) {\n\taccountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], \"a\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name))
-		returns = append(returns, fmt.Sprintf("\treturn &%s{", t.Name))
+		structs := []string{fmt.Sprintf("type %s struct {", t.Name)}
+		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{Name: \"%s\", Fields: graphql.Fields{", FirstLower(t.Name), t.Name)}
+		maps := []string{fmt.Sprintf("func ResultTo%s(result *neo4j.EagerResult) (*%s, error) {", t.Name, t.Name)}
+		returns := []string{fmt.Sprintf("return &%s{", t.Name)}
 
 		for _, field := range t.Fields {
 			structs = append(structs, fmt.Sprintf("\t%s %s `json:\"%s\"`", field.GoName, field.GoType, field.JsonName))
@@ -81,7 +76,6 @@ func GenerateSchema(schema string, root string) string {
 
 		structs = append(structs, "}\n")
 		types = append(types, "\t\t},\n\t},\n)\n")
-
 		returns = append(returns, "\t}, nil\n}\n")
 
 		var res string

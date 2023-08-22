@@ -58,25 +58,3 @@ func JoinMap(input map[string]string, separator string) string {
 
 	return strings.Join(contents, separator)
 }
-
-func AppendAt(arr []string, element string, index int) []string {
-	newArr := make([]string, len(arr)+1)
-
-	copy(newArr[:index], arr[:index])
-	newArr[index] = element
-	copy(newArr[index+1:], arr[index:])
-
-	return newArr
-}
-
-func GetMapIndex[T interface{}](input map[string]T, key string) int {
-	current := 0
-	for k, _ := range input {
-		if k == key {
-			return current
-		}
-		current++
-	}
-
-	return -1
-}
