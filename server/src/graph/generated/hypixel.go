@@ -13,10 +13,8 @@ type Player struct {
 	Name string `json:"name"`
 }
 
-var playerType = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "Player",
-		Fields: graphql.Fields{
+var playerType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Player", Fields: graphql.Fields{
 			"UUID": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 			},
@@ -27,18 +25,18 @@ var playerType = graphql.NewObject(
 	},
 )
 
-func ResultToPlayer(result *neo4j.EagerResult) (*Player, error) {
-	accountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
+func ResultToPlayer(r *neo4j.EagerResult) (*Player, error) {
+	result, _, err := neo4j.GetRecordValue[neo4j.Node](r.Records[0], "%!s(uint8=112)")
 	if err != nil {
 		return nil, err
 	}
 
-	UUID, err := neo4j.GetProperty[string](accountNode, "uuid")
+	UUID, err := neo4j.GetProperty[string](result, "uuid")
 	if err != nil {
 		return nil, err
 	}
 
-	name, err := neo4j.GetProperty[string](accountNode, "name")
+	name, err := neo4j.GetProperty[string](result, "name")
 	if err != nil {
 		return nil, err
 	}
@@ -47,4 +45,63 @@ func ResultToPlayer(result *neo4j.EagerResult) (*Player, error) {
 		Uuid: UUID,
 		Name: name,
 	}, nil
+}
+
+
+
+var AccountMutation = &graphql.Field{
+	Type: playerType,
+	Args: graphql.FieldConfigArgument{
+		"name": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql. String!),
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		return repository.AccountMutation(p)
+	},
+}
+
+var DiscordMutation = &graphql.Field{
+	Type: playerType,
+	Args: graphql.FieldConfigArgument{
+		"discordId": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql. String!),
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		return repository.DiscordMutation(p)
+	},
+}
+
+var SigninMutation = &graphql.Field{
+	Type: playerType,
+	Args: graphql.FieldConfigArgument{
+		"name": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql. String!),
+		},
+		"password": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql. String!),
+		},
+		"remember": &graphql.ArgumentConfig{
+			Type: graphql. Boolean,
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		return repository.SigninMutation(p)
+	},
+}
+
+var CreateDiscordMutation = &graphql.Field{
+	Type: playerType,
+	Args: graphql.FieldConfigArgument{
+		"discordId": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql. String!),
+		},
+		"name": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql. String!),
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		return repository.CreateDiscordMutation(p)
+	},
 }

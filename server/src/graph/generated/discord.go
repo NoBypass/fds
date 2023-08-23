@@ -5,21 +5,20 @@ package generated
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"server/src/db/repository"
 )
 
 type Discord struct {
-	Uuid        string `json:"uuid"`
-	Name        string `json:"name"`
-	Level       int64  `json:"level"`
-	Xp          int64  `json:"xp"`
-	Streak      int64  `json:"streak"`
+	Uuid string `json:"uuid"`
+	Name string `json:"name"`
+	Level int64 `json:"level"`
+	Xp int64 `json:"xp"`
+	Streak int64 `json:"streak"`
 	LastDailyAt string `json:"last_daily_at"`
 }
 
-var discordType = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "Discord",
-		Fields: graphql.Fields{
+var discordType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Discord", Fields: graphql.Fields{
 			"UUID": &graphql.Field{
 				Type: graphql.NewNonNull(graphql.String),
 			},
@@ -42,48 +41,80 @@ var discordType = graphql.NewObject(
 	},
 )
 
-func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
-	accountNode, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
+func ResultToDiscord(r *neo4j.EagerResult) (*Discord, error) {
+	result, _, err := neo4j.GetRecordValue[neo4j.Node](r.Records[0], "%!s(uint8=100)")
 	if err != nil {
 		return nil, err
 	}
 
-	UUID, err := neo4j.GetProperty[string](accountNode, "uuid")
+	UUID, err := neo4j.GetProperty[string](result, "uuid")
 	if err != nil {
 		return nil, err
 	}
 
-	name, err := neo4j.GetProperty[string](accountNode, "name")
+	name, err := neo4j.GetProperty[string](result, "name")
 	if err != nil {
 		return nil, err
 	}
 
-	level, err := neo4j.GetProperty[int64](accountNode, "level")
+	level, err := neo4j.GetProperty[int64](result, "level")
 	if err != nil {
 		return nil, err
 	}
 
-	xp, err := neo4j.GetProperty[int64](accountNode, "xp")
+	xp, err := neo4j.GetProperty[int64](result, "xp")
 	if err != nil {
 		return nil, err
 	}
 
-	streak, err := neo4j.GetProperty[int64](accountNode, "streak")
+	streak, err := neo4j.GetProperty[int64](result, "streak")
 	if err != nil {
 		return nil, err
 	}
 
-	lastDailyAt, err := neo4j.GetProperty[string](accountNode, "last_daily_at")
+	lastDailyAt, err := neo4j.GetProperty[string](result, "last_daily_at")
 	if err != nil {
 		return nil, err
 	}
 
 	return &Discord{
-		Uuid:        UUID,
-		Name:        name,
-		Level:       level,
-		Xp:          xp,
-		Streak:      streak,
+		Uuid: UUID,
+		Name: name,
+		Level: level,
+		Xp: xp,
+		Streak: streak,
 		LastDailyAt: lastDailyAt,
 	}, nil
+}
+
+
+
+var SigninMutation = &graphql.Field{
+	Type: discordType,
+	Args: graphql.FieldConfigArgument{
+		"name": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql. String!),
+		},
+		"password": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql. String!),
+		},
+		"remember": &graphql.ArgumentConfig{
+			Type: graphql. Boolean,
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		return repository.SigninMutation(p)
+	},
+}
+
+var AccountMutation = &graphql.Field{
+	Type: discordType,
+	Args: graphql.FieldConfigArgument{
+		"name": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql. String!),
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		return repository.AccountMutation(p)
+	},
 }

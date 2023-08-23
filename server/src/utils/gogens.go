@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+type Parameter struct {
+	Name       string
+	Type       string
+	IsRequired bool
+}
+
 type Field struct {
 	JsonName    string
 	GoName      string
@@ -13,6 +19,8 @@ type Field struct {
 	GraphQLType string
 	GraphQLName string
 	IsRequired  bool
+	Parameters  *[]Parameter
+	IsMutation  *bool
 }
 
 type Type struct {
@@ -52,15 +60,15 @@ func GenerateRootSchema(schema string) string {
 
 func GenerateSchema(schema string, root string) string {
 	objs := make([]string, 0)
+	resolvers := make([]string, 0)
 	newSchema := schemaToType(schema)
-
-	actions := make(map[string]string)
+	newRoot := schemaToType(root)
 
 	for _, t := range newSchema {
 		structs := []string{fmt.Sprintf("type %s struct {", t.Name)}
-		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{Name: \"%s\", Fields: graphql.Fields{", FirstLower(t.Name), t.Name)}
-		maps := []string{fmt.Sprintf("func ResultTo%s(result *neo4j.EagerResult) (*%s, error) {", t.Name, t.Name)}
-		returns := []string{fmt.Sprintf("return &%s{", t.Name)}
+		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{\n\tName: \"%s\", Fields: graphql.Fields{", FirstLower(t.Name), t.Name)}
+		maps := []string{fmt.Sprintf("func ResultTo%s(r *neo4j.EagerResult) (*%s, error) {\n\tresult, _, err := neo4j.GetRecordValue[neo4j.Node](r.Records[0], \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name, FirstLower(t.Name)[0])}
+		returns := []string{fmt.Sprintf("\treturn &%s{", t.Name)}
 
 		for _, field := range t.Fields {
 			structs = append(structs, fmt.Sprintf("\t%s %s `json:\"%s\"`", field.GoName, field.GoType, field.JsonName))
@@ -70,8 +78,36 @@ func GenerateSchema(schema string, root string) string {
 				nonnullString = fmt.Sprintf("graphql.%s", field.GraphQLType)
 			}
 			types = append(types, fmt.Sprintf("\t\t\t\"%s\": &graphql.Field{\n\t\t\t\tType: %s,\n\t\t\t},", field.GraphQLName, nonnullString))
-			maps = append(maps, fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](accountNode, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GoType, field.JsonName))
+			maps = append(maps, fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](result, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GoType, field.JsonName))
 			returns = append(returns, fmt.Sprintf("\t\t%s: %s,", field.GoName, field.GraphQLName))
+		}
+
+		for key := range newRoot {
+			for _, rootField := range newRoot[key].Fields {
+				if t.Name == rootField.GraphQLType {
+					break
+				}
+
+				resolverName := FirstUpper(rootField.GoName)
+				if rootField.IsMutation != nil && *rootField.IsMutation {
+					resolverName += "Mutation"
+				} else {
+					resolverName += "Query"
+				}
+
+				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", resolverName, FirstLower(t.Name))}
+
+				for _, parameter := range *rootField.Parameters {
+					nonnullString := fmt.Sprintf("graphql.NewNonNull(graphql.%s)", parameter.Type)
+					if !parameter.IsRequired {
+						nonnullString = fmt.Sprintf("graphql.%s", parameter.Type)
+					}
+					res = append(res, fmt.Sprintf("\t\t\"%s\": &graphql.ArgumentConfig{\n\t\t\tType: %s,\n\t\t},", parameter.Name, nonnullString))
+				}
+
+				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n\t\treturn repository.%s(p)\n\t},", resolverName))
+				resolvers = append(resolvers, strings.Join(res, "\n")+"\n}\n")
+			}
 		}
 
 		structs = append(structs, "}\n")
@@ -83,69 +119,20 @@ func GenerateSchema(schema string, root string) string {
 		for _, line := range actions {
 			res += strings.Join(line, "\n") + "\n"
 		}
+
 		objs = append(objs, res)
 	}
 
-	//for _, returnType := range returnTypes {
-	//	rootEqual := make(map[string]bool)
-	//	isMutation := false
-	//	for _, line := range strings.Split(root, "\n") {
-	//		line = strings.Replace(line, "\r", "", -1)
-	//		if strings.Contains(line, "type Mutation {") {
-	//			isMutation = true
-	//		} else if strings.Contains(line, "type Query {") {
-	//			isMutation = false
-	//		}
-	//		if strings.HasSuffix(line, returnType) {
-	//			rootEqual[line] = isMutation
-	//		}
-	//	}
-	//
-	//	for action, isMutation := range rootEqual {
-	//		name := FirstUpper(strings.Trim(strings.Split(action, "(")[0], " "))
-	//		args := make(map[string]string)
-	//		var functionName string
-	//		if isMutation {
-	//			functionName = name + "Mutation"
-	//		} else {
-	//			functionName = name + "Query"
-	//		}
-	//
-	//		re := regexp.MustCompile(`\w+\s*:\s*\w+!?`)
-	//		matches := re.FindAllString(action, -1)
-	//
-	//		for _, match := range matches {
-	//			parts := strings.SplitN(match, ":", 2)
-	//			if len(parts) == 2 {
-	//				argName := strings.TrimSpace(parts[0])
-	//				argType := strings.TrimSpace(parts[1])
-	//				args[argName] = argType
-	//			}
-	//		}
-	//
-	//		actions[action] = fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{\n", functionName, FirstLower(returnType))
-	//		for argName, argType := range args {
-	//			isRequired := strings.Contains(argType, "!")
-	//			if isRequired {
-	//				argType = "graphql.NewNonNull(graphql." + strings.Replace(argType, "!", "", -1) + ")"
-	//			} else {
-	//				argType = "graphql." + argType
-	//			}
-	//			actions[action] = actions[action] + fmt.Sprintf("\t\t\"%s\": &graphql.ArgumentConfig{\n\t\t\tType: %s,\n\t\t},\n", argName, argType)
-	//		}
-	//
-	//		actions[action] = actions[action] + "\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n\t\treturn repository." + functionName + "(p)\n\t},\n}\n"
-	//	}
-	//}
-
 	return "import (\n\t\"github.com/graphql-go/graphql\"\n\t\"github.com/neo4j/neo4j-go-driver/v5/neo4j\"\n\t\"server/src/db/repository\"\n)" +
-		"\n\n" + strings.Join(objs, "\n") + "\n\n" + JoinMap(actions, "\n")
+		"\n\n" + strings.Join(objs, "\n") + strings.Join(resolvers, "\n")
 }
 
 func schemaToType(schema string) map[string]Type {
 	lines := strings.Split(schema, "\n")
 	propertyRegex := regexp.MustCompile(`^.+.+: .+$`)
+	resolverRegex := regexp.MustCompile(`^.+\(.+\): .+$`)
 	res := make(map[string]Type)
+	var isMutation bool
 	var current string
 
 	for _, line := range lines {
@@ -154,12 +141,20 @@ func schemaToType(schema string) map[string]Type {
 			res[current] = Type{
 				Name: current,
 			}
+
+			if current == "Mutation" {
+				isMutation = true
+			} else if current == "Query" {
+				isMutation = false
+			}
 		} else if propertyRegex.MatchString(line) {
 			property := strings.Trim(strings.Split(line, ":")[0], " ")
 			goProperty := FirstUpper(property)
 			jsonProperty := convertCamelToSnake(property)
 			isRequired := strings.Contains(line, "!")
-			graphqlType := strings.Replace(strings.Replace(strings.Trim(strings.Split(line, ":")[1], " "), "\r", "", -1), "!", "", -1)
+
+			trim := strings.Split(line, " ")
+			graphqlType := strings.Replace(strings.Replace(strings.Trim(trim[len(trim)-1], " "), "\r", "", -1), "!", "", -1)
 			goType := strings.ToLower(graphqlType)
 
 			if goType == "int" {
@@ -174,16 +169,48 @@ func schemaToType(schema string) map[string]Type {
 				property = property[:len(property)-2] + "ID"
 			}
 
-			res[current] = Type{
-				Name: res[current].Name,
-				Fields: append(res[current].Fields, Field{
-					JsonName:    jsonProperty,
-					GoName:      goProperty,
-					GoType:      goType,
-					GraphQLType: graphqlType,
-					GraphQLName: property,
-					IsRequired:  isRequired,
-				}),
+			if resolverRegex.MatchString(line) {
+				paramString := strings.Split(strings.Split(line, "(")[1], ")")[0]
+				property := strings.Trim(strings.Split(line, "(")[0], " ")
+				goProperty := FirstUpper(property)
+				params := strings.Split(paramString, ",")
+				var parameters []Parameter
+				for _, param := range params {
+					param = strings.Trim(param, " ")
+					paramName := strings.Split(param, ":")[0]
+					paramType := strings.Split(param, ":")[1]
+					parameters = append(parameters, Parameter{
+						Name:       paramName,
+						Type:       paramType,
+						IsRequired: strings.Contains(param, "!"),
+					})
+				}
+
+				res[current] = Type{
+					Name: res[current].Name,
+					Fields: append(res[current].Fields, Field{
+						JsonName:    jsonProperty,
+						GoName:      goProperty,
+						GoType:      goType,
+						GraphQLType: graphqlType,
+						GraphQLName: property,
+						IsRequired:  isRequired,
+						IsMutation:  &isMutation, // TODO incorrect
+						Parameters:  &parameters,
+					}),
+				}
+			} else {
+				res[current] = Type{
+					Name: res[current].Name,
+					Fields: append(res[current].Fields, Field{
+						JsonName:    jsonProperty,
+						GoName:      goProperty,
+						GoType:      goType,
+						GraphQLType: graphqlType,
+						GraphQLName: property,
+						IsRequired:  isRequired,
+					}),
+				}
 			}
 		}
 	}
