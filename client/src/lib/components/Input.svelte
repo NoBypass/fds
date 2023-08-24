@@ -7,6 +7,7 @@
     export let light = false
     export let color: 'neutral' | 'error' | 'success' | 'warning' = 'neutral'
     export let password = false
+    export let value = ''
     export let tw = ''
 
     let inputRef: undefined | HTMLInputElement
@@ -48,6 +49,6 @@
 
 <div bind:this={mainRef} class="{colors[color]} space-between cursor-text transition duration-150 {light ? 'bg-white text-black' : 'bg-black'} items-center gap-2 py-1 border-2 flex {rounded ? 'rounded-full' : ''} px-4 {tw}">
     <slot name="left" />
-    <input on:input={(e) => dispatch('change', e)} bind:this={inputRef} {disabled} type="{password ? 'password' : 'text'}" placeholder="{placeholder}" class="placeholder:text-neutral-400 focus:outline-0 w-full {light ? 'bg-white text-black' : 'bg-black'}">
+    <input bind:value={value} on:input={(e) => dispatch('change', e)} bind:this={inputRef} {disabled} type="{password ? 'password' : 'text'}" placeholder="{placeholder}" class="placeholder:text-neutral-400 focus:outline-0 w-full {light ? 'bg-white text-black' : 'bg-black'}">
     <slot name="right" />
 </div>

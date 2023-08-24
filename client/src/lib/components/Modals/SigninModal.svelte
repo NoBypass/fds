@@ -140,7 +140,7 @@
 
             <div>
                 <Input color={userInputColor}
-                       on:change={(e) => username = e.detail.target.value}
+                       bind:value={username}
                        light rounded placeholder="Minecraft username" tw="mt-12 w-full">
                     <div slot="right">
                         {#if (playerStatus === 'success')}
@@ -152,7 +152,7 @@
                 <Text tw="mt-2" color="error" b>{errors.username}</Text>
 
                 <Input password color={errors.password.length !== 0 ? 'error' : password.length === 0 ? 'neutral' : 'success'}
-                       on:change={(e) => password = e.detail.target.value} light rounded placeholder="Password" tw="mt-10 w-full" />
+                       bind:value={password} light rounded placeholder="Password" tw="mt-10 w-full" />
                 <Text tw="mt-2" color="error" b>{errors.password}</Text>
 
                 <Checkbox on:change={(e) => remember = e.detail.target.checked} tw="mt-10"><Text size="md">Remember me!</Text></Checkbox>

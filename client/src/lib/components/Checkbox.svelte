@@ -3,14 +3,9 @@
 
     export let tw = ''
 
-    let checked = false
+    export let checked = false
 
     const dispatch = createEventDispatcher()
-
-    const change = (e: Event) => {
-        checked = e.target.checked
-        dispatch('change', e)
-    }
 </script>
 
 <style>
@@ -71,7 +66,7 @@
 </style>
 
 <div class="{tw} relative flex">
-    <input on:change={change} id="c" type="checkbox" class="h-0 w-0 hidden">
+    <input bind:checked={checked} on:change={(e) => dispatch('change', e)} id="c" type="checkbox" class="h-0 w-0 hidden">
     <label for="c" class="flex items-center w-full gap-2">
         <span class="{checked ? 'border-[10px] border-purple-500' : 'border-2 border-neutral-400'} h-5 w-5 overflow-hidden rounded-md cursor-pointer hover:bg-neutral-400/20"></span>
         <ins class="text-white hover:text-neutral-200 transition duration-150 w-full no-underline ease">
