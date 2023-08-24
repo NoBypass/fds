@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
     import MagnifyIcon from '$lib/assets/icons/MagnifyIcon.svelte'
     import Input from '$lib/components/Input.svelte'
     import Text from '$lib/components/Text.svelte'
 
-    let inputRef = null
+    let inputRef: undefined | HTMLElement
 
     $: if (inputRef && typeof inputRef.focus === 'function') {
         inputRef.focus()

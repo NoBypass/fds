@@ -14,45 +14,19 @@
     import Dropdown from '$lib/components/Dropdown.svelte'
     import DropdownItem from '$lib/components/DropdownItem.svelte'
 
-    let inputRef
     let showCommandPalette = false
     let showSigninModal = false
     let showSuccessModal = false
     let showConfirmationModal = false
-    let token: string | undefined = undefined
+    let token: string | undefined
 
-    $: if (typeof localStorage !== 'undefined') {
-        token = localStorage.getItem('token')
+    $: if (typeof localStorage !== 'undefined' && showSuccessModal != undefined) {
+        token = localStorage.getItem('token') || undefined
     }
 
     const links = [
         'Search', 'Dashboard', 'SkyBlock'
     ]
-
-    const toggleCommandPalette = () => {
-        showCommandPalette = !showCommandPalette
-    }
-
-    const hideCommandPalette = () => {
-        showCommandPalette = false
-    }
-
-    const openSigninModal = () => {
-        showSigninModal = true
-    }
-
-    const hideSigninModal = () => {
-        showSigninModal = false
-    }
-
-    const hideSuccessModal = () => {
-        showSuccessModal = false
-        token = localStorage.getItem('token')
-    }
-
-    const hideConfirmationModal = () => {
-        showConfirmationModal = true
-    }
 
     const logout = () => {
         localStorage.removeItem('token')
@@ -63,7 +37,7 @@
     const submitInfo = async (info: CustomEvent) => {
         const res = await signin(info.detail)
         let token
-        let self
+        let self: string | undefined
         if (typeof res !== 'string') {
             token = res.data.token
             self = res.data.username
@@ -71,7 +45,7 @@
 
         if (token) {
             localStorage.setItem('token', token)
-            localStorage.setItem('self', self)
+            if (self) localStorage.setItem('self', self)
             showSuccessModal = true
         } else {
             showConfirmationModal = true
@@ -85,12 +59,12 @@
     }
 </style>
 
-<CommandPalette on:close={hideCommandPalette} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
+<CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
 
 <ResponsiveContainer>
-    <SigninModal on:close={hideSigninModal} open={showSigninModal} on:submit={submitInfo} />
-    <SuccessModal open={showSuccessModal} on:close={hideSuccessModal} />
-    <ConfirmationModal open={showConfirmationModal} on:close={hideConfirmationModal} />
+    <SigninModal on:close={() => showSigninModal = false} open={showSigninModal} on:submit={submitInfo} />
+    <SuccessModal open={showSuccessModal} on:close={() => showSuccessModal = false} />
+    <ConfirmationModal open={showConfirmationModal} on:close={() => showConfirmationModal = false} />
 
     <nav class="grid grid-rows-none grid-cols-6 w-full h-20">
 
@@ -99,12 +73,12 @@
         </div>
 
         <div class="flex items-center col-span-2">
-            <div bind:this={inputRef} class="w-full border transition-all duration-200 border-neutral-700 py-1 px-4 rounded-full hover:border-neutral-400 flex gap-2 items-center">
+            <div class="w-full border transition-all duration-200 border-neutral-700 py-1 px-4 rounded-full hover:border-neutral-400 flex gap-2 items-center">
                 <MagnifyIcon tw="w-5 h-5 text-neutral-400" />
                 <input type="text"
                        placeholder="Search anything..."
                        class="focus:outline-none w-full bg-black"
-                       on:focusin={toggleCommandPalette} />
+                       on:focusin={() => showCommandPalette = !showCommandPalette} />
                 <Text b type="h6" tw="text-neutral-400">CTRL+K</Text>
             </div>
         </div>
@@ -117,7 +91,7 @@
             </ul>
             <Divider vertical tw="h-6" />
             {#if (!token)}
-                <Button on:click={openSigninModal}>Login</Button>
+                <Button on:click={() => showSigninModal = true}>Login</Button>
             {:else}
                 <Dropdown>
                     <Avatar slot="trigger" />

@@ -5,39 +5,31 @@
     import { createEventDispatcher, onMount } from 'svelte'
 
     export let open = false
+    let dispatch = createEventDispatcher()
+
+    let lastOpenTime = 0
+    let paletteRef: HTMLElement | undefined
+    let inputRef: HTMLElement | undefined
 
     $: lastOpenTime = open ? Date.now() : lastOpenTime
-    let dispatch = createEventDispatcher()
-    let paletteRef
-    let inputRef
 
-    const handleOutsideClick = (event) => {
+    const handleClick = (event: MouseEvent) => {
+        const target = event.target as HTMLElement
         if (Date.now() - lastOpenTime < 250) return
-        if (!(paletteRef && paletteRef.contains(event.target))) close(event)
+        if (!(paletteRef && paletteRef.contains(target))) close(event)
     }
 
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
         if (event.key === 'Escape') close(event)
         else if (event.ctrlKey && event.key === 'k') open = true
         else return
         event.preventDefault()
     }
 
-    const close = (event) => {
+    const close = (event: Event) => {
         open = false
         dispatch('close', event)
     }
-
-    onMount(() => {
-        document.addEventListener('click', handleOutsideClick)
-        document.addEventListener('keydown', handleKeyDown)
-        return () => {
-            if (browser) {
-                document.removeEventListener('click', handleOutsideClick)
-                document.removeEventListener('keydown', handleKeyDown)
-            }
-        }
-    })
 
     let slotAnimation = 'max-h-0 opacity-0'
     $: {
@@ -48,6 +40,8 @@
         else if (!open) slotAnimation = 'max-h-0 opacity-0'
     }
 </script>
+
+<svelte:window on:keydown={handleKeyDown} on:click={handleClick} />
 
 {#if (open)}
     <div class="absolute w-full h-full flex items-center justify-center">

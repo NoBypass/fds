@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { createEventDispatcher } from 'svelte'
 
     export let tw = ''
@@ -7,7 +7,7 @@
 
     const dispatch = createEventDispatcher()
 
-    const change = (e) => {
+    const change = (e: Event) => {
         checked = e.target.checked
         dispatch('change', e)
     }

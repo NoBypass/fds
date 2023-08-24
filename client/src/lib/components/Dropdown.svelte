@@ -19,23 +19,14 @@
         }
     }
 
-    const escape = (event) => {
+    const escape = (event: KeyboardEvent) => {
         if (event.key === 'Escape') {
             open = false
         }
     }
-
-    onMount(() => {
-        document.addEventListener('click', click)
-        document.addEventListener('keydown', escape)
-        return () => {
-            if (browser) {
-                document.removeEventListener('click', click)
-                document.removeEventListener('keydown', escape)
-            }
-        }
-    })
 </script>
+
+<svelte:window on:keydown={escape} on:click={click} />
 
 <div>
     <div aria-hidden="true" class="cursor-pointer" on:click={show}>

@@ -1,6 +1,5 @@
-<script>
-    import { createEventDispatcher, onMount } from 'svelte'
-    import { browser } from '$app/environment'
+<script lang="ts">
+    import { createEventDispatcher } from 'svelte'
     import ResponsiveContainer from '$lib/components/ResponsiveContainer.svelte'
     import Close from '$lib/assets/icons/Close.svelte'
     import { twMerge } from 'tailwind-merge'
@@ -9,38 +8,30 @@
     export let closeX = true
     export let tw = ''
 
-    let modalRef = null
+    let lastOpenTime = 0
+    let modalRef: undefined | HTMLElement
     let dispatch = createEventDispatcher()
 
-    const close = (event) => {
+    const close = (event: Event) => {
         open = false
         dispatch('close', event)
     }
 
     $: lastOpenTime = open ? Date.now() : lastOpenTime
-    const handleOutsideClick = (event) => {
+    const handleClick = (event: MouseEvent) => {
+        const target = event.target as HTMLElement
         if (Date.now() - lastOpenTime < 250) return
-        if (!(modalRef && modalRef.contains(event.target))) close(event)
+        if (!(modalRef && modalRef.contains(target))) close(event)
     }
 
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
         if (event.key === 'Escape') close(event)
         else return
         event.preventDefault()
     }
-
-    onMount(() => {
-        document.addEventListener('click', handleOutsideClick)
-        document.addEventListener('keydown', handleKeyDown)
-        return () => {
-            if (browser) {
-                document.removeEventListener('click', handleOutsideClick)
-                document.removeEventListener('keydown', handleKeyDown)
-            }
-        }
-    })
 </script>
 
+<svelte:window on:keydown={handleKeyDown} on:click={handleClick} />
 
 <div class="{open ? 'scale-100 opacity-100' : 'scale-0 opacity-0'} transition-all duration-200 ease-in-out z-50 top-0 left-0 absolute w-full h-screen full flex items-center justify-center bg-black/50"
      style="backdrop-filter: blur(4px)">

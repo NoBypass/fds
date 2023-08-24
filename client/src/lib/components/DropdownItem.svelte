@@ -10,11 +10,10 @@
     }
 
     const dispatch = createEventDispatcher()
-    const click = (event) => dispatch('click', event)
 </script>
 
 <li class="{colors[color]} cursor-pointer px-2 py-1 rounded-md">
-    <button class="border-none bg-transparent" on:click={click}>
+    <button class="border-none bg-transparent" on:click={(e) => dispatch('click', e)}>
         <slot />
     </button>
 </li>

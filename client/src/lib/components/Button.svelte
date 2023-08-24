@@ -11,10 +11,10 @@
         transparent: 'bg-transparent text-white'
     }
 
-    let buttonRef = null
+    let buttonRef: undefined | HTMLElement
     let dispatch = createEventDispatcher()
     
-    const handleClick = (e) => {
+    const handleClick = (e: MouseEvent) => {
 
         dispatch('click', e)
         if (buttonRef) {

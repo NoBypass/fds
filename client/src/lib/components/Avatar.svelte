@@ -4,7 +4,7 @@
     export let tw = ''
     export let status: 'on' | 'off' | 'idle' = 'on'
 
-    let self
+    let self: undefined | string | null
     $: if (typeof localStorage !== 'undefined') {
         self = localStorage.getItem('self')
     }

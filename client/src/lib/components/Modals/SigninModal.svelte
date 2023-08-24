@@ -62,7 +62,7 @@
         val: ''
     }
 
-    let playerStatus = null
+    let playerStatus: undefined | 'loading' | 'success'
     let username = ''
     let password = ''
     let remember = false
@@ -78,7 +78,7 @@
             setTimeout(() => {
                 if (Date.now() - prev.at >= delay && errors.username === '') {
                     fetchPlayer()
-                } else playerStatus = null
+                } else playerStatus = undefined
             }, delay)
         }
     }
@@ -92,7 +92,7 @@
             if (typeof res !== 'string' && res.data && res.data.name) {
                 playerStatus = 'success'
             } else {
-                playerStatus = null
+                playerStatus = undefined
                 errors.username = 'Player not found'
             }
         })
@@ -108,23 +108,12 @@
         if (username.length === 0) errors.username = ''
     }
 
-    const handleUsername = (e) => {
-        username = e.detail.target.value
-    }
-
-    const handlePassword = (e) => {
-        password = e.detail.target.value
-    }
-
-    const handleRemember = (e) => {
-        remember = e.detail.target.checked
-    }
-
     const dispatch = createEventDispatcher()
     const close = () => {
         open = false
         dispatch('close')
     }
+
     const submit = () => {
         dispatch('submit', {
             username,
@@ -132,8 +121,8 @@
             remember
         })
     }
-
-    $: userinputcolor = errors.username.length !== 0 ? 'error' : username.length === 0 ? 'neutral' : playerStatus === 'loading' ? 'warning' : 'success'
+    let userInputColor: 'neutral' | 'error' | 'success' | 'warning'
+    $: userInputColor = errors.username.length !== 0 ? 'error' : username.length === 0 ? 'neutral' : playerStatus === 'loading' ? 'warning' : 'success'
 </script>
 
 <Modal open={open} on:close={close} tw="h-160 flex space-between">
@@ -150,12 +139,12 @@
             </div>
 
             <div>
-                <Input color={userinputcolor}
-                       on:change={handleUsername}
+                <Input color={userInputColor}
+                       on:change={(e) => username = e.detail.target.value}
                        light rounded placeholder="Minecraft username" tw="mt-12 w-full">
                     <div slot="right">
                         {#if (playerStatus === 'success')}
-                            <img src="https://minotar.net/avatar/{username}" alt="mc-head" class="h-6 w-6 rounded-md {userinputcolor === 'success' ? '' : 'hidden'}">
+                            <img src="https://minotar.net/avatar/{username}" alt="mc-head" class="h-6 w-6 rounded-md {userInputColor === 'success' ? '' : 'hidden'}">
                         {/if}
                         <Spinner color="warning" tw="{playerStatus !== 'loading' ? 'hidden' : ''}" />
                     </div>
@@ -163,10 +152,10 @@
                 <Text tw="mt-2" color="error" b>{errors.username}</Text>
 
                 <Input password color={errors.password.length !== 0 ? 'error' : password.length === 0 ? 'neutral' : 'success'}
-                       on:change={handlePassword} light rounded placeholder="Password" tw="mt-10 w-full" />
+                       on:change={(e) => password = e.detail.target.value} light rounded placeholder="Password" tw="mt-10 w-full" />
                 <Text tw="mt-2" color="error" b>{errors.password}</Text>
 
-                <Checkbox on:change={handleRemember} tw="mt-10"><Text size="md">Remember me!</Text></Checkbox>
+                <Checkbox on:change={(e) => remember = e.detail.target.checked} tw="mt-10"><Text size="md">Remember me!</Text></Checkbox>
             </div>
 
             <div class="grid w-full grid-cols-2 grid-rows-1 mt-12 h-10 place-self-end">
