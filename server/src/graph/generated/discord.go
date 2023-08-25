@@ -9,36 +9,36 @@ import (
 )
 
 type Discord struct {
-	Uuid string `json:"uuid"`
-	Name string `json:"name"`
-	Level int64 `json:"level"`
-	Xp int64 `json:"xp"`
-	Streak int64 `json:"streak"`
+	Uuid        string `json:"uuid"`
+	Name        string `json:"name"`
+	Level       int64  `json:"level"`
+	Xp          int64  `json:"xp"`
+	Streak      int64  `json:"streak"`
 	LastDailyAt string `json:"last_daily_at"`
 }
 
-var discordType = graphql.NewObject(graphql.ObjectConfig{
+var DiscordType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Discord", Fields: graphql.Fields{
-			"UUID": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-			},
-			"name": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-			},
-			"level": &graphql.Field{
-				Type: graphql.Int,
-			},
-			"xp": &graphql.Field{
-				Type: graphql.Int,
-			},
-			"streak": &graphql.Field{
-				Type: graphql.Int,
-			},
-			"lastDailyAt": &graphql.Field{
-				Type: graphql.String,
-			},
+		"UUID": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"name": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"level": &graphql.Field{
+			Type: graphql.Int,
+		},
+		"xp": &graphql.Field{
+			Type: graphql.Int,
+		},
+		"streak": &graphql.Field{
+			Type: graphql.Int,
+		},
+		"lastDailyAt": &graphql.Field{
+			Type: graphql.String,
 		},
 	},
+},
 )
 
 func ResultToDiscord(r *neo4j.EagerResult) (*Discord, error) {
@@ -78,43 +78,41 @@ func ResultToDiscord(r *neo4j.EagerResult) (*Discord, error) {
 	}
 
 	return &Discord{
-		Uuid: UUID,
-		Name: name,
-		Level: level,
-		Xp: xp,
-		Streak: streak,
+		Uuid:        UUID,
+		Name:        name,
+		Level:       level,
+		Xp:          xp,
+		Streak:      streak,
 		LastDailyAt: lastDailyAt,
 	}, nil
 }
 
-
-
-var SigninMutation = &graphql.Field{
-	Type: discordType,
+var AccountMutation = &graphql.Field{
+	Type: DiscordType,
 	Args: graphql.FieldConfigArgument{
 		"name": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql. String!),
-		},
-		"password": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql. String!),
-		},
-		"remember": &graphql.ArgumentConfig{
-			Type: graphql. Boolean,
+			Type: graphql.NewNonNull(graphql.String),
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.SigninMutation(p)
+		return repository.AccountMutation(p), nil
 	},
 }
 
-var AccountMutation = &graphql.Field{
-	Type: discordType,
+var SigninMutation = &graphql.Field{
+	Type: DiscordType,
 	Args: graphql.FieldConfigArgument{
 		"name": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql. String!),
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"password": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"remember": &graphql.ArgumentConfig{
+			Type: graphql.Boolean,
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.AccountMutation(p)
+		return repository.SigninMutation(p), nil
 	},
 }

@@ -1,0 +1,12 @@
+type Signin {
+    token: String!
+    expiresAt: String!
+    account: Account!
+}
+
+type Account {
+    name: String!
+    email: String!
+    role: String!
+    createdAt: String!
+}

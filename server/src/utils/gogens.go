@@ -66,7 +66,7 @@ func GenerateSchema(schema string, root string) string {
 
 	for _, t := range newSchema {
 		structs := []string{fmt.Sprintf("type %s struct {", t.Name)}
-		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{\n\tName: \"%s\", Fields: graphql.Fields{", FirstLower(t.Name), t.Name)}
+		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{\n\tName: \"%s\", Fields: graphql.Fields{", t.Name, t.Name)}
 		maps := []string{fmt.Sprintf("func ResultTo%s(r *neo4j.EagerResult) (*%s, error) {\n\tresult, _, err := neo4j.GetRecordValue[neo4j.Node](r.Records[0], \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name, FirstLower(t.Name)[0])}
 		returns := []string{fmt.Sprintf("\treturn &%s{", t.Name)}
 
@@ -95,7 +95,7 @@ func GenerateSchema(schema string, root string) string {
 					resolverName += "Query"
 				}
 
-				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", resolverName, FirstLower(t.Name))}
+				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", resolverName, t.Name)}
 
 				for _, parameter := range *rootField.Parameters {
 					nonnullString := fmt.Sprintf("graphql.NewNonNull(graphql.%s)", parameter.Type)
@@ -105,7 +105,7 @@ func GenerateSchema(schema string, root string) string {
 					res = append(res, fmt.Sprintf("\t\t\"%s\": &graphql.ArgumentConfig{\n\t\t\tType: %s,\n\t\t},", parameter.Name, nonnullString))
 				}
 
-				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n\t\treturn repository.%s(p)\n\t},", resolverName))
+				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n\t\treturn repository.%s(p), nil\n\t},", resolverName))
 				resolvers = append(resolvers, strings.Join(res, "\n")+"\n}\n")
 			}
 		}
@@ -181,7 +181,7 @@ func schemaToType(schema string) map[string]Type {
 					paramType := strings.Split(param, ":")[1]
 					parameters = append(parameters, Parameter{
 						Name:       paramName,
-						Type:       paramType,
+						Type:       strings.Replace(strings.Trim(paramType, " "), "!", "", -1),
 						IsRequired: strings.Contains(param, "!"),
 					})
 				}

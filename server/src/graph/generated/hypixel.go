@@ -13,16 +13,16 @@ type Player struct {
 	Name string `json:"name"`
 }
 
-var playerType = graphql.NewObject(graphql.ObjectConfig{
+var PlayerType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Player", Fields: graphql.Fields{
-			"UUID": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-			},
-			"name": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-			},
+		"UUID": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"name": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
 		},
 	},
+},
 )
 
 func ResultToPlayer(r *neo4j.EagerResult) (*Player, error) {
@@ -47,61 +47,59 @@ func ResultToPlayer(r *neo4j.EagerResult) (*Player, error) {
 	}, nil
 }
 
-
-
 var AccountMutation = &graphql.Field{
-	Type: playerType,
+	Type: PlayerType,
 	Args: graphql.FieldConfigArgument{
 		"name": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql. String!),
+			Type: graphql.NewNonNull(graphql.String),
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.AccountMutation(p)
+		return repository.AccountMutation(p), nil
 	},
 }
 
 var DiscordMutation = &graphql.Field{
-	Type: playerType,
+	Type: PlayerType,
 	Args: graphql.FieldConfigArgument{
 		"discordId": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql. String!),
+			Type: graphql.NewNonNull(graphql.String),
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.DiscordMutation(p)
+		return repository.DiscordMutation(p), nil
 	},
 }
 
 var SigninMutation = &graphql.Field{
-	Type: playerType,
+	Type: PlayerType,
 	Args: graphql.FieldConfigArgument{
 		"name": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql. String!),
+			Type: graphql.NewNonNull(graphql.String),
 		},
 		"password": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql. String!),
+			Type: graphql.NewNonNull(graphql.String),
 		},
 		"remember": &graphql.ArgumentConfig{
-			Type: graphql. Boolean,
+			Type: graphql.Boolean,
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.SigninMutation(p)
+		return repository.SigninMutation(p), nil
 	},
 }
 
 var CreateDiscordMutation = &graphql.Field{
-	Type: playerType,
+	Type: PlayerType,
 	Args: graphql.FieldConfigArgument{
 		"discordId": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql. String!),
+			Type: graphql.NewNonNull(graphql.String),
 		},
 		"name": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql. String!),
+			Type: graphql.NewNonNull(graphql.String),
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.CreateDiscordMutation(p)
+		return repository.CreateDiscordMutation(p), nil
 	},
 }
