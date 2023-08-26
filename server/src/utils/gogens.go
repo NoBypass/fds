@@ -19,8 +19,7 @@ type Field struct {
 	GraphQLType string
 	GraphQLName string
 	IsRequired  bool
-	Parameters  *[]Parameter
-	IsMutation  *bool
+	Parameters  []Parameter
 }
 
 type Type struct {
@@ -64,7 +63,7 @@ func GenerateSchema(schema string, root string) string {
 	newSchema := schemaToType(schema)
 	newRoot := schemaToType(root)
 
-	for _, t := range newSchema {
+	for _, t := range *newSchema {
 		structs := []string{fmt.Sprintf("type %s struct {", t.Name)}
 		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{\n\tName: \"%s\", Fields: graphql.Fields{", t.Name, t.Name)}
 		maps := []string{fmt.Sprintf("func ResultTo%s(r *neo4j.EagerResult) (*%s, error) {\n\tresult, _, err := neo4j.GetRecordValue[neo4j.Node](r.Records[0], \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name, FirstLower(t.Name)[0])}
@@ -82,15 +81,15 @@ func GenerateSchema(schema string, root string) string {
 			returns = append(returns, fmt.Sprintf("\t\t%s: %s,", field.GoName, field.GraphQLName))
 		}
 
-		for key := range newRoot {
-			for _, rootField := range newRoot[key].Fields {
+		for key := range *newRoot {
+			for _, rootField := range (*newRoot)[key].Fields {
 				if t.Name != rootField.GraphQLType {
 					continue
 				}
 
 				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", rootField.GoName+key, t.Name)}
 
-				for _, parameter := range *rootField.Parameters {
+				for _, parameter := range rootField.Parameters {
 					nonnullString := fmt.Sprintf("graphql.NewNonNull(graphql.%s)", parameter.Type)
 					if !parameter.IsRequired {
 						nonnullString = fmt.Sprintf("graphql.%s", parameter.Type)
@@ -120,12 +119,11 @@ func GenerateSchema(schema string, root string) string {
 		"\n\n" + strings.Join(objs, "\n") + strings.Join(resolvers, "\n")
 }
 
-func schemaToType(schema string) map[string]Type {
+func schemaToType(schema string) *map[string]Type {
 	lines := strings.Split(schema, "\n")
 	propertyRegex := regexp.MustCompile(`^.+.+: .+$`)
 	resolverRegex := regexp.MustCompile(`^.+\(.+\): .+$`)
 	res := make(map[string]Type)
-	var isMutation bool
 	var current string
 
 	for _, line := range lines {
@@ -135,11 +133,6 @@ func schemaToType(schema string) map[string]Type {
 				Name: current,
 			}
 
-			if current == "Mutation" {
-				isMutation = true
-			} else if current == "Query" {
-				isMutation = false
-			}
 		} else if propertyRegex.MatchString(line) {
 			property := strings.Trim(strings.Split(line, ":")[0], " ")
 			goProperty := FirstUpper(property)
@@ -188,8 +181,7 @@ func schemaToType(schema string) map[string]Type {
 						GraphQLType: graphqlType,
 						GraphQLName: property,
 						IsRequired:  isRequired,
-						IsMutation:  &isMutation, // TODO incorrect
-						Parameters:  &parameters,
+						Parameters:  parameters,
 					}),
 				}
 			} else {
@@ -208,5 +200,5 @@ func schemaToType(schema string) map[string]Type {
 		}
 	}
 
-	return res
+	return &res
 }
