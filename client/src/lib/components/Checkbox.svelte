@@ -67,8 +67,8 @@
 
 <div class="{tw} relative flex">
     <input bind:checked={checked} on:change={(e) => dispatch('change', e)} id="c" type="checkbox" class="h-0 w-0 hidden">
-    <label for="c" class="flex items-center w-full gap-2">
-        <span class="{checked ? 'border-[10px] border-purple-500' : 'border-2 border-neutral-400'} h-5 w-5 overflow-hidden rounded-md cursor-pointer hover:bg-neutral-400/20"></span>
+    <label for="c" class="flex items-center w-full gap-2 cursor-pointer">
+        <span class="{checked ? 'border-[10px] border-purple-500' : 'border-2 border-neutral-400'} h-5 w-5 overflow-hidden rounded-md hover:bg-neutral-400/20"></span>
         <ins class="text-white hover:text-neutral-200 transition duration-150 w-full no-underline ease">
             <slot />
         </ins>
