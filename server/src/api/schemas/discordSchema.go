@@ -3,22 +3,29 @@ package schemas
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/db/models"
-	"server/db/repository"
+	"server/src/db/models"
+	"server/src/db/repository"
 )
+
+type Discord struct {
+	UUID        string  `json:"uuid"`
+	DiscordID   string  `json:"discord_id"`
+	Name        string  `json:"name"`
+	Level       *int    `json:"level"`
+	Xp          *int    `json:"xp"`
+	Streak      *int    `json:"streak"`
+	LastDailyAt *string `json:"last_daily_at"`
+}
 
 var discordType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Discord",
 		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.String,
-			},
-			"discord_id": &graphql.Field{
-				Type: graphql.String,
+			"uuid": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
 			},
 			"name": &graphql.Field{
-				Type: graphql.String,
+				Type: graphql.NewNonNull(graphql.String),
 			},
 			"level": &graphql.Field{
 				Type: graphql.Int,
@@ -30,13 +37,13 @@ var discordType = graphql.NewObject(
 				Type: graphql.Int,
 			},
 			"last_daily_at": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 		},
 	},
 )
 
-var DiscordQueryByDiscordId = &graphql.Field{
+var DiscordQuery = &graphql.Field{
 	Type: discordType,
 	Args: graphql.FieldConfigArgument{
 		"discord_id": &graphql.ArgumentConfig{
@@ -44,11 +51,11 @@ var DiscordQueryByDiscordId = &graphql.Field{
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.FindDiscordByDiscordId(p.Context, p.Context.Value("driver").(neo4j.DriverWithContext), p.Args["discord_id"].(string))
+		return repository.DiscordQuery(p.Context, p.Context.Value("driver").(neo4j.DriverWithContext), p.Args["discord_id"].(string))
 	},
 }
 
-var CreateDiscord = &graphql.Field{
+var CreateDiscordMutation = &graphql.Field{
 	Type: discordType,
 	Args: graphql.FieldConfigArgument{
 		"discord_id": &graphql.ArgumentConfig{
@@ -59,7 +66,7 @@ var CreateDiscord = &graphql.Field{
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.CreateDiscord(p.Context, p.Context.Value("driver").(neo4j.DriverWithContext), &models.DiscordDto{
+		return repository.CreateDiscordMutation(p.Context, p.Context.Value("driver").(neo4j.DriverWithContext), &models.DiscordDto{
 			DiscordID: p.Args["discord_id"].(string),
 			Name:      p.Args["name"].(string),
 		})

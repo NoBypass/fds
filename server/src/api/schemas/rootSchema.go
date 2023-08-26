@@ -6,12 +6,6 @@ var rootQuery = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "RootQuery",
 		Fields: graphql.Fields{
-			"hello": &graphql.Field{
-				Type: graphql.String,
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					return "Hello, GraphQL!", nil
-				},
-			},
 			"account": AccountQueryByUsername,
 			"discord": DiscordQueryByDiscordId,
 			"player":  PlayerQueryByName,
@@ -23,21 +17,8 @@ var rootMutation = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "RootMutation",
 		Fields: graphql.Fields{
-			"createMessage": &graphql.Field{
-				Type: graphql.String,
-				Args: graphql.FieldConfigArgument{
-					"content": &graphql.ArgumentConfig{
-						Type: graphql.NewNonNull(graphql.String),
-					},
-				},
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					content, _ := p.Args["content"].(string)
-					return "New message created: " + content, nil
-				},
-			},
 			"createDiscord": CreateDiscord,
 			"signin":        Signin,
-			// "resetPassword": ResetPassword,
 		},
 	},
 )

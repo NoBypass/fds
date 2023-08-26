@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/rs/cors"
 	"net/http"
-	"server/api/handlers"
-	"server/api/schemas"
+	"server/src/api/handlers"
+	"server/src/api/schemas"
 )
 
 func main() {

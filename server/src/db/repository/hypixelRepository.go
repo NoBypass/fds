@@ -7,8 +7,8 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"log"
 	"net/http"
-	"server/db/mappers"
-	"server/db/models"
+	"server/src/db/mappers"
+	"server/src/db/models"
 )
 
 func FindPlayerByName(ctx context.Context, driver neo4j.DriverWithContext, name string) (*models.Player, error) {

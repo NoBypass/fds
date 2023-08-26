@@ -2,7 +2,7 @@ package mappers
 
 import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/db/models"
+	"server/src/db/models"
 )
 
 func ResultToDiscord(result *neo4j.EagerResult) (*models.Discord, error) {

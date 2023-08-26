@@ -3,7 +3,7 @@ package schemas
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/db/repository"
+	"server/src/db/repository"
 )
 
 var playerType = graphql.NewObject(
@@ -11,7 +11,7 @@ var playerType = graphql.NewObject(
 		Name: "Player",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
-				Type: graphql.String,
+				Type: graphql.ID,
 			},
 			"uuid": &graphql.Field{
 				Type: graphql.String,

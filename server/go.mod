@@ -11,4 +11,7 @@ require (
 	github.com/graphql-go/handler v0.2.3 // indirect
 	github.com/rs/cors v1.9.0 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
+	golang.org/x/text v0.12.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
