@@ -87,32 +87,29 @@ func ResultToDiscord(r *neo4j.EagerResult) (*Discord, error) {
 	}, nil
 }
 
-var AccountMutation = &graphql.Field{
+var DiscordQuery = &graphql.Field{
 	Type: DiscordType,
 	Args: graphql.FieldConfigArgument{
-		"name": &graphql.ArgumentConfig{
+		"discordId": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.AccountMutation(p), nil
+		return repository.DiscordQuery(p), nil
 	},
 }
 
-var SigninMutation = &graphql.Field{
+var CreateDiscordMutation = &graphql.Field{
 	Type: DiscordType,
 	Args: graphql.FieldConfigArgument{
+		"discordId": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
 		"name": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
 		},
-		"password": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-		"remember": &graphql.ArgumentConfig{
-			Type: graphql.Boolean,
-		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.SigninMutation(p), nil
+		return repository.CreateDiscordMutation(p), nil
 	},
 }

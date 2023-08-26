@@ -84,18 +84,11 @@ func GenerateSchema(schema string, root string) string {
 
 		for key := range newRoot {
 			for _, rootField := range newRoot[key].Fields {
-				if t.Name == rootField.GraphQLType {
-					break
+				if t.Name != rootField.GraphQLType {
+					continue
 				}
 
-				resolverName := FirstUpper(rootField.GoName)
-				if rootField.IsMutation != nil && *rootField.IsMutation {
-					resolverName += "Mutation"
-				} else {
-					resolverName += "Query"
-				}
-
-				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", resolverName, t.Name)}
+				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", rootField.GoName+key, t.Name)}
 
 				for _, parameter := range *rootField.Parameters {
 					nonnullString := fmt.Sprintf("graphql.NewNonNull(graphql.%s)", parameter.Type)
@@ -105,7 +98,7 @@ func GenerateSchema(schema string, root string) string {
 					res = append(res, fmt.Sprintf("\t\t\"%s\": &graphql.ArgumentConfig{\n\t\t\tType: %s,\n\t\t},", parameter.Name, nonnullString))
 				}
 
-				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n\t\treturn repository.%s(p), nil\n\t},", resolverName))
+				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n\t\treturn repository.%s(p), nil\n\t},", rootField.GoName+key))
 				resolvers = append(resolvers, strings.Join(res, "\n")+"\n}\n")
 			}
 		}
