@@ -25,18 +25,18 @@ var PlayerType = graphql.NewObject(graphql.ObjectConfig{
 },
 )
 
-func ResultToPlayer(r *neo4j.EagerResult) (*Player, error) {
-	result, _, err := neo4j.GetRecordValue[neo4j.Node](r.Records[0], "%!s(uint8=112)")
+func ResultToPlayer(result *neo4j.EagerResult) (*Player, error) {
+	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "p")
 	if err != nil {
 		return nil, err
 	}
 
-	UUID, err := neo4j.GetProperty[string](result, "uuid")
+	UUID, err := neo4j.GetProperty[string](r, "uuid")
 	if err != nil {
 		return nil, err
 	}
 
-	name, err := neo4j.GetProperty[string](result, "name")
+	name, err := neo4j.GetProperty[string](r, "name")
 	if err != nil {
 		return nil, err
 	}

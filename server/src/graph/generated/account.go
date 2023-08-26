@@ -29,23 +29,23 @@ var SigninType = graphql.NewObject(graphql.ObjectConfig{
 },
 )
 
-func ResultToSignin(r *neo4j.EagerResult) (*Signin, error) {
-	result, _, err := neo4j.GetRecordValue[neo4j.Node](r.Records[0], "%!s(uint8=115)")
+func ResultToSignin(result *neo4j.EagerResult) (*Signin, error) {
+	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "s")
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := neo4j.GetProperty[string](result, "token")
+	token, err := neo4j.GetProperty[string](r, "token")
 	if err != nil {
 		return nil, err
 	}
 
-	expiresAt, err := neo4j.GetProperty[string](result, "expires_at")
+	expiresAt, err := neo4j.GetProperty[string](r, "expires_at")
 	if err != nil {
 		return nil, err
 	}
 
-	account, err := neo4j.GetProperty[Account](result, "account")
+	account, err := ResultToAccount(result)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func ResultToSignin(r *neo4j.EagerResult) (*Signin, error) {
 	return &Signin{
 		Token:     token,
 		ExpiresAt: expiresAt,
-		Account:   account,
+		Account:   *account,
 	}, nil
 }
 
@@ -82,28 +82,28 @@ var AccountType = graphql.NewObject(graphql.ObjectConfig{
 },
 )
 
-func ResultToAccount(r *neo4j.EagerResult) (*Account, error) {
-	result, _, err := neo4j.GetRecordValue[neo4j.Node](r.Records[0], "%!s(uint8=97)")
+func ResultToAccount(result *neo4j.EagerResult) (*Account, error) {
+	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
 	if err != nil {
 		return nil, err
 	}
 
-	name, err := neo4j.GetProperty[string](result, "name")
+	name, err := neo4j.GetProperty[string](r, "name")
 	if err != nil {
 		return nil, err
 	}
 
-	email, err := neo4j.GetProperty[string](result, "email")
+	email, err := neo4j.GetProperty[string](r, "email")
 	if err != nil {
 		return nil, err
 	}
 
-	role, err := neo4j.GetProperty[string](result, "role")
+	role, err := neo4j.GetProperty[string](r, "role")
 	if err != nil {
 		return nil, err
 	}
 
-	createdAt, err := neo4j.GetProperty[string](result, "created_at")
+	createdAt, err := neo4j.GetProperty[string](r, "created_at")
 	if err != nil {
 		return nil, err
 	}

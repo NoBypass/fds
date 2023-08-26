@@ -41,38 +41,38 @@ var DiscordType = graphql.NewObject(graphql.ObjectConfig{
 },
 )
 
-func ResultToDiscord(r *neo4j.EagerResult) (*Discord, error) {
-	result, _, err := neo4j.GetRecordValue[neo4j.Node](r.Records[0], "%!s(uint8=100)")
+func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
+	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "d")
 	if err != nil {
 		return nil, err
 	}
 
-	UUID, err := neo4j.GetProperty[string](result, "uuid")
+	UUID, err := neo4j.GetProperty[string](r, "uuid")
 	if err != nil {
 		return nil, err
 	}
 
-	name, err := neo4j.GetProperty[string](result, "name")
+	name, err := neo4j.GetProperty[string](r, "name")
 	if err != nil {
 		return nil, err
 	}
 
-	level, err := neo4j.GetProperty[int64](result, "level")
+	level, err := neo4j.GetProperty[int64](r, "level")
 	if err != nil {
 		return nil, err
 	}
 
-	xp, err := neo4j.GetProperty[int64](result, "xp")
+	xp, err := neo4j.GetProperty[int64](r, "xp")
 	if err != nil {
 		return nil, err
 	}
 
-	streak, err := neo4j.GetProperty[int64](result, "streak")
+	streak, err := neo4j.GetProperty[int64](r, "streak")
 	if err != nil {
 		return nil, err
 	}
 
-	lastDailyAt, err := neo4j.GetProperty[string](result, "last_daily_at")
+	lastDailyAt, err := neo4j.GetProperty[string](r, "last_daily_at")
 	if err != nil {
 		return nil, err
 	}

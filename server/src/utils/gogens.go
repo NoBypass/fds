@@ -66,22 +66,28 @@ func GenerateSchema(schema string, root string) string {
 	for _, t := range *newSchema {
 		structs := []string{fmt.Sprintf("type %s struct {", t.Name)}
 		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{\n\tName: \"%s\", Fields: graphql.Fields{", t.Name, t.Name)}
-		maps := []string{fmt.Sprintf("func ResultTo%s(r *neo4j.EagerResult) (*%s, error) {\n\tresult, _, err := neo4j.GetRecordValue[neo4j.Node](r.Records[0], \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name, FirstLower(t.Name)[0])}
+		maps := []string{fmt.Sprintf("func ResultTo%s(result *neo4j.EagerResult) (*%s, error) {\n\tr, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name, FirstLower(t.Name)[:1])}
 		returns := []string{fmt.Sprintf("\treturn &%s{", t.Name)}
 
 		for _, field := range t.Fields {
 			structs = append(structs, fmt.Sprintf("\t%s %s `json:\"%s\"`", field.GoName, field.GoType, field.JsonName))
 
+			pointer := ""
 			nonnullString := "graphql." + field.GraphQLType
 			if !IsGraphQLType(field.GraphQLType) {
 				nonnullString = field.GraphQLType + "Type"
+				pointer = "*"
 			}
 			if field.IsRequired {
 				nonnullString = fmt.Sprintf("graphql.NewNonNull(%s)", nonnullString)
 			}
 			types = append(types, fmt.Sprintf("\t\t\t\"%s\": &graphql.Field{\n\t\t\t\tType: %s,\n\t\t\t},", field.GraphQLName, nonnullString))
-			maps = append(maps, fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](result, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GoType, field.JsonName))
-			returns = append(returns, fmt.Sprintf("\t\t%s: %s,", field.GoName, field.GraphQLName))
+			returns = append(returns, fmt.Sprintf("\t\t%s: %s%s,", field.GoName, pointer, field.GraphQLName))
+			if IsGraphQLType(field.GraphQLType) {
+				maps = append(maps, fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](r, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GoType, field.JsonName))
+			} else {
+				maps = append(maps, fmt.Sprintf("\t%s, err := ResultTo%s(result)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GraphQLType))
+			}
 		}
 
 		for key := range *newRoot {
