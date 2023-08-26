@@ -11,7 +11,7 @@ import (
 type Signin struct {
 	Token     string  `json:"token"`
 	ExpiresAt string  `json:"expires_at"`
-	Account   account `json:"account"`
+	Account   Account `json:"account"`
 }
 
 var SigninType = graphql.NewObject(graphql.ObjectConfig{
@@ -23,7 +23,7 @@ var SigninType = graphql.NewObject(graphql.ObjectConfig{
 			Type: graphql.NewNonNull(graphql.String),
 		},
 		"account": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.Account),
+			Type: graphql.NewNonNull(AccountType),
 		},
 	},
 },
@@ -45,7 +45,7 @@ func ResultToSignin(r *neo4j.EagerResult) (*Signin, error) {
 		return nil, err
 	}
 
-	account, err := neo4j.GetProperty[account](result, "account")
+	account, err := neo4j.GetProperty[Account](result, "account")
 	if err != nil {
 		return nil, err
 	}

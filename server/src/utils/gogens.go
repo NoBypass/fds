@@ -72,9 +72,12 @@ func GenerateSchema(schema string, root string) string {
 		for _, field := range t.Fields {
 			structs = append(structs, fmt.Sprintf("\t%s %s `json:\"%s\"`", field.GoName, field.GoType, field.JsonName))
 
-			nonnullString := fmt.Sprintf("graphql.NewNonNull(graphql.%s)", field.GraphQLType)
-			if !field.IsRequired {
-				nonnullString = fmt.Sprintf("graphql.%s", field.GraphQLType)
+			nonnullString := "graphql." + field.GraphQLType
+			if !IsGraphQLType(field.GraphQLType) {
+				nonnullString = field.GraphQLType + "Type"
+			}
+			if field.IsRequired {
+				nonnullString = fmt.Sprintf("graphql.NewNonNull(%s)", nonnullString)
 			}
 			types = append(types, fmt.Sprintf("\t\t\t\"%s\": &graphql.Field{\n\t\t\t\tType: %s,\n\t\t\t},", field.GraphQLName, nonnullString))
 			maps = append(maps, fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](result, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GoType, field.JsonName))
@@ -143,10 +146,23 @@ func schemaToType(schema string) *map[string]Type {
 			graphqlType := strings.Replace(strings.Replace(strings.Trim(trim[len(trim)-1], " "), "\r", "", -1), "!", "", -1)
 			goType := strings.ToLower(graphqlType)
 
-			if goType == "int" {
+			switch strings.ToLower(goType) {
+			case "string":
+				break
+			case "int":
 				goType = "int64"
-			} else if goType == "float" {
+				break
+			case "float":
 				goType = "float64"
+				break
+			case "boolean":
+				goType = "bool"
+				break
+			case "id":
+				goType = "string"
+				break
+			default:
+				goType = FirstUpper(goType)
 			}
 
 			if strings.HasPrefix(property, "uuid") {
@@ -201,4 +217,21 @@ func schemaToType(schema string) *map[string]Type {
 	}
 
 	return &res
+}
+
+func IsGraphQLType(input string) bool {
+	switch strings.ToLower(input) {
+	case "string":
+		return true
+	case "int":
+		return true
+	case "float":
+		return true
+	case "boolean":
+		return true
+	case "id":
+		return true
+	default:
+		return false
+	}
 }
