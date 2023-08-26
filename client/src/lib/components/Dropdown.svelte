@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { onMount } from 'svelte'
-    import { browser } from '$app/environment'
     import { twMerge } from 'tailwind-merge'
 
     export let tw = ''
@@ -10,23 +8,23 @@
 
     const show = () => {
         openedAt = new Date().getTime()
-        open = true
+        open = !open
     }
 
-    const click = () => {
-        if (open && new Date().getTime() - openedAt > 10) {
+    const handleClick = () => {
+        if (open && new Date().getTime() - openedAt > 1) {
             open = false
         }
     }
 
-    const escape = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
         if (event.key === 'Escape') {
             open = false
         }
     }
 </script>
 
-<svelte:window on:keydown={escape} on:click={click} />
+<svelte:window on:keydown={handleKeyDown} on:click={handleClick} />
 
 <div>
     <div aria-hidden="true" class="cursor-pointer" on:click={show}>
