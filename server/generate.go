@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"server/src/utils"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -17,7 +18,7 @@ type Config struct {
 //go:generate go run generate.go
 
 func main() {
-	fmt.Println("Reading Config")
+	timestamp := time.Now().UnixNano()
 
 	config, err := readConfig()
 	if err != nil {
@@ -26,7 +27,6 @@ func main() {
 	}
 
 	fmt.Println("Starting with config:", config)
-	fmt.Println("Searching GraphQL directory for files")
 
 	files, err := os.ReadDir(config.GraphQL)
 	if err != nil {
@@ -35,7 +35,6 @@ func main() {
 	}
 
 	fmt.Println("Found", len(files), "files")
-	fmt.Println("Finding root schema")
 
 	var rootSchema string
 	var originalRootSchema string
@@ -53,8 +52,6 @@ func main() {
 		originalRootSchema = string(graphqlContent)
 		rootSchema = utils.GenerateRootSchema(string(graphqlContent))
 	}
-
-	fmt.Println("Root schema found, generating files")
 
 	for _, fileInfo := range files {
 		if fileInfo.IsDir() || !strings.HasSuffix(fileInfo.Name(), ".graphql") {
@@ -93,8 +90,9 @@ func main() {
 			fmt.Println("Error writing to Go file:", err)
 		}
 
-		fmt.Println("Generated file:", fileInfo.Name())
+		fmt.Println("Generated for file:", fileInfo.Name())
 	}
+	fmt.Println("Finished operation in ", (time.Now().UnixNano()-timestamp)/1000, "ms")
 }
 
 func readConfig() (*Config, error) {
