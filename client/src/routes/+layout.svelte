@@ -13,6 +13,8 @@
     import Avatar from '$lib/components/Avatar.svelte'
     import Dropdown from '$lib/components/Dropdown.svelte'
     import DropdownItem from '$lib/components/DropdownItem.svelte'
+    import Alertbox from '$lib/components/Alertbox.svelte'
+    import { alertStore } from '$lib/stores/alertStore'
 
     let showCommandPalette = false
     let showSigninModal = false
@@ -51,6 +53,8 @@
             showConfirmationModal = true
         }
     }
+
+    let test = 0
 </script>
 
 <style>
@@ -59,6 +63,8 @@
     }
 </style>
 
+<Alertbox />
+<Button on:click={() => {alertStore.push(`test ${test}`); test++}}>Add Alert</Button>
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
 
 <ResponsiveContainer>
