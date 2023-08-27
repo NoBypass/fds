@@ -7,11 +7,10 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"log"
 	"net/http"
-	"server/src/db/mappers"
-	"server/src/db/models"
+	"server/src/graph/generated"
 )
 
-func FindPlayerByName(ctx context.Context, driver neo4j.DriverWithContext, name string) (*models.Player, error) {
+func PlayerQuery(ctx context.Context, driver neo4j.DriverWithContext, name string) (*generated.Player, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"MATCH (p:Player) WHERE toLower(p.name) = toLower($name) RETURN p",
 		map[string]any{
@@ -22,7 +21,7 @@ func FindPlayerByName(ctx context.Context, driver neo4j.DriverWithContext, name 
 	}
 
 	if result.Records != nil || len(result.Records) > 0 {
-		return mappers.ResultToPlayer(result)
+		return generated.ResultToPlayer(result)
 	}
 
 	var url = "https://api.mojang.com/users/profiles/minecraft/" + name
@@ -50,5 +49,5 @@ func FindPlayerByName(ctx context.Context, driver neo4j.DriverWithContext, name 
 		return nil, err
 	}
 
-	return mappers.ResultToPlayer(result)
+	return generated.ResultToPlayer(result)
 }

@@ -3,12 +3,11 @@ package repository
 import (
 	"context"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/src/db/mappers"
-	"server/src/db/models"
+	"server/src/graph/generated"
 	"server/src/utils"
 )
 
-func FindDiscordByDiscordId(ctx context.Context, driver neo4j.DriverWithContext, discordIdInput string) (*models.Discord, error) {
+func FindDiscordByDiscordId(ctx context.Context, driver neo4j.DriverWithContext, discordIdInput string) (*generated.Discord, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"MATCH (d:Discord { discord_id: $discord_id }) RETURN d",
 		map[string]any{
@@ -18,10 +17,10 @@ func FindDiscordByDiscordId(ctx context.Context, driver neo4j.DriverWithContext,
 		return nil, err
 	}
 
-	return mappers.ResultToDiscord(result)
+	return generated.ResultToDiscord(result)
 }
 
-func CreateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord *models.DiscordDto) (*models.Discord, error) {
+func CreateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord *models.DiscordDto) (*generated.Discord, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"CREATE (d:Discord { id: $id, discord_id: $discord_id, name: $name, level: $level, xp: $xp, streak: $streak, last_daily_at: $last_daily_at }) RETURN d",
 		map[string]any{
@@ -37,5 +36,5 @@ func CreateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord 
 		return nil, err
 	}
 
-	return mappers.ResultToDiscord(result)
+	return generated.ResultToDiscord(result)
 }

@@ -124,7 +124,7 @@ func GenerateSchema(schema string, root string) string {
 		objs = append(objs, res)
 	}
 
-	return "import (\n\t\"github.com/graphql-go/graphql\"\n\t\"github.com/neo4j/neo4j-go-driver/v5/neo4j\"\n\t\"server/src/db/repository\"\n)" +
+	return "import (\n\t\"github.com/graphql-go/graphql\"\n\t\"github.com/neo4j/neo4j-go-driver/v5/neo4j\"\n\t\"server/src/repository\"\n)" +
 		"\n\n" + strings.Join(objs, "\n") + strings.Join(resolvers, "\n")
 }
 

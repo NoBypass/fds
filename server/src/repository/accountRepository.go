@@ -5,13 +5,12 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/src/db/mappers"
-	"server/src/db/models"
-	utils2 "server/src/utils"
+	"server/src/graph/generated"
+	"server/src/utils"
 	"strconv"
 )
 
-func FindAccountByName(ctx context.Context, driver neo4j.DriverWithContext, name string) (*models.Account, error) { // TODO remove in order to use only FindAccountByToken
+func FindAccountByName(ctx context.Context, driver neo4j.DriverWithContext, name string) (*generated.Account, error) { // TODO remove in order to use only FindAccountByToken
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"MATCH (a:Account { username: $username }) RETURN a",
 		map[string]any{
@@ -21,10 +20,10 @@ func FindAccountByName(ctx context.Context, driver neo4j.DriverWithContext, name
 		return nil, err
 	}
 
-	return mappers.ResultToAccount(result)
+	return generated.ResultToAccount(result)
 }
 
-func Signin(ctx context.Context, driver neo4j.DriverWithContext, accountDto *models.AccountDto) (*models.Signin, error) {
+func Signin(ctx context.Context, driver neo4j.DriverWithContext, accountDto *models.AccountDto) (*generated.Signin, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"MATCH (a:Account { username: $username }) RETURN a",
 		map[string]any{
@@ -35,7 +34,7 @@ func Signin(ctx context.Context, driver neo4j.DriverWithContext, accountDto *mod
 	}
 
 	if result.Records == nil || len(result.Records) == 0 {
-		password, err := utils2.Hash(accountDto.Password)
+		password, err := utils.Hash(accountDto.Password)
 		if err != nil {
 			return nil, err
 		}
@@ -45,38 +44,38 @@ func Signin(ctx context.Context, driver neo4j.DriverWithContext, accountDto *mod
 			map[string]any{
 				"username":  accountDto.Username,
 				"password":  password,
-				"joined_at": strconv.FormatInt(utils2.GetNowInMs(), 10),
+				"joined_at": strconv.FormatInt(utils.GetNowInMs(), 10),
 			}, neo4j.EagerResultTransformer)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	account, err := mappers.ResultToAccount(result)
+	account, err := generated.ResultToAccount(result)
 	if err != nil {
 		return nil, err
 	}
 
-	ok := utils2.CompareHash(accountDto.Password, account.Password)
+	ok := utils.CompareHash(accountDto.Password, account.Password)
 	if !ok {
 		return nil, errors.New("invalid password")
 	}
 
-	expiresAt := utils2.GetNowInMs() + 60*60*24*7
+	expiresAt := utils.GetNowInMs() + 60*60*24*7
 	if accountDto.Remember {
-		expiresAt = utils2.GetNowInMs() + 60*60*24*30
+		expiresAt = utils.GetNowInMs() + 60*60*24*30
 	}
 
-	token, err := utils2.GenerateJWT(utils2.CustomClaims{
+	token, err := utils.GenerateJWT(utils.CustomClaims{
 		Username: account.Username,
 		Role:     "user",
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiresAt,
-			IssuedAt:  utils2.GetNowInMs(),
+			IssuedAt:  utils.GetNowInMs(),
 		},
 	})
 
-	return &models.Signin{
+	return &generated.Signin{
 		ID:       account.ID,
 		Username: account.Username,
 		Password: account.Password,
