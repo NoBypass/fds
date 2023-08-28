@@ -116,6 +116,12 @@ func ResultToAccount(result *neo4j.EagerResult) (*Account, error) {
 	}, nil
 }
 
+type SigninInput struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+	Remember bool   `json:"remember"`
+}
+
 var SigninMutation = &graphql.Field{
 	Type: SigninType,
 	Args: graphql.FieldConfigArgument{
@@ -130,8 +136,17 @@ var SigninMutation = &graphql.Field{
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.SigninMutation(p), nil
+		input := &SigninInput{
+			Name:     p.Args["name"].(string),
+			Password: p.Args["password"].(string),
+			Remember: p.Args["remember"].(bool)}
+
+		return repository.SigninMutation(&p.Context, input), nil
 	},
+}
+
+type AccountInput struct {
+	Name string `json:"name"`
 }
 
 var AccountQuery = &graphql.Field{
@@ -142,6 +157,9 @@ var AccountQuery = &graphql.Field{
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.AccountQuery(p), nil
+		input := &AccountInput{
+			Name: p.Args["name"].(string)}
+
+		return repository.AccountQuery(&p.Context, input), nil
 	},
 }

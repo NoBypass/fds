@@ -9,6 +9,7 @@ import (
 type Parameter struct {
 	Name       string
 	Type       string
+	GoType     string
 	IsRequired bool
 }
 
@@ -97,6 +98,8 @@ func GenerateSchema(schema string, root string) string {
 				}
 
 				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", rootField.GoName+key, t.Name)}
+				inputType := []string{fmt.Sprintf("type %sInput struct {", rootField.GoName)}
+				inputMapper := []string{fmt.Sprintf("\t\tinput := &%sInput{", rootField.GoName)}
 
 				for _, parameter := range rootField.Parameters {
 					nonnullString := fmt.Sprintf("graphql.NewNonNull(graphql.%s)", parameter.Type)
@@ -104,10 +107,12 @@ func GenerateSchema(schema string, root string) string {
 						nonnullString = fmt.Sprintf("graphql.%s", parameter.Type)
 					}
 					res = append(res, fmt.Sprintf("\t\t\"%s\": &graphql.ArgumentConfig{\n\t\t\tType: %s,\n\t\t},", parameter.Name, nonnullString))
+					inputType = append(inputType, fmt.Sprintf("\t%s %s `json:\"%s\"`", FirstUpper(parameter.Name), parameter.GoType, parameter.Name))
+					inputMapper = append(inputMapper, fmt.Sprintf("\t\t\t%s: p.Args[\"%s\"].(%s),", FirstUpper(parameter.Name), parameter.Name, parameter.GoType))
 				}
 
-				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n\t\treturn repository.%s(p), nil\n\t},", rootField.GoName+key))
-				resolvers = append(resolvers, strings.Join(res, "\n")+"\n}\n")
+				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n%s\t\treturn repository.%s(&p.Context, input), nil\n\t},", strings.Join(inputMapper, "\n")+"\t\t}\n\n", rootField.GoName+key))
+				resolvers = append(resolvers, strings.Join(inputType, "\n")+"\n}\n\n"+strings.Join(res, "\n")+"\n}\n")
 			}
 		}
 
@@ -150,26 +155,7 @@ func schemaToType(schema string) *map[string]Type {
 
 			trim := strings.Split(line, " ")
 			graphqlType := strings.Replace(strings.Replace(strings.Trim(trim[len(trim)-1], " "), "\r", "", -1), "!", "", -1)
-			goType := strings.ToLower(graphqlType)
-
-			switch strings.ToLower(goType) {
-			case "string":
-				break
-			case "int":
-				goType = "int64"
-				break
-			case "float":
-				goType = "float64"
-				break
-			case "boolean":
-				goType = "bool"
-				break
-			case "id":
-				goType = "string"
-				break
-			default:
-				goType = FirstUpper(goType)
-			}
+			goType := getGoType(graphqlType)
 
 			if strings.HasPrefix(property, "uuid") {
 				property = "UUID"
@@ -190,6 +176,7 @@ func schemaToType(schema string) *map[string]Type {
 					parameters = append(parameters, Parameter{
 						Name:       paramName,
 						Type:       strings.Replace(strings.Trim(paramType, " "), "!", "", -1),
+						GoType:     getGoType(paramType),
 						IsRequired: strings.Contains(param, "!"),
 					})
 				}
@@ -223,6 +210,24 @@ func schemaToType(schema string) *map[string]Type {
 	}
 
 	return &res
+}
+
+func getGoType(input string) string {
+	input = strings.Trim(strings.Replace(input, "!", "", -1), " ")
+	switch strings.ToLower(input) {
+	case "string":
+		return "string"
+	case "int":
+		return "int64"
+	case "float":
+		return "float64"
+	case "boolean":
+		return "bool"
+	case "id":
+		return "string"
+	default:
+		return FirstUpper(input)
+	}
 }
 
 func IsGraphQLType(input string) bool {

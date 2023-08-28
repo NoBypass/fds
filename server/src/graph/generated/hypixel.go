@@ -47,6 +47,10 @@ func ResultToPlayer(result *neo4j.EagerResult) (*Player, error) {
 	}, nil
 }
 
+type PlayerInput struct {
+	Name string `json:"name"`
+}
+
 var PlayerQuery = &graphql.Field{
 	Type: PlayerType,
 	Args: graphql.FieldConfigArgument{
@@ -55,6 +59,9 @@ var PlayerQuery = &graphql.Field{
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.PlayerQuery(p), nil
+		input := &PlayerInput{
+			Name: p.Args["name"].(string)}
+
+		return repository.PlayerQuery(&p.Context, input), nil
 	},
 }

@@ -49,12 +49,3 @@ func FirstLower(input string) string {
 func FirstUpper(input string) string {
 	return strings.ToUpper(input[:1]) + input[1:]
 }
-
-func JoinMap(input map[string]string, separator string) string {
-	var contents []string
-	for _, value := range input {
-		contents = append(contents, value)
-	}
-
-	return strings.Join(contents, separator)
-}

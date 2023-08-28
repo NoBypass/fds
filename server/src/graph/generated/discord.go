@@ -87,6 +87,10 @@ func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
 	}, nil
 }
 
+type DiscordInput struct {
+	DiscordId string `json:"discordId"`
+}
+
 var DiscordQuery = &graphql.Field{
 	Type: DiscordType,
 	Args: graphql.FieldConfigArgument{
@@ -95,8 +99,16 @@ var DiscordQuery = &graphql.Field{
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.DiscordQuery(p), nil
+		input := &DiscordInput{
+			DiscordId: p.Args["discordId"].(string)}
+
+		return repository.DiscordQuery(&p.Context, input), nil
 	},
+}
+
+type CreateDiscordInput struct {
+	DiscordId string `json:"discordId"`
+	Name      string `json:"name"`
 }
 
 var CreateDiscordMutation = &graphql.Field{
@@ -110,6 +122,10 @@ var CreateDiscordMutation = &graphql.Field{
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		return repository.CreateDiscordMutation(p), nil
+		input := &CreateDiscordInput{
+			DiscordId: p.Args["discordId"].(string),
+			Name:      p.Args["name"].(string)}
+
+		return repository.CreateDiscordMutation(&p.Context, input), nil
 	},
 }
