@@ -13,7 +13,7 @@ import (
 )
 
 func AccountQuery(ctx context.Context, input *generated.AccountInput) (*generated.Account, error) {
-	result, err := repository.GetAccountByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
+	result, err := repository.FindAccountByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +22,7 @@ func AccountQuery(ctx context.Context, input *generated.AccountInput) (*generate
 }
 
 func SigninMutation(ctx context.Context, input *generated.SigninInput) (*generated.Signin, error) {
-	result, err := repository.GetAccountByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
+	result, err := repository.FindAccountByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
 	if err != nil {
 		return nil, err
 	}

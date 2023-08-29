@@ -6,7 +6,7 @@ import (
 	"server/src/graph/generated"
 )
 
-func GetAccountByName(ctx context.Context, driver neo4j.DriverWithContext, name string) (*neo4j.EagerResult, error) {
+func FindAccountByName(ctx context.Context, driver neo4j.DriverWithContext, name string) (*neo4j.EagerResult, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"MATCH (a:Account { name: $name }) RETURN a",
 		map[string]any{
