@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"server/src/api/handlers"
 	"server/src/graph/generated"
 	"server/src/repository"
 	"server/src/utils"
@@ -59,14 +60,15 @@ func SigninMutation(ctx context.Context, input *generated.SigninInput) (*generat
 		expiresAt = utils.GetNowInMs() + 60*60*24*30
 	}
 
-	token, err := utils.GenerateJWT(utils.CustomClaims{
+	claims := handlers.CustomClaims{
 		Username: account.Name,
 		Role:     "user",
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiresAt,
 			IssuedAt:  utils.GetNowInMs(),
 		},
-	})
+	}
+	token, err := claims.Sign(account).Generate()
 
 	return &generated.Signin{
 		Token:   token,
