@@ -7,7 +7,7 @@ import (
 	"server/src/utils"
 )
 
-func FindDiscordByDiscordId(ctx context.Context, driver neo4j.DriverWithContext, discordIdInput string) (*generated.Discord, error) {
+func FindDiscordByDiscordId(ctx context.Context, driver neo4j.DriverWithContext, discordIdInput string) (*neo4j.EagerResult, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"MATCH (d:Discord { discord_id: $discord_id }) RETURN d",
 		map[string]any{
@@ -17,15 +17,15 @@ func FindDiscordByDiscordId(ctx context.Context, driver neo4j.DriverWithContext,
 		return nil, err
 	}
 
-	return generated.ResultToDiscord(result)
+	return result, nil
 }
 
-func CreateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord *models.DiscordDto) (*generated.Discord, error) {
+func CreateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord *generated.Discord) (*neo4j.EagerResult, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"CREATE (d:Discord { id: $id, discord_id: $discord_id, name: $name, level: $level, xp: $xp, streak: $streak, last_daily_at: $last_daily_at }) RETURN d",
 		map[string]any{
-			"id":            utils.GenerateUUID(discord.DiscordID, discord.Name),
-			"discord_id":    discord.DiscordID,
+			"id":            utils.GenerateUUID(discord.DiscordId, discord.Name),
+			"discord_id":    discord.DiscordId,
 			"name":          discord.Name,
 			"level":         0,
 			"xp":            0,
@@ -36,5 +36,5 @@ func CreateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord 
 		return nil, err
 	}
 
-	return generated.ResultToDiscord(result)
+	return result, nil
 }

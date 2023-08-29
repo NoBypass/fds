@@ -1,5 +1,5 @@
 type Discord {
-    uuid: String!
+    discordId: String!
     name: String!
     level: Int
     xp: Int

@@ -9,7 +9,7 @@ import (
 )
 
 type Discord struct {
-	Uuid        string `json:"uuid"`
+	DiscordId   string `json:"uuid"`
 	Name        string `json:"name"`
 	Level       int64  `json:"level"`
 	Xp          int64  `json:"xp"`
@@ -78,7 +78,7 @@ func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
 	}
 
 	return &Discord{
-		Uuid:        UUID,
+		DiscordId:   UUID,
 		Name:        name,
 		Level:       level,
 		Xp:          xp,
