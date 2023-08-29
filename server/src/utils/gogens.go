@@ -111,7 +111,7 @@ func GenerateSchema(schema string, root string) string {
 					inputMapper = append(inputMapper, fmt.Sprintf("\t\t\t%s: p.Args[\"%s\"].(%s),", FirstUpper(parameter.Name), parameter.Name, parameter.GoType))
 				}
 
-				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n%s\t\treturn repository.%s(&p.Context, input), nil\n\t},", strings.Join(inputMapper, "\n")+"\t\t}\n\n", rootField.GoName+key))
+				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n%s\t\treturn services.%s(p.Context, input), nil\n\t},", strings.Join(inputMapper, "\n")+"\t\t}\n\n", rootField.GoName+key))
 				resolvers = append(resolvers, strings.Join(inputType, "\n")+"\n}\n\n"+strings.Join(res, "\n")+"\n}\n")
 			}
 		}
@@ -129,7 +129,7 @@ func GenerateSchema(schema string, root string) string {
 		objs = append(objs, res)
 	}
 
-	return "import (\n\t\"github.com/graphql-go/graphql\"\n\t\"github.com/neo4j/neo4j-go-driver/v5/neo4j\"\n\t\"server/src/repository\"\n)" +
+	return "import (\n\t\"github.com/graphql-go/graphql\"\n\t\"github.com/neo4j/neo4j-go-driver/v5/neo4j\"\n\t\"server/src/graph/services\"\n)" +
 		"\n\n" + strings.Join(objs, "\n") + strings.Join(resolvers, "\n")
 }
 

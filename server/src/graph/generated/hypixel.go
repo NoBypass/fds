@@ -5,7 +5,7 @@ package generated
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/src/repository"
+	"server/src/graph/services"
 )
 
 type Player struct {
@@ -62,6 +62,6 @@ var PlayerQuery = &graphql.Field{
 		input := &PlayerInput{
 			Name: p.Args["name"].(string)}
 
-		return repository.PlayerQuery(&p.Context, input), nil
+		return services.PlayerQuery(p.Context, input), nil
 	},
 }

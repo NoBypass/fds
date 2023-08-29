@@ -5,7 +5,7 @@ package generated
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/src/repository"
+	"server/src/graph/services"
 )
 
 type Discord struct {
@@ -102,7 +102,7 @@ var DiscordQuery = &graphql.Field{
 		input := &DiscordInput{
 			DiscordId: p.Args["discordId"].(string)}
 
-		return repository.DiscordQuery(&p.Context, input), nil
+		return services.DiscordQuery(p.Context, input), nil
 	},
 }
 
@@ -126,6 +126,6 @@ var CreateDiscordMutation = &graphql.Field{
 			DiscordId: p.Args["discordId"].(string),
 			Name:      p.Args["name"].(string)}
 
-		return repository.CreateDiscordMutation(&p.Context, input), nil
+		return services.CreateDiscordMutation(p.Context, input), nil
 	},
 }
