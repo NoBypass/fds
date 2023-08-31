@@ -1,9 +1,11 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte'
+    import { twMerge } from 'tailwind-merge'
 
     export let rounded = false
     export let color: 'primary' | 'neutral' | 'transparent' = 'primary'
     export let disabled = false
+    export let tw = ''
 
     const colors = {
         primary: 'bg-purple-500 hover:bg-purple-600 shadow-purple-500/50 text-white shadow-md',
@@ -47,8 +49,6 @@
         on:click={handleClick}
         type="button"
         disabled={disabled}
-        class="{disabled ? colors[color].split(' ').filter((c) => !c.startsWith('hover:')).join(' ') : colors[color]} {disabled ? 'opacity-70' : ''} z-10 overflow-hidden {rounded ? 'rounded-full' : 'rounded-md'} transition duration-150 relative">
-    <div class="h-full px-5 py-1.5">
-        <slot />
-    </div>
+        class="{twMerge(`${disabled ? colors[color].split(' ').filter((c) => !c.startsWith('hover:')).join(' ') : colors[color]} ${disabled ? 'opacity-70' : ''} z-10 overflow-hidden ${rounded ? 'rounded-full' : 'rounded-md'} px-5 py-1.5 transition duration-150 relative`, tw)}">
+    <slot />
 </button>
