@@ -1,5 +1,5 @@
 import type { SigninInfo, SigninRes } from '$lib/types/signin'
-import { makeGraphQLRequest } from '$lib/services/graphql'
+import { makeGraphQLRequest } from '$lib/api/graphql'
 
 export const signin = async (info: SigninInfo) => {
     return makeGraphQLRequest<SigninRes>(`mutation {

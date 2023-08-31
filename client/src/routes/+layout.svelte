@@ -7,7 +7,7 @@
     import Divider from '$lib/components/Divider.svelte'
     import Button from '$lib/components/Button.svelte'
     import SigninModal from '$lib/components/Modals/SigninModal.svelte'
-    import { signin } from '$lib/services/signin'
+    import { signin } from '$lib/api/signin'
     import ConfirmationModal from '$lib/components/Modals/ConfirmationModal.svelte'
     import SuccessModal from '$lib/components/Modals/SuccessModal.svelte'
     import Avatar from '$lib/components/Avatar.svelte'
@@ -53,8 +53,6 @@
             showConfirmationModal = true
         }
     }
-
-    let test = 0
 </script>
 
 <style>
@@ -64,7 +62,6 @@
 </style>
 
 <Alertbox />
-<Button on:click={() => {alertStore.push(`test ${test}`); test++}}>Add Alert</Button>
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
 
 <ResponsiveContainer>

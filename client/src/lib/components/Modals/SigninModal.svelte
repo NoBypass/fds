@@ -7,7 +7,7 @@
     import Text from '$lib/components/Text.svelte'
     import { createEventDispatcher } from 'svelte'
     import Spinner from '$lib/components/Spinner.svelte'
-    import { makeGraphQLRequest } from '$lib/services/graphql.js'
+    import { makeGraphQLRequest } from '$lib/api/graphql.js'
     import type { Player } from '$lib/types/hypixel'
 
     export let open = false
