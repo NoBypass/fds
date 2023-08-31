@@ -53,8 +53,6 @@
             showConfirmationModal = true
         }
     }
-
-    let test = 0
 </script>
 
 <style>
@@ -64,7 +62,6 @@
 </style>
 
 <Alertbox />
-<Button on:click={() => {alertStore.push(`test ${test}`); test++}}>Add Alert</Button>
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
 
 <ResponsiveContainer>
