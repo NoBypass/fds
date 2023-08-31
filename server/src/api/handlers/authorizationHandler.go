@@ -8,9 +8,20 @@ import (
 	"server/src/utils"
 )
 
+func NewClaims(role string) (*CustomClaims, error) {
+	possible := []string{"admin", "bot", "subscriber", "user"}
+	for _, p := range possible {
+		if p == role {
+			return &CustomClaims{
+				Role: role,
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("invalid role")
+}
+
 type CustomClaims struct {
-	Username string `json:"username"`
-	Role     string `json:"role"`
+	Role string `json:"role"`
 	jwt.StandardClaims
 }
 

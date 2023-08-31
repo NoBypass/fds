@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"server/src/api/handlers"
 	"server/src/graph/generated"
@@ -55,18 +54,9 @@ func SigninMutation(ctx context.Context, input *generated.SigninInput) (*generat
 		return nil, errors.New("invalid password")
 	}
 
-	expiresAt := utils.GetNowInMs() + 60*60*24*7
-	if input.Remember {
-		expiresAt = utils.GetNowInMs() + 60*60*24*30
-	}
-
-	claims := handlers.CustomClaims{
-		Username: account.Name,
-		Role:     "user",
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expiresAt,
-			IssuedAt:  utils.GetNowInMs(),
-		},
+	claims, err := handlers.NewClaims("user")
+	if err != nil {
+		return nil, err
 	}
 	token, err := claims.Sign(account).Generate()
 
