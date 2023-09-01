@@ -6,5 +6,6 @@ type Query {
 
 type Mutation {
     signin(name: String!, password: String!, remember: Boolean): Signin
+    apiKey(name: String!, role: String!): Signin
     createDiscord(discordId: String!, name: String!): Discord
 }

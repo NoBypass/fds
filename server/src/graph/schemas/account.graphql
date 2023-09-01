@@ -1,11 +1,11 @@
 type Signin {
     token: String!
+    role: String!
     account: Account!
 }
 
 type Account {
     name: String!
     password: String!
-    role: String!
     createdAt: String!
 }

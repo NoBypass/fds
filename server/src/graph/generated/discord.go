@@ -9,7 +9,7 @@ import (
 )
 
 type Discord struct {
-	DiscordId   string `json:"uuid"`
+	DiscordId   string `json:"discord_id"`
 	Name        string `json:"name"`
 	Level       int64  `json:"level"`
 	Xp          int64  `json:"xp"`
@@ -19,7 +19,7 @@ type Discord struct {
 
 var DiscordType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Discord", Fields: graphql.Fields{
-		"UUID": &graphql.Field{
+		"discordId": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
 		},
 		"name": &graphql.Field{
@@ -47,7 +47,7 @@ func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
 		return nil, err
 	}
 
-	UUID, err := neo4j.GetProperty[string](r, "uuid")
+	discordId, err := neo4j.GetProperty[string](r, "discord_id")
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
 	}
 
 	return &Discord{
-		DiscordId:   UUID,
+		DiscordId:   discordId,
 		Name:        name,
 		Level:       level,
 		Xp:          xp,

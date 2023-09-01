@@ -8,50 +8,9 @@ import (
 	"server/src/graph/services"
 )
 
-type Signin struct {
-	Token   string  `json:"token"`
-	Account Account `json:"account"`
-}
-
-var SigninType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Signin", Fields: graphql.Fields{
-		"token": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-		"account": &graphql.Field{
-			Type: graphql.NewNonNull(AccountType),
-		},
-	},
-},
-)
-
-func ResultToSignin(result *neo4j.EagerResult) (*Signin, error) {
-	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "s")
-	if err != nil {
-		return nil, err
-	}
-
-	token, err := neo4j.GetProperty[string](r, "token")
-	if err != nil {
-		return nil, err
-	}
-
-	account, err := ResultToAccount(result)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Signin{
-		Token:   token,
-		Account: *account,
-	}, nil
-}
-
 type Account struct {
 	Name      string `json:"name"`
-	Email     string `json:"email"`
 	Password  string `json:"password"`
-	Role      string `json:"role"`
 	CreatedAt string `json:"created_at"`
 }
 
@@ -60,13 +19,7 @@ var AccountType = graphql.NewObject(graphql.ObjectConfig{
 		"name": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
 		},
-		"email": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
-		},
 		"password": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-		"role": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
 		},
 		"createdAt": &graphql.Field{
@@ -87,17 +40,7 @@ func ResultToAccount(result *neo4j.EagerResult) (*Account, error) {
 		return nil, err
 	}
 
-	email, err := neo4j.GetProperty[string](r, "email")
-	if err != nil {
-		return nil, err
-	}
-
 	password, err := neo4j.GetProperty[string](r, "password")
-	if err != nil {
-		return nil, err
-	}
-
-	role, err := neo4j.GetProperty[string](r, "role")
 	if err != nil {
 		return nil, err
 	}
@@ -109,11 +52,77 @@ func ResultToAccount(result *neo4j.EagerResult) (*Account, error) {
 
 	return &Account{
 		Name:      name,
-		Email:     email,
 		Password:  password,
-		Role:      role,
 		CreatedAt: createdAt,
 	}, nil
+}
+
+type Signin struct {
+	Token   string  `json:"token"`
+	Role    string  `json:"role"`
+	Account Account `json:"account"`
+}
+
+var SigninType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Signin", Fields: graphql.Fields{
+		"token": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"role": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"account": &graphql.Field{
+			Type: graphql.NewNonNull(AccountType),
+		},
+	},
+},
+)
+
+func ResultToSignin(result *neo4j.EagerResult) (*Signin, error) {
+	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "s")
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := neo4j.GetProperty[string](r, "token")
+	if err != nil {
+		return nil, err
+	}
+
+	role, err := neo4j.GetProperty[string](r, "role")
+	if err != nil {
+		return nil, err
+	}
+
+	account, err := ResultToAccount(result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Signin{
+		Token:   token,
+		Role:    role,
+		Account: *account,
+	}, nil
+}
+
+type AccountInput struct {
+	Name string `json:"name"`
+}
+
+var AccountQuery = &graphql.Field{
+	Type: AccountType,
+	Args: graphql.FieldConfigArgument{
+		"name": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		input := &AccountInput{
+			Name: p.Args["name"].(string)}
+
+		return services.AccountQuery(p.Context, input), nil
+	},
 }
 
 type SigninInput struct {
@@ -145,21 +154,26 @@ var SigninMutation = &graphql.Field{
 	},
 }
 
-type AccountInput struct {
+type ApiKeyInput struct {
 	Name string `json:"name"`
+	Role string `json:"role"`
 }
 
-var AccountQuery = &graphql.Field{
-	Type: AccountType,
+var ApiKeyMutation = &graphql.Field{
+	Type: SigninType,
 	Args: graphql.FieldConfigArgument{
 		"name": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
 		},
+		"role": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		input := &AccountInput{
-			Name: p.Args["name"].(string)}
+		input := &ApiKeyInput{
+			Name: p.Args["name"].(string),
+			Role: p.Args["role"].(string)}
 
-		return services.AccountQuery(p.Context, input), nil
+		return services.ApiKeyMutation(p.Context, input), nil
 	},
 }

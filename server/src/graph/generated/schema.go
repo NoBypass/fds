@@ -20,6 +20,7 @@ var rootMutation = graphql.NewObject(
 		Name: "RootMutation",
 		Fields: graphql.Fields{
 			"signin":        SigninMutation,
+			"apiKey":        ApiKeyMutation,
 			"createDiscord": CreateDiscordMutation,
 		},
 	},

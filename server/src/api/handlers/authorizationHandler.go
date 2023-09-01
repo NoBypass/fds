@@ -49,18 +49,19 @@ func (c *CustomClaims) Generate() (string, error) {
 	return tokenString, nil
 }
 
-func (c *CustomClaims) Parse(tokenString string) error {
+func ParseJWT(tokenString string) (*CustomClaims, error) {
+	c := &CustomClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, c, func(token *jwt.Token) (interface{}, error) {
 		return []byte("your-secret-key"), nil // TODO use env variable
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !token.Valid {
-		return fmt.Errorf("invalid token")
+		return nil, fmt.Errorf("invalid token")
 	}
 
-	return nil
+	return c, nil
 }
