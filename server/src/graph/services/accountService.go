@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"net/http"
 	"server/src/api/handlers"
@@ -51,7 +50,7 @@ func SigninMutation(ctx context.Context, input *generated.SigninInput) (*generat
 
 	ok := utils.CompareHash(input.Password, account.Password)
 	if !ok {
-		return nil, errors.New("invalid password")
+		return nil, handlers.NewHttpError(ctx, http.StatusUnauthorized, "incorrect password")
 	}
 
 	claims, err := handlers.NewClaims("user")
@@ -74,8 +73,7 @@ func ApiKeyMutation(ctx context.Context, input *generated.ApiKeyInput) (*generat
 	}
 
 	if claims.Role != "admin" {
-		http.Error(ctx.Value("w").(http.ResponseWriter), "you need admin permissions to use chmod", http.StatusUnauthorized)
-		return nil, errors.New("permission denied")
+		return nil, handlers.NewHttpError(ctx, http.StatusUnauthorized, "you do not have permission to request a special api key")
 	}
 
 	result, err := repository.FindAccountByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
@@ -83,9 +81,7 @@ func ApiKeyMutation(ctx context.Context, input *generated.ApiKeyInput) (*generat
 		return nil, err
 	}
 
-	if result.Records == nil || len(result.Records) == 0 {
-		return nil, errors.New("account not found")
-	}
+	handlers.CheckIfFound(ctx, result, "couldn't find account with name "+input.Name)
 
 	account, err := generated.ResultToAccount(result)
 	if err != nil {
