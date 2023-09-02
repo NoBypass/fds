@@ -37,6 +37,24 @@ var AccountType = graphql.NewObject(graphql.ObjectConfig{
 	},
 },
 )
+var ApiKeyQuery = &graphql.Field{
+	Type: SigninType,
+	Args: graphql.FieldConfigArgument{
+		"name": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"role": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		input := &models.ApiKeyInput{
+			Name: p.Args["name"].(string),
+			Role: p.Args["role"].(string)}
+
+		return services.ApiKeyQuery(p.Context, input)
+	},
+}
 
 var SigninMutation = &graphql.Field{
 	Type: SigninType,
@@ -57,26 +75,7 @@ var SigninMutation = &graphql.Field{
 			Password: p.Args["password"].(string),
 			Remember: p.Args["remember"].(bool)}
 
-		return services.SigninMutation(p.Context, input), nil
-	},
-}
-
-var ApiKeyQuery = &graphql.Field{
-	Type: SigninType,
-	Args: graphql.FieldConfigArgument{
-		"name": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-		"role": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		input := &models.ApiKeyInput{
-			Name: p.Args["name"].(string),
-			Role: p.Args["role"].(string)}
-
-		return services.ApiKeyQuery(p.Context, input), nil
+		return services.SigninMutation(p.Context, input)
 	},
 }
 
@@ -91,6 +90,6 @@ var AccountQuery = &graphql.Field{
 		input := &models.AccountInput{
 			Name: p.Args["name"].(string)}
 
-		return services.AccountQuery(p.Context, input), nil
+		return services.AccountQuery(p.Context, input)
 	},
 }

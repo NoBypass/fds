@@ -31,7 +31,6 @@ var DiscordType = graphql.NewObject(graphql.ObjectConfig{
 	},
 },
 )
-
 var DiscordQuery = &graphql.Field{
 	Type: DiscordType,
 	Args: graphql.FieldConfigArgument{
@@ -43,7 +42,7 @@ var DiscordQuery = &graphql.Field{
 		input := &models.DiscordInput{
 			DiscordId: p.Args["discordId"].(string)}
 
-		return services.DiscordQuery(p.Context, input), nil
+		return services.DiscordQuery(p.Context, input)
 	},
 }
 
@@ -62,7 +61,7 @@ var CreateDiscordMutation = &graphql.Field{
 			DiscordId: p.Args["discordId"].(string),
 			Name:      p.Args["name"].(string)}
 
-		return services.CreateDiscordMutation(p.Context, input), nil
+		return services.CreateDiscordMutation(p.Context, input)
 	},
 }
 
@@ -81,6 +80,6 @@ var GiveXpMutation = &graphql.Field{
 			DiscordId: p.Args["discordId"].(string),
 			Amount:    p.Args["amount"].(int64)}
 
-		return services.GiveXpMutation(p.Context, input), nil
+		return services.GiveXpMutation(p.Context, input)
 	},
 }

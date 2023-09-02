@@ -4,15 +4,15 @@ import "github.com/neo4j/neo4j-go-driver/v5/neo4j"
 
 // Code automatically generated; DO NOT EDIT.
 
+type ApiKeyInput struct {
+	Name string `json:"name"`
+	Role string `json:"role"`
+}
+
 type SigninInput struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	Remember bool   `json:"remember"`
-}
-
-type ApiKeyInput struct {
-	Name string `json:"name"`
-	Role string `json:"role"`
 }
 
 type Signin struct {

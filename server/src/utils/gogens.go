@@ -112,7 +112,7 @@ func GenerateSchema(schema string, root string) (string, string) {
 					inputMapper = append(inputMapper, fmt.Sprintf("\t\t\t%s: p.Args[\"%s\"].(%s),", FirstUpper(parameter.Name), parameter.Name, parameter.GoType))
 				}
 
-				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n%s\t\treturn services.%s(p.Context, input), nil\n\t},", strings.Join(inputMapper, "\n")+"\t\t}\n\n", rootField.GoName+key))
+				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n%s\t\treturn services.%s(p.Context, input)\n\t},", strings.Join(inputMapper, "\n")+"\t\t}\n\n", rootField.GoName+key))
 				resolvers = append(resolvers, strings.Join(res, "\n")+"\n}\n")
 				models = append(models, strings.Join(inputType, "\n")+"\n}\n")
 			}

@@ -19,7 +19,6 @@ var PlayerType = graphql.NewObject(graphql.ObjectConfig{
 	},
 },
 )
-
 var PlayerQuery = &graphql.Field{
 	Type: PlayerType,
 	Args: graphql.FieldConfigArgument{
@@ -31,6 +30,6 @@ var PlayerQuery = &graphql.Field{
 		input := &models.PlayerInput{
 			Name: p.Args["name"].(string)}
 
-		return services.PlayerQuery(p.Context, input), nil
+		return services.PlayerQuery(p.Context, input)
 	},
 }
