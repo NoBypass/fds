@@ -7,6 +7,7 @@ import (
 	"server/src/api/handlers"
 	"server/src/graph/generated"
 	"server/src/repository"
+	"server/src/utils"
 )
 
 func CreateDiscordMutation(ctx context.Context, input *generated.CreateDiscordInput) (*generated.Discord, error) {
@@ -47,6 +48,21 @@ func GiveXpMutation(ctx context.Context, input *generated.GiveXpInput) (*generat
 
 	handlers.CheckIfFound(ctx, result, "could not find discord with id "+input.DiscordId)
 	discord, err := generated.ResultToDiscord(result)
+	if err != nil {
+		return nil, err
+	}
+
+	levelMaxXp := utils.MaxOutAt(discord.Level*1000, 10000)
+	if discord.Xp >= levelMaxXp {
+		discord.Level += 1
+		discord.Xp = discord.Xp - levelMaxXp
+	}
+
+	result, err = repository.UpdateDiscord(ctx, ctx.Value("driver").(neo4j.DriverWithContext), discord)
+	if err != nil {
+		return nil, err
+	}
+	discord, err = generated.ResultToDiscord(result)
 	if err != nil {
 		return nil, err
 	}

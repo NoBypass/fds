@@ -49,3 +49,11 @@ func FirstLower(input string) string {
 func FirstUpper(input string) string {
 	return strings.ToUpper(input[:1]) + input[1:]
 }
+
+func MaxOutAt(input int64, max int64) int64 {
+	if input > max {
+		return max
+	}
+
+	return input
+}
