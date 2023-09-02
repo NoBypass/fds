@@ -8,55 +8,6 @@ import (
 	"server/src/graph/services"
 )
 
-type Account struct {
-	Name      string `json:"name"`
-	Password  string `json:"password"`
-	CreatedAt string `json:"created_at"`
-}
-
-var AccountType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Account", Fields: graphql.Fields{
-		"name": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-		"password": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-		"createdAt": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-},
-)
-
-func ResultToAccount(result *neo4j.EagerResult) (*Account, error) {
-	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
-	if err != nil {
-		return nil, err
-	}
-
-	name, err := neo4j.GetProperty[string](r, "name")
-	if err != nil {
-		return nil, err
-	}
-
-	password, err := neo4j.GetProperty[string](r, "password")
-	if err != nil {
-		return nil, err
-	}
-
-	createdAt, err := neo4j.GetProperty[string](r, "created_at")
-	if err != nil {
-		return nil, err
-	}
-
-	return &Account{
-		Name:      name,
-		Password:  password,
-		CreatedAt: createdAt,
-	}, nil
-}
-
 type Signin struct {
 	Token   string  `json:"token"`
 	Role    string  `json:"role"`
@@ -106,22 +57,76 @@ func ResultToSignin(result *neo4j.EagerResult) (*Signin, error) {
 	}, nil
 }
 
-type AccountInput struct {
-	Name string `json:"name"`
+type Account struct {
+	Name      string `json:"name"`
+	Password  string `json:"password"`
+	CreatedAt string `json:"created_at"`
 }
 
-var AccountQuery = &graphql.Field{
-	Type: AccountType,
+var AccountType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Account", Fields: graphql.Fields{
+		"name": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"password": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"createdAt": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+	},
+},
+)
+
+func ResultToAccount(result *neo4j.EagerResult) (*Account, error) {
+	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "a")
+	if err != nil {
+		return nil, err
+	}
+
+	name, err := neo4j.GetProperty[string](r, "name")
+	if err != nil {
+		return nil, err
+	}
+
+	password, err := neo4j.GetProperty[string](r, "password")
+	if err != nil {
+		return nil, err
+	}
+
+	createdAt, err := neo4j.GetProperty[string](r, "created_at")
+	if err != nil {
+		return nil, err
+	}
+
+	return &Account{
+		Name:      name,
+		Password:  password,
+		CreatedAt: createdAt,
+	}, nil
+}
+
+type ApiKeyInput struct {
+	Name string `json:"name"`
+	Role string `json:"role"`
+}
+
+var ApiKeyQuery = &graphql.Field{
+	Type: SigninType,
 	Args: graphql.FieldConfigArgument{
 		"name": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
 		},
+		"role": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		input := &AccountInput{
-			Name: p.Args["name"].(string)}
+		input := &ApiKeyInput{
+			Name: p.Args["name"].(string),
+			Role: p.Args["role"].(string)}
 
-		return services.AccountQuery(p.Context, input), nil
+		return services.ApiKeyQuery(p.Context, input), nil
 	},
 }
 
@@ -154,26 +159,21 @@ var SigninMutation = &graphql.Field{
 	},
 }
 
-type ApiKeyInput struct {
+type AccountInput struct {
 	Name string `json:"name"`
-	Role string `json:"role"`
 }
 
-var ApiKeyMutation = &graphql.Field{
-	Type: SigninType,
+var AccountQuery = &graphql.Field{
+	Type: AccountType,
 	Args: graphql.FieldConfigArgument{
 		"name": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
 		},
-		"role": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		input := &ApiKeyInput{
-			Name: p.Args["name"].(string),
-			Role: p.Args["role"].(string)}
+		input := &AccountInput{
+			Name: p.Args["name"].(string)}
 
-		return services.ApiKeyMutation(p.Context, input), nil
+		return services.AccountQuery(p.Context, input), nil
 	},
 }

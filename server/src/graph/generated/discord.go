@@ -14,7 +14,7 @@ type Discord struct {
 	Level       int64  `json:"level"`
 	Xp          int64  `json:"xp"`
 	Streak      int64  `json:"streak"`
-	LastDailyAt string `json:"last_daily_at"`
+	LastDailyAt int64  `json:"last_daily_at"`
 }
 
 var DiscordType = graphql.NewObject(graphql.ObjectConfig{
@@ -35,7 +35,7 @@ var DiscordType = graphql.NewObject(graphql.ObjectConfig{
 			Type: graphql.Int,
 		},
 		"lastDailyAt": &graphql.Field{
-			Type: graphql.String,
+			Type: graphql.Int,
 		},
 	},
 },
@@ -72,7 +72,7 @@ func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
 		return nil, err
 	}
 
-	lastDailyAt, err := neo4j.GetProperty[string](r, "last_daily_at")
+	lastDailyAt, err := neo4j.GetProperty[int64](r, "last_daily_at")
 	if err != nil {
 		return nil, err
 	}
@@ -127,5 +127,29 @@ var CreateDiscordMutation = &graphql.Field{
 			Name:      p.Args["name"].(string)}
 
 		return services.CreateDiscordMutation(p.Context, input), nil
+	},
+}
+
+type GiveXpInput struct {
+	DiscordId string `json:"discordId"`
+	Amount    int64  `json:"amount"`
+}
+
+var GiveXpMutation = &graphql.Field{
+	Type: DiscordType,
+	Args: graphql.FieldConfigArgument{
+		"discordId": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"amount": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.Int),
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		input := &GiveXpInput{
+			DiscordId: p.Args["discordId"].(string),
+			Amount:    p.Args["amount"].(int64)}
+
+		return services.GiveXpMutation(p.Context, input), nil
 	},
 }

@@ -11,6 +11,7 @@ var rootQuery = graphql.NewObject(
 			"account": AccountQuery,
 			"discord": DiscordQuery,
 			"player":  PlayerQuery,
+			"apiKey":  ApiKeyQuery,
 		},
 	},
 )
@@ -20,8 +21,8 @@ var rootMutation = graphql.NewObject(
 		Name: "RootMutation",
 		Fields: graphql.Fields{
 			"signin":        SigninMutation,
-			"apiKey":        ApiKeyMutation,
 			"createDiscord": CreateDiscordMutation,
+			"giveXp":        GiveXpMutation,
 		},
 	},
 )

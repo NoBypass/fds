@@ -4,5 +4,5 @@ type Discord {
     level: Int
     xp: Int
     streak: Int
-    lastDailyAt: String
+    lastDailyAt: Int
 }
