@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"net/http"
 	"server/src/api/handlers"
 	"server/src/graph/generated"
 	"server/src/repository"
@@ -30,6 +31,15 @@ func DiscordQuery(ctx context.Context, input *generated.DiscordInput) (*generate
 }
 
 func GiveXpMutation(ctx context.Context, input *generated.GiveXpInput) (*generated.Discord, error) {
+	claims, err := handlers.ParseJWT(ctx.Value("token").(string))
+	if err != nil {
+		return nil, err
+	}
+
+	if claims.Role != "bot" && claims.Role != "admin" {
+		return nil, handlers.NewHttpError(ctx, http.StatusUnauthorized, "you do not have permission to give xp")
+	}
+
 	result, err := repository.GiveXp(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.DiscordId, input.Amount)
 	if err != nil {
 		return nil, err
