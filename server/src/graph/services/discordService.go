@@ -5,13 +5,13 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"net/http"
 	"server/src/api/handlers"
-	"server/src/graph/generated"
+	"server/src/graph/generated/models"
 	"server/src/repository"
 	"server/src/utils"
 )
 
-func CreateDiscordMutation(ctx context.Context, input *generated.CreateDiscordInput) (*generated.Discord, error) {
-	result, err := repository.CreateDiscord(ctx, ctx.Value("driver").(neo4j.DriverWithContext), &generated.Discord{
+func CreateDiscordMutation(ctx context.Context, input *models.CreateDiscordInput) (*models.Discord, error) {
+	result, err := repository.CreateDiscord(ctx, ctx.Value("driver").(neo4j.DriverWithContext), &models.Discord{
 		DiscordId: input.DiscordId,
 		Name:      input.Name,
 	})
@@ -19,19 +19,19 @@ func CreateDiscordMutation(ctx context.Context, input *generated.CreateDiscordIn
 		return nil, err
 	}
 
-	return generated.ResultToDiscord(result)
+	return models.ResultToDiscord(result)
 }
 
-func DiscordQuery(ctx context.Context, input *generated.DiscordInput) (*generated.Discord, error) {
+func DiscordQuery(ctx context.Context, input *models.DiscordInput) (*models.Discord, error) {
 	result, err := repository.FindDiscordByDiscordId(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.DiscordId)
 	if err != nil {
 		return nil, err
 	}
 
-	return generated.ResultToDiscord(result)
+	return models.ResultToDiscord(result)
 }
 
-func GiveXpMutation(ctx context.Context, input *generated.GiveXpInput) (*generated.Discord, error) {
+func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Discord, error) {
 	claims, err := handlers.ParseJWT(ctx.Value("token").(string))
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func GiveXpMutation(ctx context.Context, input *generated.GiveXpInput) (*generat
 	}
 
 	handlers.CheckIfFound(ctx, result, "could not find discord with id "+input.DiscordId)
-	discord, err := generated.ResultToDiscord(result)
+	discord, err := models.ResultToDiscord(result)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func GiveXpMutation(ctx context.Context, input *generated.GiveXpInput) (*generat
 	if err != nil {
 		return nil, err
 	}
-	discord, err = generated.ResultToDiscord(result)
+	discord, err = models.ResultToDiscord(result)
 	if err != nil {
 		return nil, err
 	}

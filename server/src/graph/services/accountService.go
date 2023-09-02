@@ -5,23 +5,23 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"net/http"
 	"server/src/api/handlers"
-	"server/src/graph/generated"
+	"server/src/graph/generated/models"
 	"server/src/repository"
 	"server/src/utils"
 	"strconv"
 	"time"
 )
 
-func AccountQuery(ctx context.Context, input *generated.AccountInput) (*generated.Account, error) {
+func AccountQuery(ctx context.Context, input *models.AccountInput) (*models.Account, error) {
 	result, err := repository.FindAccountByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return generated.ResultToAccount(result)
+	return models.ResultToAccount(result)
 }
 
-func SigninMutation(ctx context.Context, input *generated.SigninInput) (*generated.Signin, error) {
+func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Signin, error) {
 	result, err := repository.FindAccountByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func SigninMutation(ctx context.Context, input *generated.SigninInput) (*generat
 			return nil, err
 		}
 
-		result, err = repository.CreateAccount(ctx, ctx.Value("driver").(neo4j.DriverWithContext), &generated.Account{
+		result, err = repository.CreateAccount(ctx, ctx.Value("driver").(neo4j.DriverWithContext), &models.Account{
 			Name:      input.Name,
 			Password:  password,
 			CreatedAt: strconv.FormatInt(time.Now().Unix(), 10),
@@ -43,7 +43,7 @@ func SigninMutation(ctx context.Context, input *generated.SigninInput) (*generat
 		}
 	}
 
-	account, err := generated.ResultToAccount(result)
+	account, err := models.ResultToAccount(result)
 	if err != nil {
 		return nil, err
 	}
@@ -59,14 +59,14 @@ func SigninMutation(ctx context.Context, input *generated.SigninInput) (*generat
 	}
 	token, err := claims.Sign(account).Generate()
 
-	return &generated.Signin{
+	return &models.Signin{
 		Token:   token,
 		Role:    claims.Role,
 		Account: *account,
 	}, nil
 }
 
-func ApiKeyQuery(ctx context.Context, input *generated.ApiKeyInput) (*generated.Signin, error) {
+func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin, error) {
 	claims, err := handlers.ParseJWT(ctx.Value("request").(*http.Request).Header.Get("Authorization"))
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func ApiKeyQuery(ctx context.Context, input *generated.ApiKeyInput) (*generated.
 
 	handlers.CheckIfFound(ctx, result, "couldn't find account with name "+input.Name)
 
-	account, err := generated.ResultToAccount(result)
+	account, err := models.ResultToAccount(result)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func ApiKeyQuery(ctx context.Context, input *generated.ApiKeyInput) (*generated.
 	}
 	token, err := claims.Sign(account).Generate()
 
-	return &generated.Signin{
+	return &models.Signin{
 		Token:   token,
 		Role:    claims.Role,
 		Account: *account,

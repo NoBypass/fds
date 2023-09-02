@@ -58,16 +58,17 @@ func GenerateRootSchema(schema string) string {
 	return "import \"github.com/graphql-go/graphql\"\n\n" + strings.Join(lines, "\n") + "var RootSchema, _ = graphql.NewSchema(\n\tgraphql.SchemaConfig{\n\t\tQuery:    rootQuery,\n\t\tMutation: rootMutation,\n\t},\n)"
 }
 
-func GenerateSchema(schema string, root string) string {
+func GenerateSchema(schema string, root string) (string, string) {
 	objs := make([]string, 0)
 	resolvers := make([]string, 0)
+	models := make([]string, 0)
 	newSchema := schemaToType(schema)
 	newRoot := schemaToType(root)
 
 	for _, t := range *newSchema {
 		structs := []string{fmt.Sprintf("type %s struct {", t.Name)}
 		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{\n\tName: \"%s\", Fields: graphql.Fields{", t.Name, t.Name)}
-		maps := []string{fmt.Sprintf("func ResultTo%s(result *neo4j.EagerResult) (*%s, error) {\n\tr, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name, FirstLower(t.Name)[:1])}
+		mappers := []string{fmt.Sprintf("\nfunc ResultTo%s(result *neo4j.EagerResult) (*%s, error) {\n\tr, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name, FirstLower(t.Name)[:1])}
 		returns := []string{fmt.Sprintf("\treturn &%s{", t.Name)}
 
 		for _, field := range t.Fields {
@@ -85,9 +86,9 @@ func GenerateSchema(schema string, root string) string {
 			types = append(types, fmt.Sprintf("\t\t\t\"%s\": &graphql.Field{\n\t\t\t\tType: %s,\n\t\t\t},", field.GraphQLName, nonnullString))
 			returns = append(returns, fmt.Sprintf("\t\t%s: %s%s,", field.GoName, pointer, field.GraphQLName))
 			if IsGraphQLType(field.GraphQLType) {
-				maps = append(maps, fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](r, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GoType, field.JsonName))
+				mappers = append(mappers, fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](r, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GoType, field.JsonName))
 			} else {
-				maps = append(maps, fmt.Sprintf("\t%s, err := ResultTo%s(result)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GraphQLType))
+				mappers = append(mappers, fmt.Sprintf("\t%s, err := ResultTo%s(result)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GraphQLType))
 			}
 		}
 
@@ -99,7 +100,7 @@ func GenerateSchema(schema string, root string) string {
 
 				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", rootField.GoName+key, t.Name)}
 				inputType := []string{fmt.Sprintf("type %sInput struct {", rootField.GoName)}
-				inputMapper := []string{fmt.Sprintf("\t\tinput := &%sInput{", rootField.GoName)}
+				inputMapper := []string{fmt.Sprintf("\t\tinput := &models.%sInput{", rootField.GoName)}
 
 				for _, parameter := range rootField.Parameters {
 					nonnullString := fmt.Sprintf("graphql.NewNonNull(graphql.%s)", parameter.Type)
@@ -112,7 +113,8 @@ func GenerateSchema(schema string, root string) string {
 				}
 
 				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n%s\t\treturn services.%s(p.Context, input), nil\n\t},", strings.Join(inputMapper, "\n")+"\t\t}\n\n", rootField.GoName+key))
-				resolvers = append(resolvers, strings.Join(inputType, "\n")+"\n}\n\n"+strings.Join(res, "\n")+"\n}\n")
+				resolvers = append(resolvers, strings.Join(res, "\n")+"\n}\n")
+				models = append(models, strings.Join(inputType, "\n")+"\n}\n")
 			}
 		}
 
@@ -120,17 +122,12 @@ func GenerateSchema(schema string, root string) string {
 		types = append(types, "\t\t},\n\t},\n)\n")
 		returns = append(returns, "\t}, nil\n}\n")
 
-		var res string
-		actions := [][]string{structs, types, maps, returns}
-		for _, line := range actions {
-			res += strings.Join(line, "\n") + "\n"
-		}
-
-		objs = append(objs, res)
+		models = append(models, strings.Join(structs, "\n")+strings.Join(mappers, "\n")+strings.Join(returns, "\n"))
+		objs = append(objs, strings.Join(types, "\n"))
 	}
 
-	return "import (\n\t\"github.com/graphql-go/graphql\"\n\t\"github.com/neo4j/neo4j-go-driver/v5/neo4j\"\n\t\"server/src/graph/services\"\n)" +
-		"\n\n" + strings.Join(objs, "\n") + strings.Join(resolvers, "\n")
+	return "import (\n\t\"github.com/graphql-go/graphql\"\n\t\"server/src/graph/generated/models\"\n\t\"server/src/graph/services\"\n)" +
+		"\n\n" + strings.Join(objs, "\n") + strings.Join(resolvers, "\n"), strings.Join(models, "\n")
 }
 
 func schemaToType(schema string) *map[string]Type {

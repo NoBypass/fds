@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/rs/cors"
 	"net/http"
-	"server/src/api/handlers"
+	"server/src/api/resolvers"
 	"server/src/graph/generated"
 )
 
@@ -18,7 +18,7 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	http.Handle("/graphql", c.Handler(handlers.GraphQLHandler(&generated.RootSchema)))
+	http.Handle("/graphql", c.Handler(resolvers.GraphQLHandler(&generated.RootSchema)))
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println("Error starting server:", err)

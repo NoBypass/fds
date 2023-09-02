@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"server/src/graph/generated"
+	"server/src/graph/generated/models"
 	"server/src/utils"
 )
 
@@ -25,7 +25,7 @@ type CustomClaims struct {
 	jwt.StandardClaims
 }
 
-func (c *CustomClaims) Sign(subject *generated.Account) *CustomClaims {
+func (c *CustomClaims) Sign(subject *models.Account) *CustomClaims {
 	jsonSubject, err := json.Marshal(subject)
 	if err != nil {
 		return c

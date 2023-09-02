@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/src/graph/generated"
+	"server/src/graph/generated/models"
 	"server/src/utils"
 )
 
@@ -34,7 +34,7 @@ func GiveXp(ctx context.Context, driver neo4j.DriverWithContext, discordIdInput 
 	return result, nil
 }
 
-func UpdateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord *generated.Discord) (*neo4j.EagerResult, error) {
+func UpdateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord *models.Discord) (*neo4j.EagerResult, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"MATCH (d:Discord { discord_id: $discord_id }) SET d.level = $level, d.xp = $xp, d.streak = $streak, d.last_daily_at = $last_daily_at RETURN d",
 		map[string]any{
@@ -51,7 +51,7 @@ func UpdateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord 
 	return result, nil
 }
 
-func CreateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord *generated.Discord) (*neo4j.EagerResult, error) {
+func CreateDiscord(ctx context.Context, driver neo4j.DriverWithContext, discord *models.Discord) (*neo4j.EagerResult, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"CREATE (d:Discord { id: $id, discord_id: $discord_id, name: $name, level: $level, xp: $xp, streak: $streak, last_daily_at: $last_daily_at }) RETURN d",
 		map[string]any{

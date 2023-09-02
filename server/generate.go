@@ -75,7 +75,17 @@ func main() {
 		if strings.HasPrefix(fileInfo.Name(), "schema") {
 			content += rootSchema
 		} else {
-			content += utils.GenerateSchema(string(graphqlContent), originalRootSchema)
+			c, model := utils.GenerateSchema(string(graphqlContent), originalRootSchema)
+			content += c
+
+			// write file to generated/models containing the model
+			modelFile, err := os.Create(filepath.Join(config.Generated, "models", strings.TrimSuffix(fileInfo.Name(), ".graphql")+"Models.go"))
+			if err != nil {
+				fmt.Println("Error creating model file:", err)
+				return
+			}
+
+			_, err = modelFile.WriteString("package models\n\nimport \"github.com/neo4j/neo4j-go-driver/v5/neo4j\"\n\n// Code automatically generated; DO NOT EDIT.\n\n" + model)
 		}
 
 		goFile, err := os.Create(goFilePath)

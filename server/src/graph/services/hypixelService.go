@@ -7,23 +7,18 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"log"
 	"net/http"
-	"server/src/graph/generated"
+	"server/src/graph/generated/models"
 	"server/src/repository"
 )
 
-type NewPlayer struct {
-	Name string `json:"name"`
-	ID   string `json:"id"`
-}
-
-func PlayerQuery(ctx context.Context, input *generated.PlayerInput) (*generated.Player, error) {
+func PlayerQuery(ctx context.Context, input *models.PlayerInput) (*models.Player, error) {
 	result, err := repository.FindPlayerByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
 	if err != nil {
 		return nil, err
 	}
 
 	if result.Records != nil || len(result.Records) > 0 {
-		return generated.ResultToPlayer(result)
+		return models.ResultToPlayer(result)
 	}
 
 	var url = "https://api.mojang.com/users/profiles/minecraft/" + input.Name
@@ -36,7 +31,7 @@ func PlayerQuery(ctx context.Context, input *generated.PlayerInput) (*generated.
 	}
 	defer response.Body.Close()
 
-	var newPlayerInput NewPlayer
+	var newPlayerInput repository.NewPlayer
 	if err := json.NewDecoder(response.Body).Decode(&newPlayerInput); err != nil {
 		log.Fatalf("Error decoding JSON: %v", err)
 	}
@@ -46,5 +41,5 @@ func PlayerQuery(ctx context.Context, input *generated.PlayerInput) (*generated.
 		return nil, err
 	}
 
-	return generated.ResultToPlayer(result)
+	return models.ResultToPlayer(result)
 }

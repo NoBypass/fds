@@ -3,8 +3,12 @@ package repository
 import (
 	"context"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"server/src/graph/services"
 )
+
+type NewPlayer struct {
+	Name string `json:"name"`
+	ID   string `json:"id"`
+}
 
 func FindPlayerByName(ctx context.Context, driver neo4j.DriverWithContext, name string) (*neo4j.EagerResult, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
@@ -19,7 +23,7 @@ func FindPlayerByName(ctx context.Context, driver neo4j.DriverWithContext, name 
 	return result, nil
 }
 
-func CreatePlayer(ctx context.Context, driver neo4j.DriverWithContext, player *services.NewPlayer) (*neo4j.EagerResult, error) {
+func CreatePlayer(ctx context.Context, driver neo4j.DriverWithContext, player *NewPlayer) (*neo4j.EagerResult, error) {
 	result, err := neo4j.ExecuteQuery(ctx, driver,
 		"CREATE (p:Player { name: $name, uuid: $uuid }) RETURN p",
 		map[string]any{
