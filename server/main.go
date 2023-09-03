@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"server/src/api/resolvers"
 	"server/src/graph/generated"
+	"server/src/utils"
 )
 
 func main() {
@@ -18,8 +19,9 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	http.Handle("/ws", resolvers.WebSocketHandler(&generated.RootSchema))
-	http.Handle("/graphql", c.Handler(resolvers.GraphQLHandler(&generated.RootSchema)))
+	_, ctx, _ := utils.ConnectDB()
+	http.Handle("/ws", resolvers.WebSocketHandler(&generated.RootSchema, ctx))
+	http.Handle("/graphql", c.Handler(resolvers.GraphQLHandler(&generated.RootSchema, ctx)))
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println("Error starting server:", err)

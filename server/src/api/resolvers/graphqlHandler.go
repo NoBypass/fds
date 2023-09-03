@@ -6,10 +6,9 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 	"net/http"
-	"server/src/utils"
 )
 
-func GraphQLHandler(schema *graphql.Schema) http.Handler {
+func GraphQLHandler(schema *graphql.Schema, ctx context.Context) http.Handler {
 	h := handler.New(&handler.Config{
 		Schema:   schema,
 		Pretty:   true,
@@ -19,7 +18,6 @@ func GraphQLHandler(schema *graphql.Schema) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// If-Else statement to use GraphiQL along with the GraphQL handler
 		if r.Method == "POST" {
-			_, ctx, _ := utils.ConnectDB()
 			ctx = context.WithValue(ctx, "request", r)
 			ctx = context.WithValue(ctx, "response", w)
 

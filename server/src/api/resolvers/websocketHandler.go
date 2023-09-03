@@ -18,7 +18,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func WebSocketHandler(schema *graphql.Schema) http.Handler {
+func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
@@ -27,7 +27,7 @@ func WebSocketHandler(schema *graphql.Schema) http.Handler {
 		}
 		defer conn.Close()
 
-		ctx := context.WithValue(context.Background(), "request", r)
+		ctx = context.WithValue(ctx, "request", r)
 		ctx = context.WithValue(ctx, "response", w)
 
 		claims, err := handlers.ParseJWT(r.Header.Get("Authorization"))
