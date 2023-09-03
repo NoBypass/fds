@@ -30,32 +30,25 @@ type Type struct {
 
 func GenerateRootSchema(schema string) string {
 	lines := strings.Split(schema, "\n")
+	roots := make([]string, 0)
 	actionRegex := regexp.MustCompile(`^.+\(.+\): .+$`)
-	isMutation := false
 
+	var name string
 	for i, line := range lines {
-		if strings.HasPrefix(line, "type Query {") {
-			lines[i] = "var rootQuery = graphql.NewObject(\n\tgraphql.ObjectConfig{\n\t\tName: \"RootQuery\",\n\t\tFields: graphql.Fields{"
-			isMutation = false
-		} else if strings.HasPrefix(line, "type Mutation {") {
-			lines[i] = "var rootMutation = graphql.NewObject(\n\tgraphql.ObjectConfig{\n\t\tName: \"RootMutation\",\n\t\tFields: graphql.Fields{"
-			isMutation = true
+		if strings.HasPrefix(line, "type") {
+			name = strings.Split(line, " ")[1]
+			lines[i] = fmt.Sprintf("var root%s = graphql.NewObject(\n\tgraphql.ObjectConfig{\n\t\tName: \"Root%s\",\n\t\tFields: graphql.Fields{", name, name)
+			roots = append(roots, fmt.Sprintf("\n\t\t%s: root%s,", name, name))
 		} else if strings.HasPrefix(line, "}") {
 			lines[i] = "\t\t},\n\t},\n)\n"
 		} else if actionRegex.MatchString(line) {
 			strings.Trim(line, " ")
 			actionName := strings.Trim(strings.Split(line, "(")[0], " ")
-			upper := FirstUpper(actionName)
-			if isMutation {
-				upper += "Mutation"
-			} else {
-				upper += "Query"
-			}
-			lines[i] = "\t\t\t\"" + actionName + "\": " + upper + ","
+			lines[i] = "\t\t\t\"" + actionName + "\": " + FirstUpper(actionName) + name + ","
 		}
 	}
 
-	return "import \"github.com/graphql-go/graphql\"\n\n" + strings.Join(lines, "\n") + "var RootSchema, _ = graphql.NewSchema(\n\tgraphql.SchemaConfig{\n\t\tQuery:    rootQuery,\n\t\tMutation: rootMutation,\n\t},\n)"
+	return fmt.Sprintf("import \"github.com/graphql-go/graphql\"\n\n%svar RootSchema, _ = graphql.NewSchema(\n\tgraphql.SchemaConfig{%s\n\t},\n)", strings.Join(lines, "\n"), strings.Join(roots, ""))
 }
 
 func GenerateSchema(schema string, root string) (string, string) {

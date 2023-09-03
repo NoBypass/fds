@@ -5,4 +5,11 @@ type Discord {
     xp: Int
     streak: Int
     lastDailyAt: Int
+    linkedWith: LinkedWith
+}
+
+type LinkedWith {
+    linkedAt: Int!
+    player: Player!
+    discord: Discord!
 }

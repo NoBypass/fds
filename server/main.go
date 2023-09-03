@@ -12,12 +12,13 @@ func main() {
 	fmt.Println("Starting server...")
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"}, // Set the allowed origins here
-		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,
 	})
 
+	http.Handle("/ws", resolvers.WebSocketHandler(&generated.RootSchema))
 	http.Handle("/graphql", c.Handler(resolvers.GraphQLHandler(&generated.RootSchema)))
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {

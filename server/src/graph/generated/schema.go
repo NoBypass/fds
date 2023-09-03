@@ -27,9 +27,20 @@ var rootMutation = graphql.NewObject(
 	},
 )
 
+//var rootSubscription = graphql.NewObject(
+//	graphql.ObjectConfig{
+//		Name: "RootSubscription",
+//		Fields: graphql.Fields{
+//			"createDiscord": CreateDiscordSubscription,
+//			"giveXp": GiveXpSubscription,
+//		},
+//	},
+//)
+
 var RootSchema, _ = graphql.NewSchema(
 	graphql.SchemaConfig{
 		Query:    rootQuery,
 		Mutation: rootMutation,
+		// Subscription: rootSubscription,
 	},
 )

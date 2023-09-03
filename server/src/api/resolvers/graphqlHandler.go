@@ -20,7 +20,8 @@ func GraphQLHandler(schema *graphql.Schema) http.Handler {
 		// If-Else statement to use GraphiQL along with the GraphQL handler
 		if r.Method == "POST" {
 			_, ctx, _ := utils.ConnectDB()
-			newCtx := context.WithValue(ctx, "request", r)
+			ctx = context.WithValue(ctx, "request", r)
+			ctx = context.WithValue(ctx, "response", w)
 
 			var requestBody struct {
 				Query string `json:"query"`
@@ -33,7 +34,7 @@ func GraphQLHandler(schema *graphql.Schema) http.Handler {
 			result := graphql.Do(graphql.Params{
 				Schema:        *schema,
 				RequestString: requestBody.Query,
-				Context:       newCtx,
+				Context:       ctx,
 			})
 			if len(result.Errors) != 0 {
 				http.Error(w, result.Errors[0].Message, http.StatusInternalServerError)

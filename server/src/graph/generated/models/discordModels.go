@@ -18,6 +18,16 @@ type GiveXpInput struct {
 	Amount    int64  `json:"amount"`
 }
 
+//type CreateDiscordInput struct {
+//	DiscordId string `json:"discordId"`
+//	Name string `json:"name"`
+//}
+//
+//type GiveXpInput struct {
+//	DiscordId string `json:"discordId"`
+//	Amount int64 `json:"amount"`
+//}
+
 type Discord struct {
 	DiscordId   string `json:"discord_id"`
 	Name        string `json:"name"`
@@ -25,6 +35,7 @@ type Discord struct {
 	Xp          int64  `json:"xp"`
 	Streak      int64  `json:"streak"`
 	LastDailyAt int64  `json:"last_daily_at"`
+	//	LinkedWith LinkedWith `json:"linked_with"`
 }
 
 func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
@@ -62,6 +73,11 @@ func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	//linkedWith, err := ResultToLinkedWith(result)
+	if err != nil {
+		return nil, err
+	}
 	return &Discord{
 		DiscordId:   discordId,
 		Name:        name,
@@ -69,5 +85,39 @@ func ResultToDiscord(result *neo4j.EagerResult) (*Discord, error) {
 		Xp:          xp,
 		Streak:      streak,
 		LastDailyAt: lastDailyAt,
+		// LinkedWith:  *linkedWith,
+	}, nil
+}
+
+type LinkedWith struct {
+	LinkedAt int64   `json:"linked_at"`
+	Player   Player  `json:"player"`
+	Discord  Discord `json:"discord"`
+}
+
+func ResultToLinkedWith(result *neo4j.EagerResult) (*LinkedWith, error) {
+	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], "l")
+	if err != nil {
+		return nil, err
+	}
+
+	linkedAt, err := neo4j.GetProperty[int64](r, "linked_at")
+	if err != nil {
+		return nil, err
+	}
+
+	player, err := ResultToPlayer(result)
+	if err != nil {
+		return nil, err
+	}
+
+	discord, err := ResultToDiscord(result)
+	if err != nil {
+		return nil, err
+	}
+	return &LinkedWith{
+		LinkedAt: linkedAt,
+		Player:   *player,
+		Discord:  *discord,
 	}, nil
 }
