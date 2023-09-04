@@ -89,12 +89,18 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 				continue
 			}
 
-			conn.WriteMessage(websocket.TextMessage, jsonResponse)
+			err = conn.WriteMessage(websocket.TextMessage, jsonResponse)
+			if err != nil {
+				break
+			}
 
 			err = json.NewEncoder(w).Encode(result)
 			if err != nil {
-				http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
-				return
+				err := conn.WriteMessage(websocket.TextMessage, []byte("could not send response"))
+				if err != nil {
+					break
+				}
+				break
 			}
 		}
 	})

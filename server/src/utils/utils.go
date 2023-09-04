@@ -54,6 +54,13 @@ func MaxOutAt(input int64, max int64) int64 {
 	if input > max {
 		return max
 	}
-
 	return input
+}
+
+func TrimStringUntil(s, substr string) string {
+	index := strings.Index(s, substr)
+	if index == -1 {
+		return s
+	}
+	return s[index:]
 }
