@@ -63,7 +63,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 				Context:       ctx,
 			})
 			if len(result.Errors) != 0 {
-				fmt.Println(result.Errors[0].Message) // TODO fix "interface conversion: interface is nil, not neo4j.DriverWithContext"
+				fmt.Println(result.Errors[0].Message)
 				err := conn.WriteMessage(websocket.TextMessage, []byte(result.Errors[0].Message))
 				if err != nil {
 					break
