@@ -25,5 +25,5 @@ func Log(msg string, color string) {
 		}
 	}
 	msg = strings.Join(lines, "\n")
-	fmt.Printf("\u001B[1m(%s%s\033[37m) \u001B[0m%s", color, formattedTime, msg)
+	fmt.Printf("\u001B[1m(%s%s\033[37m) \u001B[0m%s\n", color, formattedTime, msg)
 }

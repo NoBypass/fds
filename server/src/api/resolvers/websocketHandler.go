@@ -8,6 +8,8 @@ import (
 	"github.com/graphql-go/graphql"
 	"net/http"
 	"server/src/api/handlers"
+	"server/src/api/handlers/logger"
+	"server/src/utils"
 )
 
 var upgrader = websocket.Upgrader{
@@ -35,11 +37,37 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 			ctx = context.WithValue(ctx, "claims", claims)
 		}
 
-		// TODO rate limit
+		requestLimit := 3
+		if claims != nil {
+			switch claims.Role {
+			case "admin":
+				requestLimit = -1
+			case "bot":
+				requestLimit = -1
+			case "subscriber":
+				requestLimit = -1
+			case "user":
+				requestLimit = 500
+			}
+		}
+
+		wsId := utils.GenerateUUID(claims)
+		if claims != nil {
+			logger.Log(fmt.Sprintf("websocket connection opened with '%s' with role '%s', ID:%s", claims.StandardClaims.Subject, claims.Role, wsId), logger.SUCCESS)
+		} else {
+			logger.Log("anonymous websocket connection opened, ID:"+wsId, logger.WARN)
+		}
 
 		for {
 			_, msgBytes, err := conn.ReadMessage()
 			if err != nil {
+				logger.Log("client disconnected, ID:"+wsId, logger.INFO)
+				break
+			}
+
+			requestLimit--
+			if requestLimit == 0 {
+				logger.Log("disconnecting websocket connection due to rate limit, ID:"+wsId, logger.INFO)
 				break
 			}
 
@@ -52,6 +80,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 			if err != nil {
 				err := conn.WriteMessage(websocket.TextMessage, []byte("invalid request"))
 				if err != nil {
+					logger.Error(fmt.Errorf("disconnecting; could not send response: %w, ID:%s", err, wsId))
 					break
 				}
 				continue
@@ -66,6 +95,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 				fmt.Println(result.Errors[0].Message)
 				err := conn.WriteMessage(websocket.TextMessage, []byte(result.Errors[0].Message))
 				if err != nil {
+					logger.Error(fmt.Errorf("disconnecting; could not send response: %w, ID:%s", err, wsId))
 					break
 				}
 				continue
@@ -82,8 +112,8 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 
 			jsonResponse, err := json.Marshal(response)
 			if err != nil {
-				err := conn.WriteMessage(websocket.TextMessage, []byte("could not send response"))
 				if err != nil {
+					logger.Error(fmt.Errorf("disconnecting; could not send response: %w, ID:%s", err, wsId))
 					break
 				}
 				continue
@@ -91,6 +121,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 
 			err = conn.WriteMessage(websocket.TextMessage, jsonResponse)
 			if err != nil {
+				logger.Error(fmt.Errorf("disconnecting; could not send response: %w, ID:%s", err, wsId))
 				break
 			}
 
@@ -98,6 +129,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 			if err != nil {
 				err := conn.WriteMessage(websocket.TextMessage, []byte("could not send response"))
 				if err != nil {
+					logger.Error(fmt.Errorf("disconnecting; could not send response: %w, ID:%s", err, wsId))
 					break
 				}
 				break
