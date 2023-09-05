@@ -51,23 +51,23 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 			}
 		}
 
-		wsId := utils.GenerateUUID(claims)
+		id := utils.GenerateUUID(claims)
 		if claims != nil {
-			logger.Log(fmt.Sprintf("websocket connection opened with '%s' with role '%s', ID:%s", claims.StandardClaims.Subject, claims.Role, wsId), logger.SUCCESS)
+			logger.Log(fmt.Sprintf("websocket connection opened with '%s' with role '%s'", claims.StandardClaims.Subject, claims.Role), logger.SUCCESS, id)
 		} else {
-			logger.Log("anonymous websocket connection opened, ID:"+wsId, logger.WARN)
+			logger.Log("anonymous websocket connection opened", logger.WARN, id)
 		}
 
 		for {
 			_, msgBytes, err := conn.ReadMessage()
 			if err != nil {
-				logger.Log("client disconnected, ID:"+wsId, logger.INFO)
+				logger.Log("client disconnected", logger.INFO, id)
 				break
 			}
 
 			requestLimit--
 			if requestLimit == 0 {
-				logger.Log("disconnecting websocket connection due to rate limit, ID:"+wsId, logger.INFO)
+				logger.Log("disconnecting websocket connection due to rate limit", logger.INFO, id)
 				break
 			}
 
@@ -80,7 +80,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 			if err != nil {
 				err := conn.WriteMessage(websocket.TextMessage, []byte("invalid request"))
 				if err != nil {
-					logger.Error(fmt.Errorf("disconnecting; could not send response: %w, ID:%s", err, wsId))
+					logger.Error(fmt.Errorf("disconnecting; could not send response: %w", err), id)
 					break
 				}
 				continue
@@ -95,7 +95,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 				fmt.Println(result.Errors[0].Message)
 				err := conn.WriteMessage(websocket.TextMessage, []byte(result.Errors[0].Message))
 				if err != nil {
-					logger.Error(fmt.Errorf("disconnecting; could not send response: %w, ID:%s", err, wsId))
+					logger.Error(fmt.Errorf("disconnecting; could not send response: %w", err), id)
 					break
 				}
 				continue
@@ -113,7 +113,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 			jsonResponse, err := json.Marshal(response)
 			if err != nil {
 				if err != nil {
-					logger.Error(fmt.Errorf("disconnecting; could not send response: %w, ID:%s", err, wsId))
+					logger.Error(fmt.Errorf("disconnecting; could not send response: %w", err), id)
 					break
 				}
 				continue
@@ -121,7 +121,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 
 			err = conn.WriteMessage(websocket.TextMessage, jsonResponse)
 			if err != nil {
-				logger.Error(fmt.Errorf("disconnecting; could not send response: %w, ID:%s", err, wsId))
+				logger.Error(fmt.Errorf("disconnecting; could not send response: %w", err), id)
 				break
 			}
 
@@ -129,7 +129,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 			if err != nil {
 				err := conn.WriteMessage(websocket.TextMessage, []byte("could not send response"))
 				if err != nil {
-					logger.Error(fmt.Errorf("disconnecting; could not send response: %w, ID:%s", err, wsId))
+					logger.Error(fmt.Errorf("disconnecting; could not send response: %w", err), id)
 					break
 				}
 				break

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Error(err error) {
+func Error(err error, args ...string) {
 	if err == nil {
 		return
 	}
@@ -30,5 +30,5 @@ func Error(err error) {
 		}
 	}
 
-	Log(errorMessage+debugInfo, ERROR)
+	Log(errorMessage+debugInfo, ERROR, args...)
 }

@@ -15,7 +15,7 @@ const (
 	RESET   = "\033[0m"
 )
 
-func Log(msg string, color string) {
+func Log(msg string, color string, args ...string) {
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("15.04.05")
 	lines := strings.Split(msg, "\n")
@@ -25,5 +25,6 @@ func Log(msg string, color string) {
 		}
 	}
 	msg = strings.Join(lines, "\n")
-	fmt.Printf("\u001B[1m(%s%s\033[37m) \u001B[0m%s\n", color, formattedTime, msg)
+	argsString := GREY + strings.Join(args, ", ") + RESET + " "
+	fmt.Printf("\u001B[1m(%s%s\033[37m) %s\u001B[0m%s\n", color, formattedTime, argsString, msg)
 }
