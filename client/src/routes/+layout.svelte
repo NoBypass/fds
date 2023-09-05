@@ -7,14 +7,13 @@
     import Divider from '$lib/components/Divider.svelte'
     import Button from '$lib/components/Button.svelte'
     import SigninModal from '$lib/components/Modals/SigninModal.svelte'
-    import { signin } from '$lib/api/signin'
     import ConfirmationModal from '$lib/components/Modals/ConfirmationModal.svelte'
     import SuccessModal from '$lib/components/Modals/SuccessModal.svelte'
     import Avatar from '$lib/components/Avatar.svelte'
     import Dropdown from '$lib/components/Dropdown.svelte'
     import DropdownItem from '$lib/components/DropdownItem.svelte'
     import Alertbox from '$lib/components/Alertbox.svelte'
-    import { alertStore } from '$lib/stores/alertStore'
+    import { ws } from '$lib/stores/websocket'
 
     let showCommandPalette = false
     let showSigninModal = false
@@ -37,17 +36,20 @@
     }
 
     const submitInfo = async (info: CustomEvent) => {
-        const res = await signin(info.detail)
-        let token
-        let self: string | undefined
-        if (typeof res !== 'string') {
-            token = res.data.token
-            self = res.data.username
-        }
+        const data: {
+            name: string
+            password: string
+            remember: boolean
+        } = info.detail
+        const res = await $ws.query<{readonly token: string, readonly name: string}>(`mutation {
+            signin(name: "${data.name}", password: "${data.password}", remember: ${data.remember}) {
+                token, name
+            }
+        }`, 'signin:'+data.name)
 
-        if (token) {
-            localStorage.setItem('token', token)
-            if (self) localStorage.setItem('self', self)
+        if (res.token && res.name) {
+            localStorage.setItem('token', res.token)
+            localStorage.setItem('self', res.name)
             showSuccessModal = true
         } else {
             showConfirmationModal = true

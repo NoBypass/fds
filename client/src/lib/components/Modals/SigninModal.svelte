@@ -7,15 +7,14 @@
     import Text from '$lib/components/Text.svelte'
     import { createEventDispatcher } from 'svelte'
     import Spinner from '$lib/components/Spinner.svelte'
-    import { makeGraphQLRequest } from '$lib/api/graphql.js'
-    import type { Player } from '$lib/types/hypixel'
+    import { ws } from '$lib/stores/websocket'
 
     export let open = false
 
     let isValid = false
     const errors = {
         password: '',
-        username: ''
+        name: ''
     }
     const pwdChecks = [
         {
@@ -49,12 +48,12 @@
     ]
     const usrChecks = [
         {
-            name: 'Username must be between 1 and 16 characters long',
-            check: () => username.length > 0 && username.length <= 16
+            name: 'name must be between 1 and 16 characters long',
+            check: () => name.length > 0 && name.length <= 16
         },
         {
-            name: 'Username must only contain letters, numbers, and underscores',
-            check: () => /^[a-zA-Z0-9_]+$/.test(username)
+            name: 'name must only contain letters, numbers, and underscores',
+            check: () => /^[a-zA-Z0-9_]+$/.test(name)
         }
     ]
     let prev = {
@@ -63,20 +62,20 @@
     }
 
     let playerStatus: undefined | 'loading' | 'success'
-    let username = ''
+    let name = ''
     let password = ''
     let remember = false
 
     $: {
-        if (username !== '' && username != prev.val) {
+        if (name !== '' && name != prev.val) {
             prev.at = Date.now()
-            prev.val = username
+            prev.val = name
 
             playerStatus = 'loading'
             const delay = 700
 
             setTimeout(() => {
-                if (Date.now() - prev.at >= delay && errors.username === '') {
+                if (Date.now() - prev.at >= delay && errors.name === '') {
                     fetchPlayer()
                 } else playerStatus = undefined
             }, delay)
@@ -84,16 +83,16 @@
     }
 
     const fetchPlayer = async () => {
-        await makeGraphQLRequest<Player>(`query {
-            player(name: "${username}") {
+        await $ws.query<{readonly name: string}>(`query {
+            player(name: "${name}") {
                 name
             }
-        }`).then(res => {
-            if (typeof res !== 'string' && res.data && res.data.name) {
+        }`, 'player:'+name).then(res => {
+            if (res.name) {
                 playerStatus = 'success'
             } else {
                 playerStatus = undefined
-                errors.username = 'Player not found'
+                errors.name = 'Player not found'
             }
         })
     }
@@ -103,9 +102,9 @@
         const pwd = pwdChecks.filter(check => !check.check())[0]?.name
         errors.password = pwd ? pwd : ''
         const usr = usrChecks.filter(check => !check.check())[0]?.name
-        errors.username = usr ? usr : ''
+        errors.name = usr ? usr : ''
         if (password.length === 0) errors.password = ''
-        if (username.length === 0) errors.username = ''
+        if (name.length === 0) errors.name = ''
     }
 
     const dispatch = createEventDispatcher()
@@ -116,13 +115,13 @@
 
     const submit = () => {
         dispatch('submit', {
-            username,
+            name,
             password,
             remember
         })
     }
     let userInputColor: 'neutral' | 'error' | 'success' | 'warning'
-    $: userInputColor = errors.username.length !== 0 ? 'error' : username.length === 0 ? 'neutral' : playerStatus === 'loading' ? 'warning' : 'success'
+    $: userInputColor = errors.name.length !== 0 ? 'error' : name.length === 0 ? 'neutral' : playerStatus === 'loading' ? 'warning' : 'success'
 </script>
 
 <Modal open={open} on:close={close} tw="h-160 flex space-between">
@@ -140,16 +139,16 @@
 
             <div>
                 <Input color={userInputColor}
-                       bind:value={username}
-                       light rounded placeholder="Minecraft username" tw="mt-12 w-full">
+                       bind:value={name}
+                       light rounded placeholder="Minecraft name" tw="mt-12 w-full">
                     <div slot="right">
                         {#if (playerStatus === 'success')}
-                            <img src="https://minotar.net/avatar/{username}" alt="mc-head" class="h-6 w-6 rounded-md {userInputColor === 'success' ? '' : 'hidden'}">
+                            <img src="https://minotar.net/avatar/{name}" alt="mc-head" class="h-6 w-6 rounded-md {userInputColor === 'success' ? '' : 'hidden'}">
                         {/if}
                         <Spinner color="warning" tw="{playerStatus !== 'loading' ? 'hidden' : ''}" />
                     </div>
                 </Input>
-                <Text tw="mt-2" color="error" b>{errors.username}</Text>
+                <Text tw="mt-2" color="error" b>{errors.name}</Text>
 
                 <Input password color={errors.password.length !== 0 ? 'error' : password.length === 0 ? 'neutral' : 'success'}
                        bind:value={password} light rounded placeholder="Password" tw="mt-10 w-full" />
