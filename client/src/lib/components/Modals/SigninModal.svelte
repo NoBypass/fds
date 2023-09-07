@@ -5,9 +5,9 @@
     import Checkbox from '$lib/components/Checkbox.svelte'
     import Modal from '$lib/components/Modal.svelte'
     import Text from '$lib/components/Text.svelte'
-    import { createEventDispatcher } from 'svelte'
+    import { createEventDispatcher, onMount } from 'svelte'
     import Spinner from '$lib/components/Spinner.svelte'
-    import { ws } from '$lib/stores/websocket'
+    import { api } from '$lib/stores/websocket'
 
     export let open = false
 
@@ -65,6 +65,9 @@
     let name = ''
     let password = ''
     let remember = false
+    let ws: undefined | WebSocket
+
+    onMount(() => ws = new WebSocket('ws://localhost:8080/ws')) // TODO: use env variable
 
     $: {
         if (name !== '' && name != prev.val) {
@@ -83,7 +86,8 @@
     }
 
     const fetchPlayer = async () => {
-        await $ws.query<{readonly name: string}>(`query {
+        if (!ws) return
+        await $api.connect(ws).query<{readonly name: string}>(`query {
             player(name: "${name}") {
                 name
             }

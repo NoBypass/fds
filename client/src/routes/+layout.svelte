@@ -13,13 +13,17 @@
     import Dropdown from '$lib/components/Dropdown.svelte'
     import DropdownItem from '$lib/components/DropdownItem.svelte'
     import Alertbox from '$lib/components/Alertbox.svelte'
-    import { ws } from '$lib/stores/websocket'
+    import { api } from '$lib/stores/websocket'
+    import { onMount } from 'svelte'
 
     let showCommandPalette = false
     let showSigninModal = false
     let showSuccessModal = false
     let showConfirmationModal = false
     let token: string | undefined
+    let ws: WebSocket | undefined
+
+    onMount(() => ws = new WebSocket('ws://localhost:8080/ws')) // TODO: use env variable
 
     $: if (typeof localStorage !== 'undefined' && showSuccessModal != undefined) {
         token = localStorage.getItem('token') || undefined
@@ -36,12 +40,13 @@
     }
 
     const submitInfo = async (info: CustomEvent) => {
+        if (!ws) return
         const data: {
             name: string
             password: string
             remember: boolean
         } = info.detail
-        const res = await $ws.query<{readonly token: string, readonly name: string}>(`mutation {
+        const res = await $api.connect(ws).query<{readonly token: string, readonly name: string}>(`mutation {
             signin(name: "${data.name}", password: "${data.password}", remember: ${data.remember}) {
                 token, name
             }

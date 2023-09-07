@@ -1,20 +1,24 @@
 import { readable } from 'svelte/store'
-import WebSocket_2 from 'vite'
-import WebSocket = WebSocket_2.WebSocket;
 import type { WsResponse } from '$lib/types/api'
 
-const instance = new WebSocket('ws://localhost:8080/ws') // TODO: use env variable
+type Data = string | Buffer | ArrayBuffer | Buffer[]
+interface MessageEvent {
+    data: Data
+    type: string
+    target: WebSocket
+}
 
-const api = {
-    query: async <T> (query: string, operationName?: string) => {
-        try {
-            return await newWsRequest<T>(instance, query, operationName || '')
-        } catch (error) {
-            console.error('WebSocket request error:', error)
-            throw error
-        }
-    },
-    instance
+const schema = (instance: WebSocket) => {
+    return {
+        query: async <T> (query: string, operationName?: string) => {
+            try {
+                return await newWsRequest<T>(instance, query, operationName || '')
+            } catch (error) {
+                console.error('WebSocket request error:', error)
+                throw error
+            }
+        },
+    }
 }
 
 const newWsRequest = <T>(
@@ -28,13 +32,15 @@ const newWsRequest = <T>(
             reject(new Error('WebSocket request timed out'))
         }, timeoutDuration)
 
-        const handleMessage = (event: WebSocket.MessageEvent) => {
+        const handleMessage = (event: MessageEvent) => {
             try {
                 const response: WsResponse<T> = JSON.parse(event.data as string)
                 if (response.operationName === opName) {
                     clearTimeout(timeout)
                     if (response.errors) reject(new Error('WebSocket request failed'))
                     else resolve(response.data)
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
                     ws.removeEventListener('message', handleMessage)
                 }
             } catch (error) {
@@ -42,6 +48,8 @@ const newWsRequest = <T>(
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         ws.addEventListener('message', handleMessage)
 
         ws.send(JSON.stringify({
@@ -52,5 +60,9 @@ const newWsRequest = <T>(
     })
 }
 
-
-export const ws = readable(api)
+export const api = readable({
+    connect: (instance: WebSocket) => {
+        return schema(instance)
+    },
+    // graph: ...
+})
