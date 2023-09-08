@@ -6,6 +6,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 	"net/http"
+	"server/src/api/handlers/logger"
 )
 
 func GraphQLHandler(schema *graphql.Schema, ctx context.Context) http.Handler {
@@ -22,7 +23,8 @@ func GraphQLHandler(schema *graphql.Schema, ctx context.Context) http.Handler {
 			ctx = context.WithValue(ctx, "response", w)
 
 			var requestBody struct {
-				Query string `json:"query"`
+				Query         string `json:"query"`
+				OperationName string `json:"operationName"`
 			}
 			if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 				http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -44,6 +46,7 @@ func GraphQLHandler(schema *graphql.Schema, ctx context.Context) http.Handler {
 				http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
 				return
 			}
+			logger.Log("GraphQL query executed", logger.SUCCESS, requestBody.OperationName)
 		} else {
 			h.ServeHTTP(w, r)
 		}

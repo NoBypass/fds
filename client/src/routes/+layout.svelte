@@ -21,9 +21,6 @@
     let showSuccessModal = false
     let showConfirmationModal = false
     let token: string | undefined
-    let ws: WebSocket | undefined
-
-    onMount(() => ws = new WebSocket('ws://localhost:8080/ws')) // TODO: use env variable
 
     $: if (typeof localStorage !== 'undefined' && showSuccessModal != undefined) {
         token = localStorage.getItem('token') || undefined
@@ -40,13 +37,12 @@
     }
 
     const submitInfo = async (info: CustomEvent) => {
-        if (!ws) return
         const data: {
             name: string
             password: string
             remember: boolean
         } = info.detail
-        const res = await $api.connect(ws).query<{readonly token: string, readonly name: string}>(`mutation {
+        const res = await $api.graphql.query<{readonly token: string, readonly name: string}>(`mutation {
             signin(name: "${data.name}", password: "${data.password}", remember: ${data.remember}) {
                 token, name
             }
@@ -56,9 +52,7 @@
             localStorage.setItem('token', res.token)
             localStorage.setItem('self', res.name)
             showSuccessModal = true
-        } else {
-            showConfirmationModal = true
-        }
+        } else showConfirmationModal = true
     }
 </script>
 

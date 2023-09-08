@@ -65,9 +65,6 @@
     let name = ''
     let password = ''
     let remember = false
-    let ws: undefined | WebSocket
-
-    onMount(() => ws = new WebSocket('ws://localhost:8080/ws')) // TODO: use env variable
 
     $: {
         if (name !== '' && name != prev.val) {
@@ -86,12 +83,12 @@
     }
 
     const fetchPlayer = async () => {
-        if (!ws) return
-        await $api.connect(ws).query<{readonly name: string}>(`query {
+        await $api.graphql.query<{readonly name: string}>(`query {
             player(name: "${name}") {
                 name
             }
         }`, 'player:'+name).then(res => {
+            console.log(res)
             if (res.name) {
                 playerStatus = 'success'
             } else {

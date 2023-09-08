@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"github.com/rs/cors"
 	"net/http"
+	"server/src/api/handlers/logger"
 	"server/src/api/resolvers"
 	"server/src/graph/generated"
 	"server/src/utils"
 )
 
 func main() {
-	fmt.Println("Starting server...")
+	logger.Log("Starting server...", logger.INFO)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
@@ -19,10 +20,17 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	_, ctx, _ := utils.ConnectDB()
+	_, ctx, err := utils.ConnectDB()
+	if err != nil {
+		logger.Error(err)
+		return
+	} else {
+		logger.Log("Connected to database", logger.SUCCESS)
+	}
+
 	http.Handle("/ws", resolvers.WebSocketHandler(&generated.RootSchema, ctx))
 	http.Handle("/graphql", c.Handler(resolvers.GraphQLHandler(&generated.RootSchema, ctx)))
-	err := http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 		return

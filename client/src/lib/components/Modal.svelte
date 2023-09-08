@@ -4,8 +4,9 @@
     import Close from '$lib/assets/icons/Close.svelte'
     import { twMerge } from 'tailwind-merge'
 
-    export let open = false
+    export let preventClose = false
     export let closeX = true
+    export let open = false
     export let tw = ''
 
     let lastOpenTime = 0
@@ -13,6 +14,7 @@
     let dispatch = createEventDispatcher()
 
     const close = (event: Event) => {
+        if (preventClose) return
         open = false
         dispatch('close', event)
     }

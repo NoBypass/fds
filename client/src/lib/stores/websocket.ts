@@ -64,5 +64,23 @@ export const api = readable({
     connect: (instance: WebSocket) => {
         return schema(instance)
     },
-    // graph: ...
+    graphql: {
+        query: async <T>(query: string, operationName?: string) => {
+            const res = await fetch('http://localhost:8080/graphql', { // TODO: use env variable
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    operationName: operationName || '',
+                    query: query.replace(/\s+/g, ''),
+                    variables: {},
+                }),
+            })
+            return (await res.json() as {
+                data: {
+                    [key: string]: T
+                }}).data[query.split('{')[1].split('(')[0].trim()]
+        },
+    },
 })

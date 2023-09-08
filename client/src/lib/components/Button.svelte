@@ -2,9 +2,10 @@
     import { createEventDispatcher } from 'svelte'
     import { twMerge } from 'tailwind-merge'
 
+    export let disabled = false
     export let rounded = false
     export let color: 'primary' | 'neutral' | 'transparent' = 'primary'
-    export let disabled = false
+    export let href = ''
     export let tw = ''
 
     const colors = {
@@ -20,6 +21,8 @@
 
         dispatch('click', e)
         if (buttonRef) {
+            if (href != '') window.open(href)
+
             const ripple = document.createElement('span')
             ripple.style.left = `${e.offsetX}px`
             ripple.style.top = `${e.offsetY}px`
@@ -28,7 +31,6 @@
             buttonRef.appendChild(ripple)
             setTimeout(() => ripple.remove(), 400)
         }
-
     }
 </script>
 
