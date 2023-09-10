@@ -1,15 +1,9 @@
 type Discord {
-    discordId: String!
     name: String!
+    lastDailyAt: Int
+    discordId: String
+    streak: Int
     level: Int
     xp: Int
-    streak: Int
-    lastDailyAt: Int
-    linkedWith: LinkedWith
-}
-
-type LinkedWith {
-    linkedAt: Int!
-    player: Player!
-    discord: Discord!
+    verifiedWith: VerifiedWith
 }

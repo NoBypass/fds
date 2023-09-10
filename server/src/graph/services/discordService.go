@@ -19,7 +19,7 @@ func CreateDiscordMutation(ctx context.Context, input *models.CreateDiscordInput
 		return nil, err
 	}
 
-	return models.ResultToDiscord(result)
+	return utils.MapResult(&models.Discord{}, result, "d")
 }
 
 func DiscordQuery(ctx context.Context, input *models.DiscordInput) (*models.Discord, error) {
@@ -28,7 +28,7 @@ func DiscordQuery(ctx context.Context, input *models.DiscordInput) (*models.Disc
 		return nil, err
 	}
 
-	return models.ResultToDiscord(result)
+	return utils.MapResult(&models.Discord{}, result, "d")
 }
 
 func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Discord, error) {
@@ -47,7 +47,7 @@ func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Dis
 	}
 
 	handlers.CheckIfFound(ctx, result, "could not find discord with id "+input.DiscordId)
-	discord, err := models.ResultToDiscord(result)
+	discord, err := utils.MapResult(&models.Discord{}, result, "d")
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Dis
 	if err != nil {
 		return nil, err
 	}
-	discord, err = models.ResultToDiscord(result)
+	discord, err = utils.MapResult(&models.Discord{}, result, "d")
 	if err != nil {
 		return nil, err
 	}

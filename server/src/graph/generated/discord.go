@@ -10,11 +10,17 @@ import (
 
 var DiscordType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Discord", Fields: graphql.Fields{
-		"discordId": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
-		},
 		"name": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
+		},
+		"lastDailyAt": &graphql.Field{
+			Type: graphql.Int,
+		},
+		"discordId": &graphql.Field{
+			Type: graphql.String,
+		},
+		"streak": &graphql.Field{
+			Type: graphql.Int,
 		},
 		"level": &graphql.Field{
 			Type: graphql.Int,
@@ -22,34 +28,12 @@ var DiscordType = graphql.NewObject(graphql.ObjectConfig{
 		"xp": &graphql.Field{
 			Type: graphql.Int,
 		},
-		"streak": &graphql.Field{
-			Type: graphql.Int,
+		"verifiedWith": &graphql.Field{
+			Type: VerifiedWithType,
 		},
-		"lastDailyAt": &graphql.Field{
-			Type: graphql.Int,
-		},
-		//"linkedWith": &graphql.Field{
-		//	Type: LinkedWithType,
-		//},
 	},
 },
 )
-
-//	var LinkedWithType = graphql.NewObject(graphql.ObjectConfig{
-//		Name: "LinkedWith", Fields: graphql.Fields{
-//			"linkedAt": &graphql.Field{
-//				Type: graphql.NewNonNull(graphql.Int),
-//			},
-//			"player": &graphql.Field{
-//				Type: graphql.NewNonNull(PlayerType),
-//			},
-//			"discord": &graphql.Field{
-//				Type: graphql.NewNonNull(DiscordType),
-//			},
-//		},
-//	},
-//
-// )
 var DiscordQuery = &graphql.Field{
 	Type: DiscordType,
 	Args: graphql.FieldConfigArgument{
@@ -102,42 +86,3 @@ var GiveXpMutation = &graphql.Field{
 		return services.GiveXpMutation(p.Context, input)
 	},
 }
-
-//var CreateDiscordSubscription = &graphql.Field{
-//	Type: DiscordType,
-//	Args: graphql.FieldConfigArgument{
-//		"discordId": &graphql.ArgumentConfig{
-//			Type: graphql.NewNonNull(graphql.String),
-//		},
-//		"name": &graphql.ArgumentConfig{
-//			Type: graphql.NewNonNull(graphql.String),
-//		},
-//	},
-//	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-//		input := &models.CreateDiscordInput{
-//			DiscordId: p.Args["discordId"].(string),
-//			Name: p.Args["name"].(string),		}
-//
-//		return services.CreateDiscordSubscription(p.Context, input)
-//	},
-//}
-//
-//var GiveXpSubscription = &graphql.Field{
-//	Type: DiscordType,
-//	Args: graphql.FieldConfigArgument{
-//		"discordId": &graphql.ArgumentConfig{
-//			Type: graphql.NewNonNull(graphql.String),
-//		},
-//		"amount": &graphql.ArgumentConfig{
-//			Type: graphql.NewNonNull(graphql.Int),
-//		},
-//	},
-//	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-//		input := &models.GiveXpInput{
-//			DiscordId: p.Args["discordId"].(string),
-//			Amount: p.Args["amount"].(int64),		}
-//
-//		return services.GiveXpSubscription(p.Context, input)
-//	},
-//}
-//

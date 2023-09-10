@@ -1,4 +1,11 @@
 type Player {
     uuid: String!
     name: String!
+    verifiedWith: VerifiedWith
+}
+
+type VerifiedWith {
+    verifiedAt: String!
+    player: Player!
+    discord: Discord!
 }

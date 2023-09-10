@@ -18,7 +18,7 @@ func AccountQuery(ctx context.Context, input *models.AccountInput) (*models.Acco
 		return nil, err
 	}
 
-	return models.ResultToAccount(result)
+	return utils.MapResult(&models.Account{}, result, "a")
 }
 
 func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Signin, error) {
@@ -43,7 +43,7 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 		}
 	}
 
-	account, err := models.ResultToAccount(result)
+	account, err := utils.MapResult(&models.Account{}, result, "a")
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 	return &models.Signin{
 		Token:   token,
 		Role:    claims.Role,
-		Account: *account,
+		Account: account,
 	}, nil
 }
 
@@ -83,7 +83,7 @@ func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin
 
 	handlers.CheckIfFound(ctx, result, "couldn't find account with name "+input.Name)
 
-	account, err := models.ResultToAccount(result)
+	account, err := utils.MapResult(&models.Account{}, result, "a")
 	if err != nil {
 		return nil, err
 	}
@@ -97,6 +97,6 @@ func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin
 	return &models.Signin{
 		Token:   token,
 		Role:    claims.Role,
-		Account: *account,
+		Account: account,
 	}, nil
 }

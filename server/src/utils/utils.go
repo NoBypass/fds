@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"reflect"
 	"strings"
 	"time"
 	"unicode"
@@ -63,4 +65,38 @@ func TrimStringUntil(s, substr string) string {
 		return s
 	}
 	return s[index:]
+}
+
+func MapResult[T any](input *T, result *neo4j.EagerResult, indexLetter string) (*T, error) {
+	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], indexLetter)
+	if err != nil {
+		return nil, err
+	}
+
+	inputValue := *input
+	inputType := reflect.TypeOf(input)
+	for i := 0; i < inputType.NumField(); i++ {
+		field := inputType.Field(i)
+		fieldType := field.Type
+		jsonTag := field.Tag.Get("json")
+
+		var val interface{}
+		switch fieldType.Kind() {
+		case reflect.String:
+			val, err = neo4j.GetProperty[string](r, jsonTag)
+		case reflect.Int64:
+			val, err = neo4j.GetProperty[int64](r, jsonTag)
+		case reflect.Bool:
+			val, err = neo4j.GetProperty[bool](r, jsonTag)
+		case reflect.Float64:
+			val, err = neo4j.GetProperty[float64](r, jsonTag)
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		reflect.ValueOf(&inputValue).Elem().Field(i).Set(reflect.ValueOf(val))
+	}
+	*input = inputValue
+	return input, nil
 }

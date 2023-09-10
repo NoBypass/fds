@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"server/src/graph/generated/models"
 	"server/src/repository"
+	"server/src/utils"
 )
 
 func PlayerQuery(ctx context.Context, input *models.PlayerInput) (*models.Player, error) {
@@ -17,8 +18,9 @@ func PlayerQuery(ctx context.Context, input *models.PlayerInput) (*models.Player
 		return nil, err
 	}
 
+	var p *models.Player
 	if result.Records != nil || len(result.Records) > 0 {
-		return models.ResultToPlayer(result)
+		return utils.MapResult(p, result, "p")
 	}
 
 	var url = "https://api.mojang.com/users/profiles/minecraft/" + input.Name
@@ -41,5 +43,5 @@ func PlayerQuery(ctx context.Context, input *models.PlayerInput) (*models.Player
 		return nil, err
 	}
 
-	return models.ResultToPlayer(result)
+	return utils.MapResult(p, result, "p")
 }

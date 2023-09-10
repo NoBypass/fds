@@ -65,6 +65,9 @@ func GenerateSchema(schema string, root string) (string, string) {
 		returns := []string{fmt.Sprintf("\treturn &%s{", t.Name)}
 
 		for _, field := range t.Fields {
+			if !IsGraphQLType(field.GraphQLType) {
+				field.GoType = "*" + field.GoType
+			}
 			structs = append(structs, fmt.Sprintf("\t%s %s `json:\"%s\"`", field.GoName, field.GoType, field.JsonName))
 
 			pointer := ""
@@ -77,7 +80,7 @@ func GenerateSchema(schema string, root string) (string, string) {
 				nonnullString = fmt.Sprintf("graphql.NewNonNull(%s)", nonnullString)
 			}
 			types = append(types, fmt.Sprintf("\t\t\t\"%s\": &graphql.Field{\n\t\t\t\tType: %s,\n\t\t\t},", field.GraphQLName, nonnullString))
-			returns = append(returns, fmt.Sprintf("\t\t%s: %s%s,", field.GoName, pointer, field.GraphQLName))
+			returns = append(returns, fmt.Sprintf("\t\t%s: %s%s,", field.GoName, pointer, strings.Replace(field.GraphQLName, "*", "&", -1)))
 			if IsGraphQLType(field.GraphQLType) {
 				mappers = append(mappers, fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](r, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GoType, field.JsonName))
 			} else {
@@ -115,7 +118,7 @@ func GenerateSchema(schema string, root string) (string, string) {
 		types = append(types, "\t\t},\n\t},\n)\n")
 		returns = append(returns, "\t}, nil\n}\n")
 
-		models = append(models, strings.Join(structs, "\n")+strings.Join(mappers, "\n")+strings.Join(returns, "\n"))
+		models = append(models, strings.Join(structs, "\n")) // +strings.Join(mappers, "\n")+strings.Join(returns, "\n"))
 		objs = append(objs, strings.Join(types, "\n"))
 	}
 

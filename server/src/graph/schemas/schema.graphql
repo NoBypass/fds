@@ -10,8 +10,3 @@ type Mutation {
     createDiscord(discordId: String!, name: String!): Discord
     giveXp(discordId: String!, amount: Int!): Discord
 }
-
-type Subscription {
-    createDiscord(discordId: String!, name: String!): Discord
-    giveXp(discordId: String!, amount: Int!): Discord
-}

@@ -8,6 +8,21 @@ import (
 	"server/src/graph/services"
 )
 
+var VerifiedWithType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "VerifiedWith", Fields: graphql.Fields{
+		"verifiedAt": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"player": &graphql.Field{
+			Type: graphql.NewNonNull(PlayerType),
+		},
+		"discord": &graphql.Field{
+			Type: graphql.NewNonNull(DiscordType),
+		},
+	},
+},
+)
+
 var PlayerType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Player", Fields: graphql.Fields{
 		"UUID": &graphql.Field{
@@ -15,6 +30,9 @@ var PlayerType = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"name": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
+		},
+		"verifiedWith": &graphql.Field{
+			Type: VerifiedWithType,
 		},
 	},
 },
