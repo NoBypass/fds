@@ -1,7 +1,5 @@
 package models
 
-import "github.com/neo4j/neo4j-go-driver/v5/neo4j"
-
 // Code automatically generated; DO NOT EDIT.
 
 type ApiKeyInput struct {

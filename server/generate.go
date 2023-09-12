@@ -85,7 +85,7 @@ func main() {
 				return
 			}
 
-			_, err = modelFile.WriteString("package models\n\nimport \"github.com/neo4j/neo4j-go-driver/v5/neo4j\"\n\n// Code automatically generated; DO NOT EDIT.\n\n" + model)
+			_, err = modelFile.WriteString("package models\n\n// Code automatically generated; DO NOT EDIT.\n\n" + model)
 		}
 
 		goFile, err := os.Create(goFilePath)
