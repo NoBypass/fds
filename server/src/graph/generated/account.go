@@ -8,7 +8,7 @@ import (
 	"server/src/graph/services"
 )
 
-var SigninType = graphql.NewObject(graphql.ObjectConfig{
+var signinType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Signin", Fields: graphql.Fields{
 		"token": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
@@ -16,14 +16,11 @@ var SigninType = graphql.NewObject(graphql.ObjectConfig{
 		"role": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
 		},
-		"account": &graphql.Field{
-			Type: graphql.NewNonNull(AccountType),
-		},
 	},
 },
 )
 
-var AccountType = graphql.NewObject(graphql.ObjectConfig{
+var accountType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Account", Fields: graphql.Fields{
 		"name": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
@@ -38,7 +35,7 @@ var AccountType = graphql.NewObject(graphql.ObjectConfig{
 },
 )
 var ApiKeyQuery = &graphql.Field{
-	Type: SigninType,
+	Type: signinType,
 	Args: graphql.FieldConfigArgument{
 		"name": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
@@ -57,7 +54,7 @@ var ApiKeyQuery = &graphql.Field{
 }
 
 var SigninMutation = &graphql.Field{
-	Type: SigninType,
+	Type: signinType,
 	Args: graphql.FieldConfigArgument{
 		"name": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
@@ -80,7 +77,7 @@ var SigninMutation = &graphql.Field{
 }
 
 var AccountQuery = &graphql.Field{
-	Type: AccountType,
+	Type: accountType,
 	Args: graphql.FieldConfigArgument{
 		"name": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),

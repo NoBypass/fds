@@ -8,7 +8,7 @@ import (
 	"server/src/graph/services"
 )
 
-var DiscordType = graphql.NewObject(graphql.ObjectConfig{
+var discordType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Discord", Fields: graphql.Fields{
 		"name": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
@@ -28,14 +28,11 @@ var DiscordType = graphql.NewObject(graphql.ObjectConfig{
 		"xp": &graphql.Field{
 			Type: graphql.Int,
 		},
-		"verifiedWith": &graphql.Field{
-			Type: VerifiedWithType,
-		},
 	},
 },
 )
 var DiscordQuery = &graphql.Field{
-	Type: DiscordType,
+	Type: discordType,
 	Args: graphql.FieldConfigArgument{
 		"discordId": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
@@ -50,7 +47,7 @@ var DiscordQuery = &graphql.Field{
 }
 
 var CreateDiscordMutation = &graphql.Field{
-	Type: DiscordType,
+	Type: discordType,
 	Args: graphql.FieldConfigArgument{
 		"discordId": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
@@ -69,7 +66,7 @@ var CreateDiscordMutation = &graphql.Field{
 }
 
 var GiveXpMutation = &graphql.Field{
-	Type: DiscordType,
+	Type: discordType,
 	Args: graphql.FieldConfigArgument{
 		"discordId": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),

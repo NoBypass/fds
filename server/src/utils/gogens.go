@@ -51,16 +51,17 @@ func GenerateRootSchema(schema string) string {
 	return fmt.Sprintf("import \"github.com/graphql-go/graphql\"\n\n%svar RootSchema, _ = graphql.NewSchema(\n\tgraphql.SchemaConfig{%s\n\t},\n)", strings.Join(lines, "\n"), strings.Join(roots, ""))
 }
 
-func GenerateSchema(schema string, root string) (string, string) {
+func GenerateSchema(schema string, root string) (string, string, string) {
 	objs := make([]string, 0)
 	resolvers := make([]string, 0)
 	models := make([]string, 0)
 	newSchema := schemaToType(schema)
 	newRoot := schemaToType(root)
+	externalTypes := ""
 
 	for _, t := range *newSchema {
 		structs := []string{fmt.Sprintf("type %s struct {", t.Name)}
-		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{\n\tName: \"%s\", Fields: graphql.Fields{", t.Name, t.Name)}
+		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{\n\tName: \"%s\", Fields: graphql.Fields{", FirstLower(t.Name), t.Name)}
 		mappers := []string{fmt.Sprintf("\nfunc ResultTo%s(result *neo4j.EagerResult) (*%s, error) {\n\tr, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name, FirstLower(t.Name)[:1])}
 		returns := []string{fmt.Sprintf("\treturn &%s{", t.Name)}
 
@@ -73,18 +74,20 @@ func GenerateSchema(schema string, root string) (string, string) {
 			pointer := ""
 			nonnullString := "graphql." + field.GraphQLType
 			if !IsGraphQLType(field.GraphQLType) {
-				nonnullString = field.GraphQLType + "Type"
+				nonnullString = FirstLower(field.GraphQLType) + "Type"
 				pointer = "*"
 			}
 			if field.IsRequired {
 				nonnullString = fmt.Sprintf("graphql.NewNonNull(%s)", nonnullString)
 			}
-			types = append(types, fmt.Sprintf("\t\t\t\"%s\": &graphql.Field{\n\t\t\t\tType: %s,\n\t\t\t},", field.GraphQLName, nonnullString))
+
 			returns = append(returns, fmt.Sprintf("\t\t%s: %s%s,", field.GoName, pointer, strings.Replace(field.GraphQLName, "*", "&", -1)))
 			if IsGraphQLType(field.GraphQLType) {
+				types = append(types, fmt.Sprintf("\t\t\t\"%s\": &graphql.Field{\n\t\t\t\tType: %s,\n\t\t\t},", field.GraphQLName, nonnullString))
 				mappers = append(mappers, fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](r, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GoType, field.JsonName))
 			} else {
 				mappers = append(mappers, fmt.Sprintf("\t%s, err := ResultTo%s(result)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GraphQLType))
+				externalTypes += fmt.Sprintf("\t%sType.AddFieldConfig(\"%s\", &graphql.Field{Type: %s})\n", FirstLower(t.Name), field.GraphQLName, nonnullString)
 			}
 		}
 
@@ -94,7 +97,7 @@ func GenerateSchema(schema string, root string) (string, string) {
 					continue
 				}
 
-				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", rootField.GoName+key, t.Name)}
+				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", rootField.GoName+key, FirstLower(t.Name))}
 				inputType := []string{fmt.Sprintf("type %sInput struct {", rootField.GoName)}
 				inputMapper := []string{fmt.Sprintf("\t\tinput := &models.%sInput{", rootField.GoName)}
 
@@ -123,7 +126,7 @@ func GenerateSchema(schema string, root string) (string, string) {
 	}
 
 	return "import (\n\t\"github.com/graphql-go/graphql\"\n\t\"server/src/graph/generated/models\"\n\t\"server/src/graph/services\"\n)" +
-		"\n\n" + strings.Join(objs, "\n") + strings.Join(resolvers, "\n"), strings.Join(models, "\n")
+		"\n\n" + strings.Join(objs, "\n") + strings.Join(resolvers, "\n"), strings.Join(models, "\n"), externalTypes
 }
 
 func schemaToType(schema string) *map[string]Type {

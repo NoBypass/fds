@@ -32,3 +32,11 @@ var RootSchema, _ = graphql.NewSchema(
 		Mutation: rootMutation,
 	},
 )
+
+func InitSchema() {
+	signinType.AddFieldConfig("account", &graphql.Field{Type: graphql.NewNonNull(accountType)})
+	discordType.AddFieldConfig("verifiedWith", &graphql.Field{Type: verifiedWithType})
+	playerType.AddFieldConfig("verifiedWith", &graphql.Field{Type: verifiedWithType})
+	verifiedWithType.AddFieldConfig("player", &graphql.Field{Type: graphql.NewNonNull(playerType)})
+	verifiedWithType.AddFieldConfig("discord", &graphql.Field{Type: graphql.NewNonNull(discordType)})
+}

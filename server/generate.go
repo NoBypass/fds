@@ -38,6 +38,8 @@ func main() {
 
 	var rootSchema string
 	var originalRootSchema string
+	var specialTypes string
+
 	for _, fileInfo := range files {
 		if fileInfo.IsDir() || !strings.HasSuffix(fileInfo.Name(), ".graphql") || !strings.HasPrefix(fileInfo.Name(), "schema") {
 			continue
@@ -51,6 +53,14 @@ func main() {
 
 		originalRootSchema = string(graphqlContent)
 		rootSchema = utils.GenerateRootSchema(string(graphqlContent))
+	}
+
+	for i := 0; i < len(files); i++ {
+		fileInfo := files[i]
+		if strings.HasPrefix(fileInfo.Name(), "schema") {
+			files[i], files[len(files)-1] = files[len(files)-1], files[i]
+			break
+		}
 	}
 
 	for _, fileInfo := range files {
@@ -73,9 +83,10 @@ func main() {
 		content := "package generated\n\n// Code automatically generated; DO NOT EDIT.\n\n"
 
 		if strings.HasPrefix(fileInfo.Name(), "schema") {
-			content += rootSchema
+			content += rootSchema + fmt.Sprintf("\n\nfunc InitSchema() {\n%s}\n", specialTypes)
 		} else {
-			c, model := utils.GenerateSchema(string(graphqlContent), originalRootSchema)
+			c, model, external := utils.GenerateSchema(string(graphqlContent), originalRootSchema)
+			specialTypes += external
 			content += c
 
 			// write file to generated/models containing the model
