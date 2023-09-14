@@ -31,15 +31,11 @@ func main() {
 	http.Handle("/ws", resolvers.WebSocketHandler(&generated.RootSchema, ctx))
 	http.Handle("/graphql", c.Handler(resolvers.GraphQLHandler(&generated.RootSchema, ctx)))
 
-	go func() {
-		err := http.ListenAndServe(":8080", nil)
-		if err != nil {
-			fmt.Println("Error starting server:", err)
-			return
-		}
-	}()
-
 	generated.InitSchema()
 	logger.Log("Server started & graphql initialized", logger.SUCCESS)
-	// dbutils.CloseDB(driver, ctx)
+	err = http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Println("Error starting server:", err)
+		return
+	}
 }
