@@ -89,7 +89,6 @@ func main() {
 			specialTypes += external
 			content += c
 
-			// write file to generated/models containing the model
 			modelFile, err := os.Create(filepath.Join(config.Generated, "models", strings.TrimSuffix(fileInfo.Name(), ".graphql")+"Models.go"))
 			if err != nil {
 				fmt.Println("Error creating model file:", err)
@@ -97,6 +96,10 @@ func main() {
 			}
 
 			_, err = modelFile.WriteString("package models\n\n// Code automatically generated; DO NOT EDIT.\n\n" + model)
+			if err != nil {
+				fmt.Println("Error writing to model file:", err)
+				return
+			}
 		}
 
 		goFile, err := os.Create(goFilePath)
@@ -111,7 +114,6 @@ func main() {
 			fmt.Println("Error writing to Go file:", err)
 		}
 
-		fmt.Println("Generated for file:", fileInfo.Name())
 	}
 	fmt.Println("Finished operation in ", (time.Now().UnixNano()-timestamp)/1000, "ms")
 }
