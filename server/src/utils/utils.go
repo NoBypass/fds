@@ -27,7 +27,7 @@ func GetNowInMs() int64 {
 	return time.Now().UnixMilli()
 }
 
-func convertCamelToSnake(input string) string {
+func ConvertCamelToSnake(input string) string {
 	var output bytes.Buffer
 
 	for i, char := range input {
@@ -74,7 +74,7 @@ func MapResult[T any](input *T, result *neo4j.EagerResult, indexLetter string) (
 	}
 
 	inputValue := *input
-	inputType := reflect.TypeOf(input)
+	inputType := reflect.TypeOf(inputValue)
 	for i := 0; i < inputType.NumField(); i++ {
 		field := inputType.Field(i)
 		fieldType := field.Type

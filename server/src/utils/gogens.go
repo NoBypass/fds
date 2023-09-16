@@ -146,7 +146,7 @@ func schemaToType(schema string) *map[string]Type {
 		} else if propertyRegex.MatchString(line) {
 			property := strings.Trim(strings.Split(line, ":")[0], " ")
 			goProperty := FirstUpper(property)
-			jsonProperty := convertCamelToSnake(property)
+			jsonProperty := ConvertCamelToSnake(property)
 			isRequired := strings.Contains(line, "!")
 
 			trim := strings.Split(line, " ")

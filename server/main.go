@@ -7,6 +7,8 @@ import (
 	"server/src/api/handlers/logger"
 	"server/src/api/resolvers"
 	"server/src/graph/generated"
+	"server/src/graph/generated/models"
+	"server/src/repository/db"
 	"server/src/utils"
 )
 
@@ -27,6 +29,15 @@ func main() {
 	} else {
 		logger.Log("Connected to database", logger.SUCCESS)
 	}
+
+	acc := db.New[models.Account](&ctx)
+	r, err := acc.Create(&models.Account{
+		Name:      "test",
+		Password:  "test",
+		CreatedAt: "test",
+	})
+	fmt.Println(err)
+	fmt.Printf("%#v\n", r)
 
 	http.Handle("/ws", resolvers.WebSocketHandler(&generated.RootSchema, ctx))
 	http.Handle("/graphql", c.Handler(resolvers.GraphQLHandler(&generated.RootSchema, ctx)))
