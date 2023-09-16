@@ -31,10 +31,8 @@ func main() {
 	}
 
 	acc := db.New[models.Account](&ctx)
-	r, err := acc.Create(&models.Account{
-		Name:      "test",
-		Password:  "test",
-		CreatedAt: "test",
+	r, err := acc.Find(&models.Account{
+		Name: "test",
 	})
 	fmt.Println(err)
 	fmt.Printf("%#v\n", r)

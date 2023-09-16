@@ -100,3 +100,17 @@ func MapResult[T any](input *T, result *neo4j.EagerResult, indexLetter string) (
 	*input = inputValue
 	return input, nil
 }
+
+func StructToMap[T any](input *T) (map[string]any, error) {
+	values := make(map[string]any)
+	inputType := reflect.TypeOf(*input)
+	for i := 0; i < inputType.NumField(); i++ {
+		field := inputType.Field(i)
+		value := reflect.ValueOf(input).Elem().FieldByName(field.Name).Interface()
+		if reflect.DeepEqual(value, reflect.Zero(field.Type).Interface()) {
+			continue
+		}
+		values[ConvertCamelToSnake(field.Name)] = value
+	}
+	return values, nil
+}
