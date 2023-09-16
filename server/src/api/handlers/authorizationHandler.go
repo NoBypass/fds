@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"net/http"
 	"server/src/graph/generated/models"
 	"server/src/utils"
 )
@@ -47,6 +49,11 @@ func (c *CustomClaims) Generate() (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func ParseJWTbyCxt(ctx context.Context) (*CustomClaims, error) {
+	tokenString := ctx.Value("request").(*http.Request).Header.Get("Authorization")
+	return ParseJWT(tokenString)
 }
 
 func ParseJWT(tokenString string) (*CustomClaims, error) {

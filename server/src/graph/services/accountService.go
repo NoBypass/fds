@@ -67,7 +67,7 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 }
 
 func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin, error) {
-	claims, err := handlers.ParseJWT(ctx.Value("request").(*http.Request).Header.Get("Authorization"))
+	claims, err := handlers.ParseJWTbyCxt(ctx)
 	if err != nil {
 		return nil, err
 	}
