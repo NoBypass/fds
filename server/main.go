@@ -2,16 +2,23 @@ package main
 
 import (
 	"fmt"
+	"github.com/rs/cors"
 	"net/http"
 	"server/src/api/handlers/logger"
 	"server/src/api/resolvers"
 	"server/src/graph/generated"
-	"server/src/middleware"
 	"server/src/utils"
 )
 
 func main() {
 	logger.Log("Starting server", logger.INFO)
+
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
 
 	_, ctx, err := utils.ConnectDB()
 	if err != nil {
@@ -21,19 +28,8 @@ func main() {
 		logger.Log("Connected to database", logger.SUCCESS)
 	}
 
-	ws, err := middleware.Auth(ctx, resolvers.WebSocketHandler)
-	if err != nil {
-		logger.Error(err)
-		return
-	}
-	graphql, err := middleware.Auth(ctx, resolvers.GraphQLHandler)
-	if err != nil {
-		logger.Error(err)
-		return
-	}
-
-	http.Handle("/ws", ws)
-	http.Handle("/graphql", graphql)
+	http.Handle("/ws", resolvers.WebSocketHandler(ctx))
+	http.Handle("/graphql", c.Handler(resolvers.GraphQLHandler(ctx)))
 
 	generated.InitSchema()
 	logger.Log("Server started & graphql initialized", logger.SUCCESS)
