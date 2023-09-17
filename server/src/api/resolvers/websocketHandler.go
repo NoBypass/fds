@@ -31,7 +31,6 @@ func WebSocketHandler(ctx context.Context) http.Handler {
 
 		ctx = context.WithValue(ctx, "request", r)
 		ctx = context.WithValue(ctx, "response", w)
-
 		claims, err := utils.ParseJWT(r.Header.Get("Authorization"))
 		if err == nil {
 			ctx = context.WithValue(ctx, "claims", claims)

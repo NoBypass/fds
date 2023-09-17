@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"server/src/api/handlers/logger"
 	"server/src/graph/generated"
+	"server/src/utils"
 )
 
 func GraphQLHandler(ctx context.Context) http.Handler {
@@ -22,6 +23,10 @@ func GraphQLHandler(ctx context.Context) http.Handler {
 		if r.Method == "POST" {
 			ctx = context.WithValue(ctx, "request", r)
 			ctx = context.WithValue(ctx, "response", w)
+			claims, err := utils.ParseJWT(r.Header.Get("Authorization"))
+			if err == nil {
+				ctx = context.WithValue(ctx, "claims", claims)
+			}
 
 			var requestBody struct {
 				Query         string `json:"query"`
@@ -42,7 +47,7 @@ func GraphQLHandler(ctx context.Context) http.Handler {
 				return
 			}
 
-			err := json.NewEncoder(w).Encode(result)
+			err = json.NewEncoder(w).Encode(result)
 			if err != nil {
 				http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
 				return
