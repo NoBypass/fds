@@ -7,6 +7,7 @@ import (
 	"server/src/api/handlers"
 	"server/src/graph/generated/models"
 	"server/src/repository"
+	"server/src/repository/db"
 	"server/src/utils"
 	"strconv"
 	"time"
@@ -73,17 +74,8 @@ func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin
 		return nil, err
 	}
 
-	result, err := repository.FindAccountByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	handlers.CheckIfFound(ctx, result, "couldn't find account with name "+input.Name)
-
-	account, err := utils.MapResult(&models.Account{}, result, "a")
-	if err != nil {
-		return nil, err
-	}
+	accounts := db.New[models.Account](ctx)
+	account, err := accounts.Find(&models.Account{Name: input.Name})
 
 	claims, err = utils.NewClaims(input.Role)
 	if err != nil {

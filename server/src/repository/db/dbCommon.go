@@ -13,10 +13,10 @@ type DB[T any] struct {
 	ctx    context.Context
 }
 
-func New[T any](ctx *context.Context) *DB[T] {
+func New[T any](ctx context.Context) *DB[T] {
 	return &DB[T]{
-		driver: (*ctx).Value("driver").(neo4j.DriverWithContext),
-		ctx:    *ctx,
+		driver: ctx.Value("driver").(neo4j.DriverWithContext),
+		ctx:    ctx,
 	}
 }
 
