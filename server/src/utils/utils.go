@@ -68,6 +68,9 @@ func TrimStringUntil(s, substr string) string {
 }
 
 func MapResult[T any](input *T, result *neo4j.EagerResult, indexLetter string) (*T, error) {
+	if len(result.Records) == 0 {
+		return nil, fmt.Errorf("no results found")
+	}
 	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], indexLetter)
 	if err != nil {
 		return nil, err
@@ -90,18 +93,20 @@ func MapResult[T any](input *T, result *neo4j.EagerResult, indexLetter string) (
 			val, err = neo4j.GetProperty[bool](r, jsonTag)
 		case reflect.Float64:
 			val, err = neo4j.GetProperty[float64](r, jsonTag)
+		default:
+			continue
 		}
 		if err != nil {
 			return nil, err
 		}
 
-		reflect.ValueOf(&inputValue).Elem().Field(i).Set(reflect.ValueOf(val))
+		reflect.ValueOf(input).Elem().Field(i).Set(reflect.ValueOf(val))
 	}
 	*input = inputValue
 	return input, nil
 }
 
-func StructToMap[T any](input *T) (map[string]any, error) {
+func StructToMap[T any](input *T) map[string]any {
 	values := make(map[string]any)
 	inputType := reflect.TypeOf(*input)
 	for i := 0; i < inputType.NumField(); i++ {
@@ -112,5 +117,5 @@ func StructToMap[T any](input *T) (map[string]any, error) {
 		}
 		values[ConvertCamelToSnake(field.Name)] = value
 	}
-	return values, nil
+	return values
 }

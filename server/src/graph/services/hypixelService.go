@@ -4,23 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"log"
 	"net/http"
 	"server/src/graph/generated/models"
 	"server/src/repository"
-	"server/src/utils"
+	"server/src/repository/db"
 )
 
 func PlayerQuery(ctx context.Context, input *models.PlayerInput) (*models.Player, error) {
-	result, err := repository.FindPlayerByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	var p *models.Player
-	if result.Records != nil || len(result.Records) > 0 {
-		return utils.MapResult(p, result, "p")
+	players := db.New[models.Player](ctx)
+	player, _ := players.Find(&models.Player{
+		Name: input.Name,
+	})
+	if player != nil {
+		return player, nil
 	}
 
 	var url = "https://api.mojang.com/users/profiles/minecraft/" + input.Name
@@ -33,15 +30,13 @@ func PlayerQuery(ctx context.Context, input *models.PlayerInput) (*models.Player
 	}
 	defer response.Body.Close()
 
-	var newPlayerInput repository.NewPlayer
+	newPlayerInput := repository.NewPlayer{}
 	if err := json.NewDecoder(response.Body).Decode(&newPlayerInput); err != nil {
 		log.Fatalf("Error decoding JSON: %v", err)
 	}
 
-	result, err = repository.CreatePlayer(ctx, ctx.Value("driver").(neo4j.DriverWithContext), &newPlayerInput)
-	if err != nil {
-		return nil, err
-	}
-
-	return utils.MapResult(p, result, "p")
+	return players.Create(&models.Player{
+		Uuid: newPlayerInput.ID,
+		Name: newPlayerInput.Name,
+	})
 }
