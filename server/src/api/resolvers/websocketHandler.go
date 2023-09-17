@@ -7,8 +7,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/graphql-go/graphql"
 	"net/http"
-	"server/src/api/handlers"
 	"server/src/api/handlers/logger"
+	"server/src/graph/generated"
 	"server/src/utils"
 )
 
@@ -20,7 +20,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler {
+func WebSocketHandler(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
@@ -32,7 +32,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 		ctx = context.WithValue(ctx, "request", r)
 		ctx = context.WithValue(ctx, "response", w)
 
-		claims, err := handlers.ParseJWT(r.Header.Get("Authorization"))
+		claims, err := utils.ParseJWT(r.Header.Get("Authorization"))
 		if err == nil {
 			ctx = context.WithValue(ctx, "claims", claims)
 		}
@@ -87,7 +87,7 @@ func WebSocketHandler(schema *graphql.Schema, ctx context.Context) http.Handler 
 			}
 
 			result := graphql.Do(graphql.Params{
-				Schema:        *schema,
+				Schema:        generated.RootSchema,
 				RequestString: query.Query,
 				Context:       ctx,
 			})

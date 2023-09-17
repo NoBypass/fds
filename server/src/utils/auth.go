@@ -1,4 +1,4 @@
-package handlers
+package utils
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
+	"server/src/api/handlers"
 	"server/src/graph/generated/models"
-	"server/src/utils"
 )
 
 func NewClaims(role string) (*CustomClaims, error) {
@@ -35,7 +35,7 @@ func (c *CustomClaims) Sign(subject *models.Account) *CustomClaims {
 
 	c.Subject = string(jsonSubject)
 	c.StandardClaims.Issuer = "Root CA"
-	c.StandardClaims.IssuedAt = utils.GetNowInMs()
+	c.StandardClaims.IssuedAt = GetNowInMs()
 
 	return c
 }
@@ -71,4 +71,18 @@ func ParseJWT(tokenString string) (*CustomClaims, error) {
 	}
 
 	return c, nil
+}
+
+func Error(ctx context.Context, err error) error {
+	return handlers.NewHttpError(ctx, http.StatusUnauthorized, err.Error())
+}
+
+func Allow(ctx context.Context, roles []string) error {
+	claims := ctx.Value("claims").(*CustomClaims)
+	for _, role := range roles {
+		if claims.Role == role {
+			return nil
+		}
+	}
+	return Error(ctx, fmt.Errorf("you don't have permission to access this. role: %s", claims.Role))
 }

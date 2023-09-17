@@ -7,11 +7,12 @@ import (
 	"github.com/graphql-go/handler"
 	"net/http"
 	"server/src/api/handlers/logger"
+	"server/src/graph/generated"
 )
 
-func GraphQLHandler(schema *graphql.Schema, ctx context.Context) http.Handler {
+func GraphQLHandler(ctx context.Context) http.Handler {
 	h := handler.New(&handler.Config{
-		Schema:   schema,
+		Schema:   &generated.RootSchema,
 		Pretty:   true,
 		GraphiQL: true,
 	})
@@ -32,7 +33,7 @@ func GraphQLHandler(schema *graphql.Schema, ctx context.Context) http.Handler {
 			}
 
 			result := graphql.Do(graphql.Params{
-				Schema:        *schema,
+				Schema:        generated.RootSchema,
 				RequestString: requestBody.Query,
 				Context:       ctx,
 			})

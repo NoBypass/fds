@@ -53,7 +53,7 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 		return nil, handlers.NewHttpError(ctx, http.StatusUnauthorized, "incorrect password")
 	}
 
-	claims, err := handlers.NewClaims("user")
+	claims, err := utils.NewClaims("user")
 	if err != nil {
 		return nil, err
 	}
@@ -67,13 +67,10 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 }
 
 func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin, error) {
-	claims, err := handlers.ParseJWTbyCxt(ctx)
+	claims := ctx.Value("claims").(*utils.CustomClaims)
+	err := utils.Allow(ctx, []string{"admin"})
 	if err != nil {
 		return nil, err
-	}
-
-	if claims.Role != "admin" {
-		return nil, handlers.NewHttpError(ctx, http.StatusUnauthorized, "you do not have permission to request a special api key")
 	}
 
 	result, err := repository.FindAccountByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
@@ -88,7 +85,7 @@ func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin
 		return nil, err
 	}
 
-	claims, err = handlers.NewClaims(input.Role)
+	claims, err = utils.NewClaims(input.Role)
 	if err != nil {
 		return nil, err
 	}
