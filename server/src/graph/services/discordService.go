@@ -32,7 +32,7 @@ func DiscordQuery(ctx context.Context, input *models.DiscordInput) (*models.Disc
 }
 
 func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Discord, error) {
-	claims, err := utils.ParseJWT(ctx.Value("token").(string))
+	claims, err := utils.ParseJWT(ctx, ctx.Value("token").(string))
 	if err != nil {
 		return nil, err
 	}

@@ -58,7 +58,7 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 	if err != nil {
 		return nil, err
 	}
-	token, err := claims.Sign(account).Generate()
+	token, err := claims.Sign(account).Generate(ctx)
 
 	return &models.Signin{
 		Token:   token,
@@ -81,7 +81,7 @@ func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin
 	if err != nil {
 		return nil, err
 	}
-	token, err := claims.Sign(account).Generate()
+	token, err := claims.Sign(account).Generate(ctx)
 
 	return &models.Signin{
 		Token:   token,

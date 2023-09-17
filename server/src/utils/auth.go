@@ -40,10 +40,10 @@ func (c *CustomClaims) Sign(subject *models.Account) *CustomClaims {
 	return c
 }
 
-func (c *CustomClaims) Generate() (string, error) {
+func (c *CustomClaims) Generate(ctx context.Context) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 
-	tokenString, err := token.SignedString([]byte("your-secret-key")) // TODO use env variable
+	tokenString, err := token.SignedString([]byte(ctx.Value("env").(ENV).JWTSecret))
 	if err != nil {
 		return "", err
 	}
@@ -51,15 +51,10 @@ func (c *CustomClaims) Generate() (string, error) {
 	return tokenString, nil
 }
 
-func ParseJWTbyCxt(ctx context.Context) (*CustomClaims, error) {
-	tokenString := ctx.Value("request").(*http.Request).Header.Get("Authorization")
-	return ParseJWT(tokenString)
-}
-
-func ParseJWT(tokenString string) (*CustomClaims, error) {
+func ParseJWT(ctx context.Context, tokenString string) (*CustomClaims, error) {
 	c := &CustomClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, c, func(token *jwt.Token) (interface{}, error) {
-		return []byte("your-secret-key"), nil // TODO use env variable
+		return []byte(ctx.Value("env").(ENV).JWTSecret), nil
 	})
 
 	if err != nil {

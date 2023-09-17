@@ -1,26 +1,33 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/rs/cors"
 	"net/http"
 	"server/src/api/handlers/logger"
 	"server/src/api/resolvers"
 	"server/src/graph/generated"
+	"server/src/repository/db"
 	"server/src/utils"
 )
+
+var c = cors.New(cors.Options{
+	AllowedOrigins:   []string{"http://localhost:5173"},
+	AllowedMethods:   []string{"GET", "POST"},
+	AllowedHeaders:   []string{"Authorization", "Content-Type"},
+	AllowCredentials: true,
+})
 
 func main() {
 	logger.Log("Starting server", logger.INFO)
 
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"},
-		AllowedMethods:   []string{"GET", "POST"},
-		AllowedHeaders:   []string{"Authorization", "Content-Type"},
-		AllowCredentials: true,
-	})
+	env := utils.FetchEnv()
 
-	_, ctx, err := utils.ConnectDB()
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, "env", env)
+	driver, err := db.Connect(ctx)
+	ctx = context.WithValue(ctx, "driver", driver)
 	if err != nil {
 		logger.Error(err)
 		return
