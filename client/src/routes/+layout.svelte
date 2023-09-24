@@ -76,7 +76,7 @@
 
 <style>
     :global(body) {
-        @apply bg-black text-white;
+        @apply bg-slate-950 text-white;
     }
 </style>
 
