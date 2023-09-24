@@ -7,10 +7,6 @@
 
     export let open = false
 
-    let ws: WebSocket | undefined
-
-    onMount(() => ws = new WebSocket('ws://localhost:8080/ws')) // TODO: use env variable
-
     const dispatch = createEventDispatcher()
     const submit = () => {
         dispatch('submit', {
@@ -19,7 +15,7 @@
     }
 </script>
 
-<Modal preventClose closeX="{false}" open={true}>
+<Modal preventClose closeX="{false}" open={open}>
     <div class="p-5 text-center grid gap-6">
         <Text b type="h2">Verify that it's you</Text>
         <Text>You need to verify your Minecraft account via Discord</Text>

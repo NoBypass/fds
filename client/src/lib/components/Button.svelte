@@ -4,21 +4,22 @@
 
     export let disabled = false
     export let rounded = false
-    export let color: 'primary' | 'neutral' | 'transparent' = 'primary'
+    export let type: 'fancy' | 'primary' | 'normal' | 'transparent' = 'normal'
     export let href = ''
     export let tw = ''
 
-    const colors = {
-        primary: 'bg-purple-500 hover:bg-purple-600 shadow-purple-500/50 text-white shadow-md',
-        neutral: 'bg-white hover:bg-gray-200 shadow-gray-500/50 text-gray-800 shadow-md',
-        transparent: 'bg-transparent text-white'
+    const styles = {
+        fancy: 'bg-gradient-primary normal-b',
+        transparent: 'bg-transparent text-white',
+        normal: 'border border-gray-500/60 bg-gradient-glass opacity-80 hover:opacity-100',
+        primary: 'bg-primary-glass border border-purple-500/60 bg-gradient-primary-glass'
     }
 
     let buttonRef: undefined | HTMLElement
     let dispatch = createEventDispatcher()
+    const styleClass = `${disabled ? styles[type].split(' ').filter(c => c.startsWith('hover:')).join(' ') : styles[type]} ${disabled ? 'opacity-70' : ''}`
     
     const handleClick = (e: MouseEvent) => {
-
         dispatch('click', e)
         if (buttonRef) {
             if (href != '') window.open(href)
@@ -26,31 +27,22 @@
             const ripple = document.createElement('span')
             ripple.style.left = `${e.offsetX}px`
             ripple.style.top = `${e.offsetY}px`
-            'absolute rounded-full bg-white -translate-x-1/2 -translate-y-1/2 w-4 h-4 animate-[ripple_1s_ease-in-out_infinite]'
+            'absolute rounded-full bg-white/30 -translate-x-1/2 -translate-y-1/2 w-4 h-4 animate-[ripple_1s_ease-in-out_infinite]'
                 .split(' ').forEach((c) => ripple.classList.add(c))
+            buttonRef.classList.add('animate-resize')
             buttonRef.appendChild(ripple)
-            setTimeout(() => ripple.remove(), 400)
+            setTimeout(() => {
+                if (buttonRef) buttonRef.classList.remove('animate-resize')
+                ripple.remove()
+            }, 400)
         }
     }
 </script>
-
-<style>
-    @keyframes ripple {
-        0% {
-            scale: 0;
-            opacity: .7;
-        }
-        100% {
-            scale: 1;
-            opacity: 0;
-        }
-    }
-</style>
 
 <button bind:this={buttonRef}
         on:click={handleClick}
         type="button"
         disabled={disabled}
-        class="{twMerge(`${disabled ? colors[color].split(' ').filter((c) => !c.startsWith('hover:')).join(' ') : colors[color]} ${disabled ? 'opacity-70' : ''} z-10 overflow-hidden ${rounded ? 'rounded-full' : 'rounded-md'} px-5 py-1.5 transition duration-150 relative`, tw)}">
+        class="{twMerge(`${styleClass} z-10 overflow-hidden ${rounded ? 'rounded-full' : 'rounded-md'} px-5 py-1.5 transition-all duration-150 relative`, tw)}">
     <slot />
 </button>

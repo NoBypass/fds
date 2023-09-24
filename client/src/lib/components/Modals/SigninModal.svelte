@@ -7,7 +7,7 @@
     import Text from '$lib/components/Text.svelte'
     import { createEventDispatcher, onMount } from 'svelte'
     import Spinner from '$lib/components/Spinner.svelte'
-    import { api } from '$lib/stores/websocket'
+    import { api } from '$lib/stores/api'
 
     export let open = false
 

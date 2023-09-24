@@ -1,10 +1,8 @@
 <script lang="ts">
     import './../app.css'
-    import MagnifyIcon from '$lib/assets/icons/MagnifyIcon.svelte'
     import CommandPalette from '$lib/components/CommandPalette.svelte'
     import ResponsiveContainer from '$lib/components/ResponsiveContainer.svelte'
     import Text from '$lib/components/Text.svelte'
-    import Divider from '$lib/components/Divider.svelte'
     import Button from '$lib/components/Button.svelte'
     import SigninModal from '$lib/components/Modals/SigninModal.svelte'
     import ConfirmationModal from '$lib/components/Modals/ConfirmationModal.svelte'
@@ -12,9 +10,9 @@
     import Avatar from '$lib/components/Avatar.svelte'
     import Dropdown from '$lib/components/Dropdown.svelte'
     import DropdownItem from '$lib/components/DropdownItem.svelte'
+    import Shadows from '$lib/components/Shadows.svelte'
     import Alertbox from '$lib/components/Alertbox.svelte'
-    import { api } from '$lib/stores/websocket'
-    import { onMount } from 'svelte'
+    import { api } from '$lib/stores/api'
 
     let showCommandPalette = false
     let showSigninModal = false
@@ -54,6 +52,26 @@
             showSuccessModal = true
         } else showConfirmationModal = true
     }
+
+    type Shadow = {
+        opacity: number
+        color: string
+        height: number
+        width: number
+        offsetX: number
+        offsetY: number
+    }
+
+    let shadows: undefined | Shadow[]
+    for (let i = 0; i < 5; i++) {
+        const opacity = Math.random()
+        const color = `rgba(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255}, ${opacity})`
+        const height = Math.random()*100
+        const width = Math.random()*100
+        const offsetX = Math.random()*100
+        const offsetY = Math.random()*100
+        shadows = [...shadows || [], { opacity, color, height, width, offsetX, offsetY }]
+    }
 </script>
 
 <style>
@@ -65,35 +83,29 @@
 <Alertbox />
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
 
-<ResponsiveContainer>
+<div class="z-0 opacity-60">
+    <Shadows />
+</div>
+<ResponsiveContainer tw="bg-white/5">
     <SigninModal on:close={() => showSigninModal = false} open={showSigninModal} on:submit={submitInfo} />
-    <SuccessModal open={showSuccessModal} on:close={() => showSuccessModal = false} />
-    <ConfirmationModal open={showConfirmationModal} on:close={() => showConfirmationModal = false} />
+    <nav class="grid grid-rows-none grid-cols-3 w-full h-20">
 
-    <nav class="grid grid-rows-none grid-cols-6 w-full h-20">
-
-        <div class="flex items-center">
+        <div class="flex items-center gap-2">
+            <div class="h-9 w-9 rounded-lg bg-gradient-primary normal-b flex justify-center items-center">
+                <Text b type="h2" tw="text-slate-950 -translate-y-0.5">F</Text>
+            </div>
             <Text type="h3" b>FDS</Text>
         </div>
 
-        <div class="flex items-center col-span-2">
-            <div class="w-full border transition-all duration-200 border-neutral-700 py-1 px-4 rounded-full hover:border-neutral-400 flex gap-2 items-center">
-                <MagnifyIcon tw="w-5 h-5 text-neutral-400" />
-                <input type="text"
-                       placeholder="Search anything..."
-                       class="focus:outline-none w-full bg-black"
-                       on:focusin={() => showCommandPalette = !showCommandPalette} />
-                <Text b type="h6" tw="text-neutral-400">CTRL+K</Text>
-            </div>
-        </div>
-
-        <div class="flex col-start-6 items-center gap-8 justify-self-end">
-            <ul class="flex gap-4">
+        <div class="flex items-center gap-8 justify-self-center">
+            <ul class="flex gap-4 border-gray-500/50 rounded-full px-8 py-2.5 border">
                 {#each links as link}
                     <li><a href="/{link.toLowerCase()}">{link}</a></li>
                 {/each}
             </ul>
-            <Divider vertical tw="h-6" />
+        </div>
+
+        <div class="justify-self-end self-center">
             {#if (!token)}
                 <Button on:click={() => showSigninModal = true}>Login</Button>
             {:else}
@@ -107,6 +119,12 @@
             {/if}
         </div>
     </nav>
+</ResponsiveContainer>
+<div class="z-50 h-px w-screen bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+<ResponsiveContainer>
+    <SuccessModal open={showSuccessModal} on:close={() => showSuccessModal = false} />
+    <ConfirmationModal open={showConfirmationModal} on:close={() => showConfirmationModal = false} />
 
     <slot />
 </ResponsiveContainer>
