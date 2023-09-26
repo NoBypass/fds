@@ -1,4 +1,4 @@
-version: '3'
+version: '4'
 services:
   neo4j:
     image: neo4j:5.3
@@ -11,5 +11,14 @@ services:
     volumes:
       - neo4j-data:/data
 
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
 volumes:
   neo4j-data:
+  redis-data:
