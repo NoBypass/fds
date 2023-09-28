@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       backgroundImage: (theme) => ({
-        'gradient-glass': 'linear-gradient(to top, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05))',
+        'gradient-glass': 'linear-gradient(to top, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02))',
         'gradient-primary-glass': 'linear-gradient(to top, rgba(168, 85, 247, 0.3), rgba(168, 85, 247, 0.08))',
         'gradient-primary': `linear-gradient(120deg, ${theme('colors.purple.500')}, ${theme('colors.indigo.500')})`,
       }),

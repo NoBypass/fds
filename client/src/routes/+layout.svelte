@@ -83,7 +83,7 @@
 <Alertbox />
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
 
-<div class="z-0 opacity-60">
+<div class="z-0 opacity-50 w-screen overflow-hidden">
     <Shadows />
 </div>
 <ResponsiveContainer tw="bg-white/5">
@@ -107,7 +107,7 @@
 
         <div class="justify-self-end self-center">
             {#if (!token)}
-                <Button on:click={() => showSigninModal = true}>Login</Button>
+                <Button type="primary" on:click={() => showSigninModal = true}>Login</Button>
             {:else}
                 <Dropdown>
                     <Avatar slot="trigger" />

@@ -2,9 +2,9 @@
     export let b = false
     export let o = false
     export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md'
-    export let type: 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = 'p'
+    export let type: 'p' | 's' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = 'p'
     export let tw = ''
-    export let color: 'neutral' | 'error' = 'neutral'
+    export let color: 'neutral' | 'error' | 'gradient' = 'neutral'
 
     const sizes = {
         xs: 'text-xs',
@@ -17,6 +17,7 @@
     const colors = {
         neutral: '',
         error: 'text-rose-700',
+        gradient: 'bg-gradient-primary bg-clip-text text-transparent',
     }
 
     const className = `${sizes[size]} ${colors[color]} ${tw} ${o ? 'opacity-70' : ''} ${b ? 'font-bold' : ''}`
@@ -62,4 +63,6 @@
     <h5 class={className}><slot /></h5>
 {:else if (type === 'h6')}
     <h6 class={className}><slot /></h6>
+{:else if (type === 's')}
+    <strong class={className}><slot /></strong>
 {/if}

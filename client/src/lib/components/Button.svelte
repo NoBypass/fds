@@ -12,7 +12,7 @@
         fancy: 'bg-gradient-primary normal-b',
         transparent: 'bg-transparent text-white',
         normal: 'border border-gray-500/60 bg-gradient-glass opacity-80 hover:opacity-100',
-        primary: 'bg-primary-glass border border-purple-500/60 bg-gradient-primary-glass'
+        primary: 'border border-purple-500/60 bg-gradient-primary-glass opacity-80 hover:opacity-100'
     }
 
     let buttonRef: undefined | HTMLElement

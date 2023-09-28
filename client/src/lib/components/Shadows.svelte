@@ -29,6 +29,7 @@
 
     const animate = () => {
         requestAnimationFrame(animate)
+        w = innerWidth
         if (shadows.length < amount) spawn()
         if (shadows.reduce((acc, shadow) => acc + shadow.opacity, 0) < amount/2 - 0.1) spawn()
 
