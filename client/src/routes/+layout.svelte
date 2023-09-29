@@ -13,6 +13,7 @@
     import Shadows from '$lib/components/Shadows.svelte'
     import Alertbox from '$lib/components/Alertbox.svelte'
     import { api } from '$lib/stores/api'
+    import { mouseStore } from '$lib/stores/location'
 
     let showCommandPalette = false
     let showSigninModal = false
@@ -80,10 +81,14 @@
     }
 </style>
 
+<svelte:window on:mousemove={(e) => {
+    mouseStore.update(e.clientX, e.clientY)
+}} />
+
 <Alertbox />
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
 
-<div class="z-0 opacity-50 w-screen overflow-hidden">
+<div class="z-0 opacity-40 w-screen overflow-hidden">
     <Shadows />
 </div>
 <ResponsiveContainer tw="bg-white/5">
