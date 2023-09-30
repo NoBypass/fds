@@ -5,6 +5,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"net/http"
 	"server/src/api/handlers"
+	"server/src/auth"
 	"server/src/graph/generated/models"
 	"server/src/repository"
 	"server/src/repository/db"
@@ -51,10 +52,10 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 
 	ok := utils.CompareHash(input.Password, account.Password)
 	if !ok {
-		return nil, handlers.NewHttpError(ctx, http.StatusUnauthorized, "incorrect password")
+		return nil, handlers.HttpError(ctx, http.StatusUnauthorized, "incorrect password")
 	}
 
-	claims, err := utils.NewClaims("user")
+	claims, err := auth.NewClaims("user")
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +69,8 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 }
 
 func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin, error) {
-	claims := ctx.Value("claims").(*utils.CustomClaims)
-	err := utils.Allow(ctx, []string{"admin"})
+	claims := ctx.Value("claims").(*auth.CustomClaims)
+	err := auth.Allow(ctx, []string{"admin"})
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +78,7 @@ func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin
 	accounts := db.New[models.Account](ctx)
 	account, err := accounts.Find(&models.Account{Name: input.Name})
 
-	claims, err = utils.NewClaims(input.Role)
+	claims, err = auth.NewClaims(input.Role)
 	if err != nil {
 		return nil, err
 	}

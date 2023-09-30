@@ -10,11 +10,15 @@ type ENV struct {
 	HypixelKey string `yaml:"HypixelKey"`
 	ClientURL  string `yaml:"ClientUrl"`
 	JWTSecret  string `yaml:"JWTSecret"`
-	DB         struct {
+	Persistent struct {
 		URI      string `yaml:"URI"`
 		Username string `yaml:"Username"`
 		Password string `yaml:"Password"`
-	} `yaml:"DB"`
+	} `yaml:"Persistent"`
+	Cache struct {
+		URI      string `yaml:"URI"`
+		Password string `yaml:"Password"`
+	} `yaml:"Cache"`
 }
 
 func FetchEnv() ENV {

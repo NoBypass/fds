@@ -3,13 +3,9 @@ package resolvers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/websocket"
-	"github.com/graphql-go/graphql"
 	"net/http"
-	"server/src/api/handlers/logger"
-	"server/src/graph/generated"
-	"server/src/utils"
+	"server/src/api/handlers"
 )
 
 var upgrader = websocket.Upgrader{
@@ -20,119 +16,39 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func WebSocketHandler(ctx context.Context) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		conn, err := upgrader.Upgrade(w, r, nil)
+func WebSocketHandler(ctx context.Context) {
+	req := ctx.Value("request").(*http.Request)
+	res := ctx.Value("response").(http.ResponseWriter)
+
+	conn, err := upgrader.Upgrade(res, req, nil)
+	if err != nil {
+		http.Error(res, "could not upgrade connection to websocket: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	defer conn.Close()
+	ctx = context.WithValue(ctx, "conn", conn)
+
+	for {
+		_, msgBytes, err := conn.ReadMessage()
 		if err != nil {
-			http.Error(w, "could not upgrade connection to websocket: "+err.Error(), http.StatusBadRequest)
-			return
-		}
-		defer conn.Close()
-
-		ctx = context.WithValue(ctx, "request", r)
-		ctx = context.WithValue(ctx, "response", w)
-		claims, err := utils.ParseJWT(ctx, r.Header.Get("Authorization"))
-		if err == nil {
-			ctx = context.WithValue(ctx, "claims", claims)
+			break
 		}
 
-		requestLimit := 3
-		if claims != nil {
-			switch claims.Role {
-			case "admin":
-				requestLimit = -1
-			case "bot":
-				requestLimit = -1
-			case "subscriber":
-				requestLimit = -1
-			case "user":
-				requestLimit = 500
-			}
+		var query struct {
+			OperationName string `json:"operationName"`
+			Query         string `json:"query"`
+			Variables     any    `json:"variables"`
 		}
-
-		id := utils.GenerateUUID(claims)
-		if claims != nil {
-			logger.Log(fmt.Sprintf("websocket connection opened with '%s' with role '%s'", claims.StandardClaims.Subject, claims.Role), logger.SUCCESS, id)
-		} else {
-			logger.Log("anonymous websocket connection opened", logger.WARN, id)
-		}
-
-		for {
-			_, msgBytes, err := conn.ReadMessage()
+		err = json.Unmarshal(msgBytes, &query)
+		if err != nil {
+			err := conn.WriteMessage(websocket.TextMessage, []byte("invalid request"))
 			if err != nil {
-				logger.Log("client disconnected", logger.INFO, id)
+				handlers.HttpError(ctx, http.StatusBadRequest, "invalid request")
 				break
 			}
-
-			requestLimit--
-			if requestLimit == 0 {
-				logger.Log("disconnecting websocket connection due to rate limit", logger.INFO, id)
-				break
-			}
-
-			var query struct {
-				OperationName string `json:"operationName"`
-				Query         string `json:"query"`
-				Variables     any    `json:"variables"`
-			}
-			err = json.Unmarshal(msgBytes, &query)
-			if err != nil {
-				err := conn.WriteMessage(websocket.TextMessage, []byte("invalid request"))
-				if err != nil {
-					logger.Error(fmt.Errorf("disconnecting; could not send response: %w", err), id)
-					break
-				}
-				continue
-			}
-
-			result := graphql.Do(graphql.Params{
-				Schema:        generated.RootSchema,
-				RequestString: query.Query,
-				Context:       ctx,
-			})
-			if len(result.Errors) != 0 {
-				fmt.Println(result.Errors[0].Message)
-				err := conn.WriteMessage(websocket.TextMessage, []byte(result.Errors[0].Message))
-				if err != nil {
-					logger.Error(fmt.Errorf("disconnecting; could not send response: %w", err), id)
-					break
-				}
-				continue
-			}
-
-			var response struct {
-				OperationName string      `json:"operationName"`
-				Data          interface{} `json:"data"`
-				Errors        interface{} `json:"errors"`
-			}
-			response.OperationName = query.OperationName
-			response.Data = result.Data
-			response.Errors = result.Errors
-
-			jsonResponse, err := json.Marshal(response)
-			if err != nil {
-				if err != nil {
-					logger.Error(fmt.Errorf("disconnecting; could not send response: %w", err), id)
-					break
-				}
-				continue
-			}
-
-			err = conn.WriteMessage(websocket.TextMessage, jsonResponse)
-			if err != nil {
-				logger.Error(fmt.Errorf("disconnecting; could not send response: %w", err), id)
-				break
-			}
-
-			err = json.NewEncoder(w).Encode(result)
-			if err != nil {
-				err := conn.WriteMessage(websocket.TextMessage, []byte("could not send response"))
-				if err != nil {
-					logger.Error(fmt.Errorf("disconnecting; could not send response: %w", err), id)
-					break
-				}
-				break
-			}
+			continue
 		}
-	})
+
+		GraphQLHandler(ctx)
+	}
 }
