@@ -26,7 +26,7 @@
     }
 
     const links = [
-        'Search', 'Dashboard', 'SkyBlock'
+        'Home', 'Player', 'Leaderboards', 'Download'
     ]
 
     const logout = () => {
@@ -103,9 +103,11 @@
         </div>
 
         <div class="flex items-center gap-8 justify-self-center">
-            <ul class="flex gap-4 border-gray-500/50 rounded-full px-8 py-2.5 border">
+            <ul class="flex border-gray-500/50 rounded-full px-0.5 py-0.5 border">
                 {#each links as link}
-                    <li><a href="/{link.toLowerCase()}">{link}</a></li>
+                    <li class="py-2 px-4 ring-inset ring-white/40 hover:ring-1 rounded-full hover:bg-white/5 transition duration-300">
+                        <a href="/{link === links[0] ? '' : link.toLowerCase()}">{link}</a>
+                    </li>
                 {/each}
             </ul>
         </div>

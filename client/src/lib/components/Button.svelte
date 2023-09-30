@@ -11,8 +11,8 @@
     const styles = {
         fancy: 'bg-gradient-primary normal-b',
         transparent: 'bg-transparent text-white',
-        normal: 'border border-gray-500/60 bg-gradient-glass opacity-80 hover:opacity-100',
-        primary: 'border border-purple-500/60 bg-gradient-primary-glass opacity-80 hover:opacity-100'
+        normal: 'border-2 border-gray-500/60 bg-gradient-glass opacity-80 hover:opacity-100',
+        primary: 'border-2 border-purple-500/60 bg-gradient-primary-glass opacity-80 hover:opacity-100'
     }
 
     let buttonRef: undefined | HTMLElement

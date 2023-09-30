@@ -46,7 +46,7 @@
     }
 </script>
 
-<div bind:this={mainRef} class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border-2 flex {rounded ? 'rounded-full' : ''} px-4 {tw}">
+<div bind:this={mainRef} class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border-2 flex {rounded ? 'rounded-full' : 'rounded-lg'} px-4 {tw}">
     <slot name="left" />
     <input on:input={(e) => {
         dispatch('change', e)
