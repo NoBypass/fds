@@ -8,10 +8,15 @@
     export let password = false
     export let value = ''
     export let tw = ''
+    export let regex = /./
+    export let id = 'c'
 
     let inputRef: undefined | HTMLInputElement
     let mainRef: undefined | HTMLDivElement
+    let isFocused = false
 
+    const classnames = 'shadow-md shadow-purple-500/50 border-purple-500'.split(' ')
+    const dispatch = createEventDispatcher()
     const colors = {
         neutral: 'hover:border-neutral-500 border-neutral-700',
         error: 'border-rose-500 hover:border-rose-600',
@@ -19,38 +24,42 @@
         warning: 'border-yellow-500 hover:border-yellow-600',
     }
 
-    const dispatch = createEventDispatcher()
-
-    $: if (inputRef) {
-        const classnames = 'shadow-md shadow-purple-500/50 border-purple-500'.split(' ')
-        inputRef.addEventListener('focus', () => {
-            if (!mainRef) return
-            for (const c of classnames) {
-                mainRef.classList.add(c)
-            }
-            mainRef.classList.remove('hover:border-neutral-500')
-        })
-        inputRef.addEventListener('blur', () => {
-            if (!mainRef) return
-            for (const c of classnames) {
-                mainRef.classList.remove(c)
-            }
-            mainRef.classList.add('hover:border-neutral-500')
+    $: if (mainRef) {
+        mainRef.addEventListener('click', () => {
+            isFocused = true
         })
     }
 
-    $: if (mainRef) {
-        mainRef.addEventListener('click', () => {
-            if (inputRef) inputRef.focus()
-        })
+    $: handleFocus(isFocused)
+    const handleFocus = (f: boolean) => {
+        if (!mainRef) return
+        for (const c of classnames) {
+            if (f) mainRef.classList.add(c)
+            else mainRef.classList.remove(c)
+        }
+        mainRef.classList.toggle('hover:border-neutral-500')
+    }
+
+    const handleInput = () => {
+        if (!inputRef) return
+        const v = inputRef.value
+        if (regex.test(v)) {
+            dispatch('input', v)
+            value = inputRef.value
+        } else inputRef.value = value.slice(0, -1)
     }
 </script>
 
-<div bind:this={mainRef} class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border-2 flex {rounded ? 'rounded-full' : 'rounded-lg'} px-4 {tw}">
-    <slot name="left" />
-    <input on:input={(e) => {
-        dispatch('change', e)
-        value = e.target.value
-    }} bind:this={inputRef} {disabled} type="{password ? 'password' : 'text'}" placeholder="{placeholder}" class="placeholder:text-neutral-400 focus:outline-0 w-full bg-transparent">
-    <slot name="right" />
+<div class="pt-8">
+    <div bind:this={mainRef} class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border-2 flex {rounded ? 'rounded-full' : 'rounded-lg'} px-2.5 {tw}">
+        <slot name="left" />
+        <label for={id} class="z-0 absolute text-white/50 transition duration-150 {isFocused ? '-translate-y-9' : ''}">{placeholder}</label>
+        <input on:blur={() => isFocused = false}
+               on:input={handleInput}
+               bind:this={inputRef}
+               {value} {disabled} id={id}
+               type="{password ? 'password' : 'text'}"
+               class="z-10 placeholder:text-neutral-400 focus:outline-0 w-full bg-transparent">
+        <slot name="right" />
+    </div>
 </div>
