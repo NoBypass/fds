@@ -34,3 +34,8 @@ func Allow(ctx context.Context, roles []string) error {
 	}
 	return handlers.HttpError(ctx, http.StatusUnauthorized, fmt.Sprintf("you don't have permission to access this. role: %s", claims.Role))
 }
+
+func HasRole(ctx context.Context, role string) bool {
+	claims := ctx.Value("claims").(*CustomClaims)
+	return claims.Role == role
+}

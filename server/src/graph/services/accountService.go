@@ -15,12 +15,18 @@ import (
 )
 
 func AccountQuery(ctx context.Context, input *models.AccountInput) (*models.Account, error) {
-	result, err := repository.FindAccountByName(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.Name)
+	accounts := db.New[models.Account](ctx)
+	account, err := accounts.Find(&models.Account{Name: input.Name})
 	if err != nil {
 		return nil, err
 	}
 
-	return utils.MapResult(&models.Account{}, result, "a")
+	if !auth.HasRole(ctx, "admin") {
+		account.Password = ""
+		account.CreatedAt = ""
+	}
+
+	return account, nil
 }
 
 func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Signin, error) {
@@ -69,7 +75,6 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 }
 
 func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin, error) {
-	claims := ctx.Value("claims").(*auth.CustomClaims)
 	err := auth.Allow(ctx, []string{"admin"})
 	if err != nil {
 		return nil, err
@@ -78,11 +83,14 @@ func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin
 	accounts := db.New[models.Account](ctx)
 	account, err := accounts.Find(&models.Account{Name: input.Name})
 
-	claims, err = auth.NewClaims(input.Role)
+	claims, err := auth.NewClaims(input.Role)
 	if err != nil {
 		return nil, err
 	}
 	token, err := claims.Sign(account).Generate(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	return &models.Signin{
 		Token:   token,
