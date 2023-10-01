@@ -3,7 +3,9 @@ package db
 import (
 	"fmt"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"net/http"
 	"reflect"
+	"server/src/api/handlers"
 	"server/src/utils"
 )
 
@@ -22,6 +24,10 @@ func (db *DB[T]) Find(entity *T) (*T, error) {
 		fmt.Sprintf("MATCH (n:%s { %s }) RETURN n", reflect.TypeOf(*entity).Name(), args[:len(args)-1]), values, neo4j.EagerResultTransformer)
 	if err != nil {
 		return nil, err
+	}
+
+	if result.Records == nil || len(result.Records) == 0 {
+		return nil, handlers.HttpError(db.ctx, http.StatusNotFound, "not found")
 	}
 
 	entity, err = utils.MapResult(entity, result, "n")
