@@ -68,6 +68,7 @@
         <label for={id} class="z-0 {isFocused ? 'absolute -translate-y-9 -translate-x-2.5' : 'whitespace-nowrap relative hover:cursor-text'} text-white/50 transition duration-150">{placeholder}</label>
         <input on:blur={() => isFocused = false}
                on:input={handleInput}
+               on:focus={() => isFocused = true}
                bind:this={inputRef}
                {value} {disabled} id={id}
                type="{password ? 'password' : 'text'}"
