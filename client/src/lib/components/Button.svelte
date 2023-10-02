@@ -11,8 +11,8 @@
     const styles = {
         fancy: 'bg-gradient-primary normal-b',
         transparent: 'bg-transparent text-white',
-        normal: 'border-2 border-gray-500/60 bg-gradient-glass opacity-80 hover:opacity-100',
-        primary: 'border-2 border-purple-500/60 bg-gradient-primary-glass opacity-80 hover:opacity-100'
+        normal: 'border border-gray-500/60 bg-gray-500/[.12] shadow-inset-neutral opacity-80 hover:opacity-100',
+        primary: 'border border-purple-500/60 bg-purple-500/[.12] shadow-inset-primary opacity-80 hover:opacity-100'
     }
 
     let buttonRef: undefined | HTMLElement
@@ -25,14 +25,14 @@
             if (href != '') window.open(href)
 
             const ripple = document.createElement('span')
-            ripple.style.left = `${e.offsetX}px`
-            ripple.style.top = `${e.offsetY}px`
+            const bounds = buttonRef.getBoundingClientRect()
+            ripple.style.left = `${e.clientX - bounds.left}px`
+            ripple.style.top = `${e.clientY - bounds.top}px`
             'absolute rounded-full bg-white/30 -translate-x-1/2 -translate-y-1/2 w-4 h-4 animate-[ripple_1s_ease-in-out_infinite]'
                 .split(' ').forEach((c) => ripple.classList.add(c))
             buttonRef.classList.add('animate-resize')
             buttonRef.appendChild(ripple)
             setTimeout(() => {
-                if (buttonRef) buttonRef.classList.remove('animate-resize')
                 ripple.remove()
             }, 400)
         }
@@ -40,9 +40,9 @@
 </script>
 
 <button bind:this={buttonRef}
-        on:click={handleClick}
+        on:mousedown={handleClick}
         type="button"
         disabled={disabled}
-        class="{twMerge(`${styleClass} z-10 overflow-hidden ${rounded ? 'rounded-full' : 'rounded-md'} px-5 py-1.5 transition-all duration-150 relative`, tw)}">
+        class="{twMerge(`${styleClass} active:scale-[.97] z-10 overflow-hidden ${rounded ? 'rounded-full' : 'rounded-md'} px-5 py-1.5 transition-all duration-150 relative`, tw)}">
     <slot />
 </button>

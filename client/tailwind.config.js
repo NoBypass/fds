@@ -4,9 +4,11 @@ export default {
   theme: {
     extend: {
       backgroundImage: (theme) => ({
-        'gradient-glass': 'linear-gradient(to top, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02))',
-        'gradient-primary-glass': 'linear-gradient(to top, rgba(168, 85, 247, 0.3), rgba(168, 85, 247, 0.08))',
         'gradient-primary': `linear-gradient(120deg, ${theme('colors.purple.500')}, ${theme('colors.indigo.500')})`,
+      }),
+      boxShadow: (theme) => ({
+        'inset-primary': `inset 0 0 12px ${theme('colors.purple.400/25%')}`,
+        'inset-neutral': `inset 0 0 12px ${theme('colors.gray.400/25%')}`,
       }),
       spacing: {
         '104': '26rem',
@@ -17,7 +19,6 @@ export default {
       animation: {
         'spinner-linear': 'spinner-spin .8s linear infinite',
         'spinner-ease': 'spinner-spin .8s ease infinite',
-        'resize': 'resize .2s ease-in-out forwards',
       },
       keyframes: {
         'ripple': {
@@ -40,7 +41,7 @@ export default {
       screens: {
         '2xl': '1536px',
         '3xl': '1920px',
-      }
+      },
     },
   },
   plugins: [],
