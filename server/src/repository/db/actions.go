@@ -22,7 +22,7 @@ func (db *DB[T]) Find(entity *T) (*T, error) {
 
 	name := reflect.TypeOf(*entity).Name()
 	result, err := neo4j.ExecuteQuery(db.ctx, db.driver,
-		fmt.Sprintf("MATCH (n:%s) %s RETURN n", name, args[:len(args)-3]), values, neo4j.EagerResultTransformer)
+		fmt.Sprintf("MATCH (n:%s) WHERE%sRETURN n", name, args[:len(args)-3]), values, neo4j.EagerResultTransformer)
 	if err != nil {
 		return nil, err
 	}
