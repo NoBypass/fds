@@ -17,17 +17,18 @@ func (db *DB[T]) Find(entity *T) (*T, error) {
 
 	var args string
 	for key := range values {
-		args += fmt.Sprintf("%s: $%s,", key, key)
+		args += fmt.Sprintf(" toLower(n.%s) = toLower($%s) AND", key, key)
 	}
 
+	name := reflect.TypeOf(*entity).Name()
 	result, err := neo4j.ExecuteQuery(db.ctx, db.driver,
-		fmt.Sprintf("MATCH (n:%s { %s }) RETURN n", reflect.TypeOf(*entity).Name(), args[:len(args)-1]), values, neo4j.EagerResultTransformer)
+		fmt.Sprintf("MATCH (n:%s) %s RETURN n", name, args[:len(args)-3]), values, neo4j.EagerResultTransformer)
 	if err != nil {
 		return nil, err
 	}
 
 	if result.Records == nil || len(result.Records) == 0 {
-		return nil, handlers.HttpError(db.ctx, http.StatusNotFound, "not found")
+		return nil, handlers.HttpError(db.ctx, http.StatusNotFound, name+" not found")
 	}
 
 	entity, err = utils.MapResult(entity, result, "n")
