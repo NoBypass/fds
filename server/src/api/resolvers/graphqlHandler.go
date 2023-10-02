@@ -22,8 +22,9 @@ func GraphQLHandler(ctx context.Context) {
 	// If-Else statement to use GraphiQL along with the GraphQL handler
 	if req.Method == "POST" {
 		var requestBody struct {
-			Query         string `json:"query"`
-			OperationName string `json:"operationName"`
+			Query         string                 `json:"query"`
+			OperationName string                 `json:"operationName"`
+			Variables     map[string]interface{} `json:"variables"`
 		}
 		if err := json.NewDecoder(req.Body).Decode(&requestBody); err != nil {
 			handlers.HttpError(ctx, http.StatusBadRequest, "Invalid request body")
@@ -31,9 +32,10 @@ func GraphQLHandler(ctx context.Context) {
 		}
 
 		result := graphql.Do(graphql.Params{
-			Schema:        generated.RootSchema,
-			RequestString: requestBody.Query,
-			Context:       ctx,
+			Schema:         generated.RootSchema,
+			RequestString:  requestBody.Query,
+			Context:        ctx,
+			VariableValues: requestBody.Variables,
 		})
 		if len(result.Errors) != 0 {
 			handlers.Error(ctx, result.Errors[0])
