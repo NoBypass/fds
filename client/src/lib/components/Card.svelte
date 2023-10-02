@@ -11,7 +11,7 @@
     const rad = 200
 
     $: boundingBox = ref?.getBoundingClientRect()
-    mouseStore.subscribe((point: Point) => {
+    mouseStore.onMove((point: Point) => {
         if (boundingBox && mouseStore.intersects(boundingBox)) {
             mouseLocation = { x: point.x - boundingBox.left - rad, y: point.y - boundingBox.top - rad }
         }

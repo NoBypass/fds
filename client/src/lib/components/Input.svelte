@@ -1,5 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte'
+    import { mouseStore } from '$lib/stores/location'
+    import type { Point } from '$lib/types/common'
 
     export let placeholder = ''
     export let rounded = false
@@ -8,7 +10,7 @@
     export let password = false
     export let value = ''
     export let tw = ''
-    export let regex = /./
+    export let regex: RegExp | undefined
     export let id = 'c'
 
     let inputRef: undefined | HTMLInputElement
@@ -25,17 +27,19 @@
     }
 
     $: if (mainRef) {
-        mainRef.addEventListener('click', () => {
+        mouseStore.onClick(() => {
             isFocused = true
-        })
+        }, mainRef.getBoundingClientRect())
     }
 
     $: handleFocus(isFocused)
     const handleFocus = (f: boolean) => {
         if (!mainRef) return
         for (const c of classnames) {
-            if (f) mainRef.classList.add(c)
-            else mainRef.classList.remove(c)
+            if (f) {
+                inputRef?.focus()
+                mainRef.classList.add(c)
+            } else mainRef.classList.remove(c)
         }
         mainRef.classList.toggle('hover:border-neutral-500')
     }
@@ -43,19 +47,25 @@
     const handleInput = () => {
         if (!inputRef) return
         const v = inputRef.value
-        if (regex.test(v)) {
+        if (!regex) {
             dispatch('input', v)
             value = inputRef.value
-        } else inputRef.value = value.slice(0, -1)
+        } else {
+            if (regex && regex.test(v)) {
+                dispatch('input', v)
+                value = inputRef.value
+            } else inputRef.value = value.slice(0, -1)
+        }
 
         if (!isFocused) isFocused = true
     }
 </script>
 
-<div class="pt-8">
-    <div bind:this={mainRef} class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border flex {rounded ? 'rounded-full' : 'rounded-lg'} px-2.5 {tw}">
+<div class="pt-8 {tw}">
+    <div bind:this={mainRef}
+         class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border flex {rounded ? 'rounded-full' : 'rounded-lg'} px-2.5">
         <slot name="left" />
-        <label for={id} class="z-0 absolute text-white/50 transition duration-150 {isFocused ? '-translate-y-9 -translate-x-2.5' : ''}">{placeholder}</label>
+        <label for={id} class="z-0 {isFocused ? 'absolute -translate-y-9 -translate-x-2.5' : 'whitespace-nowrap relative hover:cursor-text'} text-white/50 transition duration-150">{placeholder}</label>
         <input on:blur={() => isFocused = false}
                on:input={handleInput}
                bind:this={inputRef}

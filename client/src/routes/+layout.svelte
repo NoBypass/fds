@@ -81,13 +81,11 @@
     }
 </style>
 
-<svelte:window on:mousemove={(e) => {
-    mouseStore.update(e.clientX, e.clientY)
-}} />
+<svelte:window on:mousemove={(e) => mouseStore.move(e.clientX, e.clientY)}
+               on:click={mouseStore.click}/>
 
 <Alertbox />
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
-
 <div class="z-0 opacity-40 w-screen overflow-hidden">
     <Shadows />
 </div>

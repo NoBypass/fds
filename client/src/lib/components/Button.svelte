@@ -22,7 +22,7 @@
     const handleClick = (e: MouseEvent) => {
         dispatch('click', e)
         if (buttonRef) {
-            if (href != '') window.open(href)
+            if (href != '') window.location.replace(href)
 
             const ripple = document.createElement('span')
             const bounds = buttonRef.getBoundingClientRect()
