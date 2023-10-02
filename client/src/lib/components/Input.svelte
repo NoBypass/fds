@@ -15,10 +15,10 @@
     let mainRef: undefined | HTMLDivElement
     let isFocused = false
 
-    const classnames = 'shadow-md shadow-purple-500/50 border-purple-500'.split(' ')
+    const classnames = 'ring-1 ring-purple-500 outline outline-1 outline-offset-4 outline-purple-500/40'.split(' ')
     const dispatch = createEventDispatcher()
     const colors = {
-        neutral: 'hover:border-neutral-500 border-neutral-700',
+        neutral: 'hover:border-neutral-500 border-neutral-700 hover:bg-neutral-700 hover:bg-opacity-10',
         error: 'border-rose-500 hover:border-rose-600',
         success: 'border-emerald-500 hover:border-emerald-600',
         warning: 'border-yellow-500 hover:border-yellow-600',
@@ -53,7 +53,7 @@
 </script>
 
 <div class="pt-8">
-    <div bind:this={mainRef} class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border-2 flex {rounded ? 'rounded-full' : 'rounded-lg'} px-2.5 {tw}">
+    <div bind:this={mainRef} class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border flex {rounded ? 'rounded-full' : 'rounded-lg'} px-2.5 {tw}">
         <slot name="left" />
         <label for={id} class="z-0 absolute text-white/50 transition duration-150 {isFocused ? '-translate-y-9 -translate-x-2.5' : ''}">{placeholder}</label>
         <input on:blur={() => isFocused = false}

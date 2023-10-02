@@ -18,7 +18,7 @@
     })
 </script>
 
-<div class={twMerge(tw, 'group bg-white/[.01] border-2 border-white/5 hover:border-white/10 p-4 rounded-3xl relative transition duration-300 overflow-hidden backdrop-blur-xl', noAnim ? '' : '')}>
+<div class={twMerge(tw, 'group bg-white/[.01] border border-white/10 hover:border-white/[.15] bg-gradient-neutral p-4 rounded-3xl relative transition duration-300 overflow-hidden backdrop-blur-xl', noAnim ? '' : '')}>
     <span bind:this={ref} class="z-0 absolute group-hover:opacity-[.03] opacity-0 transition-opacity duration-300"
           style="background: radial-gradient(rgba(255,255,255) 0, transparent {rad}px);
               width: {rad*2}px;

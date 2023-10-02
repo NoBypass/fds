@@ -5,6 +5,7 @@ export default {
     extend: {
       backgroundImage: (theme) => ({
         'gradient-primary': `linear-gradient(120deg, ${theme('colors.purple.500')}, ${theme('colors.indigo.500')})`,
+        'gradient-neutral': `linear-gradient(to bottom, ${theme('colors.gray.800/10%')}, ${theme('colors.gray.950/50%')})`,
       }),
       boxShadow: (theme) => ({
         'inset-primary': `inset 0 0 12px ${theme('colors.purple.400/25%')}`,
