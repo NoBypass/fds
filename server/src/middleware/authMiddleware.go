@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"github.com/rs/cors"
 	"net/http"
 	"server/src/auth"
 )
@@ -13,8 +14,15 @@ const (
 	BOT        = "bot"
 )
 
+var c = cors.New(cors.Options{
+	AllowedOrigins:   []string{"http://localhost:5173"},
+	AllowedMethods:   []string{"GET", "POST"},
+	AllowedHeaders:   []string{"Authorization", "Content-Type"},
+	AllowCredentials: true,
+})
+
 func Auth(ctx context.Context, run func(ctx context.Context)) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return c.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx = context.WithValue(ctx, "req", r)
 		ctx = context.WithValue(ctx, "res", w)
 
@@ -25,5 +33,5 @@ func Auth(ctx context.Context, run func(ctx context.Context)) http.Handler {
 
 		RateLimiterMiddleware(ctx)
 		run(ctx)
-	})
+	}))
 }
