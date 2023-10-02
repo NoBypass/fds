@@ -1,15 +1,23 @@
 import { writable } from 'svelte/store'
+import type { Listener } from '$lib/types/common'
 
 const curr = { x: 0, y: 0 }
 export const mouse = writable(curr)
 
+const listeners: Listener[] = []
+
 export const mouseStore = {
-    update: (x: number, y: number) => {
+    move: (x: number, y: number) => {
         mouse.update(() => ({ x, y }))
         curr.x = x
         curr.y = y
     },
-    subscribe: (run: (value: { x: number, y: number }) => void) => {
+    click: () => {
+        listeners.forEach(({ run, event }) => {
+            if (event === 'click') run()
+        })
+    },
+    onMove: (run: (value: { x: number, y: number }) => void) => {
         mouse.subscribe(run)
     },
     intersects: (rect: DOMRect): boolean => {
@@ -18,5 +26,12 @@ export const mouseStore = {
             && x <= rect.right
             && y >= rect.top
             && y <= rect.bottom
+    },
+    onClick: (exec: () => void, rect?: DOMRect) => {
+        const run = () => {
+            if (rect && !mouseStore.intersects(rect)) return
+            exec()
+        }
+        listeners.push({ run, event: 'click' })
     }
 }
