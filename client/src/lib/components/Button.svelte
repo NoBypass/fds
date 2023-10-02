@@ -17,8 +17,8 @@
 
     let buttonRef: undefined | HTMLElement
     let dispatch = createEventDispatcher()
-    const styleClass = `${disabled ? styles[type].split(' ').filter(c => c.startsWith('hover:')).join(' ') : styles[type]} ${disabled ? 'opacity-70' : ''}`
-    
+    $: styleClass = `${disabled ? styles[type].split(' ').filter(c => !c.startsWith('hover:')).join(' ') : styles[type]} ${disabled ? 'opacity-50 saturate-50 ' : 'active:scale-[.97]'}`
+
     const handleClick = (e: MouseEvent) => {
         dispatch('click', e)
         if (buttonRef) {
@@ -42,7 +42,7 @@
 <button bind:this={buttonRef}
         on:mousedown={handleClick}
         type="button"
-        disabled={disabled}
-        class="{twMerge(`${styleClass} active:scale-[.97] z-10 overflow-hidden ${rounded ? 'rounded-full' : 'rounded-md'} px-5 py-1.5 transition-all duration-150 relative`, tw)}">
+        {disabled}
+        class="{twMerge(`${styleClass} z-10 overflow-hidden ${rounded ? 'rounded-full' : 'rounded-md'} px-5 py-1.5 transition-all duration-150 relative`, tw)}">
     <slot />
 </button>

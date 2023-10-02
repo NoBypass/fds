@@ -4,7 +4,7 @@
     export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md'
     export let type: 'p' | 's' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = 'p'
     export let tw = ''
-    export let color: 'neutral' | 'error' | 'gradient' = 'neutral'
+    export let color: 'neutral' | 'danger' | 'gradient' = 'neutral'
 
     const sizes = {
         xs: 'text-xs',
@@ -16,7 +16,7 @@
 
     const colors = {
         neutral: '',
-        error: 'text-rose-700',
+        danger: 'text-rose-700',
         gradient: 'bg-gradient-primary bg-clip-text text-transparent',
     }
 

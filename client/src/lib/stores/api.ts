@@ -65,7 +65,8 @@ export const api = readable({
         return schema(instance)
     },
     graphql: {
-        query: async <T>(query: string, operationName?: string) => {
+        query: async <T>({ query, variables, operationName }: {query: string, variables: unknown, operationName?: string
+    }) => {
             const res = await fetch('http://localhost:8080/graphql', { // TODO: use env variable
                 method: 'POST',
                 headers: {
@@ -74,7 +75,7 @@ export const api = readable({
                 body: JSON.stringify({
                     operationName: operationName || '',
                     query: query.replace(/\s+/g, ''),
-                    variables: {},
+                    variables,
                 }),
             })
             return (await res.json() as {

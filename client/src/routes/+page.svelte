@@ -3,8 +3,9 @@
     import Input from '$lib/components/Input.svelte'
     import Text from '$lib/components/Text.svelte'
     import Card from '$lib/components/Card.svelte'
+    import type { SvelteComponent } from 'svelte'
 
-    let inputRef: undefined | HTMLElement
+    let inputRef: undefined | SvelteComponent | HTMLElement
 
     $: if (inputRef && typeof inputRef.focus === 'function') {
         inputRef.focus()
