@@ -61,7 +61,7 @@
     }
 </script>
 
-<div class="pt-8 pb-4 {tw}">
+<div class="pt-8 {tw}">
     <div bind:this={mainRef}
          class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border flex {rounded ? 'rounded-full' : 'rounded-lg'} px-2.5">
         <slot name="left" />

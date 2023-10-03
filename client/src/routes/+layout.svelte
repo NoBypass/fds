@@ -4,7 +4,6 @@
     import ResponsiveContainer from '$lib/components/ResponsiveContainer.svelte'
     import Text from '$lib/components/Text.svelte'
     import Button from '$lib/components/Button.svelte'
-    import SigninModal from '$lib/components/Modals/SigninModal.svelte'
     import ConfirmationModal from '$lib/components/Modals/ConfirmationModal.svelte'
     import SuccessModal from '$lib/components/Modals/SuccessModal.svelte'
     import Avatar from '$lib/components/Avatar.svelte'
@@ -12,11 +11,9 @@
     import DropdownItem from '$lib/components/DropdownItem.svelte'
     import Shadows from '$lib/components/Shadows.svelte'
     import Alertbox from '$lib/components/Alertbox.svelte'
-    import { api } from '$lib/stores/api'
     import { mouseStore } from '$lib/stores/location'
 
     let showCommandPalette = false
-    let showSigninModal = false
     let showSuccessModal = false
     let showConfirmationModal = false
     let token: string | undefined
@@ -33,45 +30,6 @@
         localStorage.removeItem('token')
         localStorage.removeItem('self')
         token = undefined
-    }
-
-    const submitInfo = async (info: CustomEvent) => {
-        const data: {
-            name: string
-            password: string
-            remember: boolean
-        } = info.detail
-        const res = await $api.graphql.query<{readonly token: string, readonly name: string}>(`mutation {
-            signin(name: "${data.name}", password: "${data.password}", remember: ${data.remember}) {
-                token, name
-            }
-        }`, 'signin:'+data.name)
-
-        if (res.token && res.name) {
-            localStorage.setItem('token', res.token)
-            localStorage.setItem('self', res.name)
-            showSuccessModal = true
-        } else showConfirmationModal = true
-    }
-
-    type Shadow = {
-        opacity: number
-        color: string
-        height: number
-        width: number
-        offsetX: number
-        offsetY: number
-    }
-
-    let shadows: undefined | Shadow[]
-    for (let i = 0; i < 5; i++) {
-        const opacity = Math.random()
-        const color = `rgba(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255}, ${opacity})`
-        const height = Math.random()*100
-        const width = Math.random()*100
-        const offsetX = Math.random()*100
-        const offsetY = Math.random()*100
-        shadows = [...shadows || [], { opacity, color, height, width, offsetX, offsetY }]
     }
 </script>
 
@@ -90,7 +48,6 @@
     <Shadows />
 </div>
 <ResponsiveContainer tw="bg-white/5">
-    <SigninModal on:close={() => showSigninModal = false} open={showSigninModal} on:submit={submitInfo} />
     <nav class="grid grid-rows-none grid-cols-3 w-full h-20">
 
         <div class="flex items-center gap-2">
@@ -112,7 +69,7 @@
 
         <div class="justify-self-end self-center">
             {#if (!token)}
-                <Button type="primary" on:click={() => showSigninModal = true}>Login</Button>
+                <Button type="primary" href="/login">Login</Button>
             {:else}
                 <Dropdown>
                     <Avatar slot="trigger" />
