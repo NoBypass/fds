@@ -43,6 +43,7 @@
     $: handleFocus(isFocused)
     const handleFocus = (f: boolean) => {
         if (!mainRef) return
+        console.log('confirmed'+placeholder)
         for (const c of classnames) {
             if (f && inputRef) {
                 inputRef.focus()
@@ -70,10 +71,12 @@
 </script>
 
 <div class="pt-8 {tw}">
+    <label for={id} class="z-0 {placeholderIsTop ? '-translate-y-8' : 'translate-y-1 translate-x-2.5 whitespace-nowrap hover:cursor-text'} absolute text-white/50 transition duration-150">
+        {placeholder}
+    </label>
     <div bind:this={mainRef}
          class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border flex {rounded ? 'rounded-full' : 'rounded-lg'} px-2.5">
         <slot name="left" />
-        <label for={id} class="z-0 {placeholderIsTop ? 'absolute -translate-y-9 -translate-x-2.5' : 'whitespace-nowrap relative hover:cursor-text'} text-white/50 transition duration-150">{placeholder}</label>
         <input on:blur={() => isFocused = false}
                on:input={handleInput}
                on:focus={() => isFocused = true}

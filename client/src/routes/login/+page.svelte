@@ -7,6 +7,7 @@
     import { alertStore } from '$lib/stores/alertStore'
     import Spinner from '$lib/components/Spinner.svelte'
     import api from '$lib/api/graphql'
+    import type { ResError } from '$lib/types/api'
 
     const initialState = {
         name: {
@@ -77,15 +78,15 @@
                     api.account.name(name.val).then(({ data }) => {
                         name.val = data.name
                         loginConfig()
-                    }).catch(async (err) => {
+                    }).catch(async (err: ResError) => {
                         if (err.status === 404) {
                             return await accountNotTaken()
                         }
 
-                        name.error = err.message
+                        name.error = err.msg
                         name.isLoading = false
                         name.resolved = true
-                        alertStore.push(err.message, 'danger')
+                        alertStore.push(err.msg, 'danger')
                     })
                 }
             }, 500)
@@ -98,8 +99,12 @@
             name.val = data.name
             console.log(data)
             name.error = ''
-        }).catch(() => {
-            name.error = 'This Minecraft account does not exist.'
+        }).catch((err: ResError) => {
+            if (err.status === 404) {
+                name.error = 'This Minecraft account does not exist.'
+            } else {
+                alertStore.push(err.msg, 'danger')
+            }
         })
 
         name.isLoading = false
@@ -121,13 +126,13 @@
             localStorage.setItem('token', data.token)
             loginConfig()
             return
-        }).catch((e) => {
-            if (e.status === 404) {
+        }).catch((err: ResError) => {
+            if (err.status === 404) {
                 alertStore.push('This account does not exist.', 'danger')
-            } else if (e.status === 401) {
+            } else if (err.status === 401) {
                 alertStore.push('Incorrect password.', 'danger')
             } else {
-                alertStore.push(e.message, 'danger')
+                alertStore.push(err.msg, 'danger')
             }
         })
     }
