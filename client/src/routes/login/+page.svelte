@@ -39,8 +39,24 @@
     $: {
         name.valid = name.val.length > 0 && name.error === '' && name.resolved
         password.valid = password.val.length > 0 && password.error === ''
-        cpassword.error = cpassword.val !== password.val ? 'Passwords do not match.' : ''
+        cpassword.error = cpassword.val !== password.val && cpassword.val.length > 0 ? 'Passwords do not match.' : ''
         cpassword.valid = cpassword.val.length > 0 && cpassword.error === '' || !!isLoggingIn
+
+        if (password.val.length === 0) {
+            password.error = ''
+        } else if (password.val.length < 10) {
+            password.error = 'Password must be at least 10 characters long.'
+        } else if (!/[A-Z]/.test(password.val)) {
+            password.error = 'Password must contain at least one uppercase letter.'
+        } else if (!/[a-z]/.test(password.val)) {
+            password.error = 'Password must contain at least one lowercase letter.'
+        } else if (!/[0-9]/.test(password.val)) {
+            password.error = 'Password must contain at least one number.'
+        } else if (! /[!@#$%^&*()\-_=+{}[\]:;"'<>,.?/\\|~`]/.test(password.val)) {
+            password.error = 'Password must contain at least one special character.'
+        } else {
+            password.error = ''
+        }
     }
 
     const loginConfig = () => {
@@ -91,20 +107,6 @@
     }
 
     const auth = () => {
-        if (password.val.length < 10) {
-            password.error = 'Password must be at least 10 characters long.'
-        } else if (!/[A-Z]/.test(password.val)) {
-            password.error = 'Password must contain at least one uppercase letter.'
-        } else if (!/[a-z]/.test(password.val)) {
-            password.error = 'Password must contain at least one lowercase letter.'
-        } else if (!/[0-9]/.test(password.val)) {
-            password.error = 'Password must contain at least one number.'
-        } else if (! /[!@#$%^&*()\-_=+{}[\]:;"'<>,.?/\\|~`]/.test(password.val)) {
-            password.error = 'Password must contain at least one special character.'
-        } else {
-            password.error = ''
-        }
-
         if (!name.valid || !password.valid) {
             alertStore.push('Unexpected error, please fill out all the fields correctly.', 'danger')
             return
@@ -135,22 +137,31 @@
     <Card tw="place-self-end w-96">
         <form class="grid px-2 pb-2">
             <Text tw="mb-2" b type="h2">{isLoggingIn === undefined ? 'Login / Register' : isLoggingIn ? 'Login' : 'Register'}</Text>
-            <Input id="ign" bind:value={name.val} color={name.error.length > 0 ? 'danger' : name.valid ? 'success' : 'neutral'} regex={nameRegex} placeholder="Minecraft Name">
+            <Input bind:value={name.val}
+                   bind:error={name.error}
+                   bind:isSuccess={name.valid}
+                   regex={nameRegex}
+                   placeholder="Minecraft Name">
                 <div slot="right">
                     {#if name.isLoading}
                         <Spinner />
                     {/if}
                 </div>
-                <div slot="below">
-                    {#if name.error.length > 0}
-                        <Text size="sm" color="danger" b>{name.error}</Text>
-                    {/if}
-                </div>
             </Input>
-            <Input id="pwd" bind:value={password.val} regex={pwdRegex} password placeholder="Password" />
+            <Input bind:value={password.val}
+                   bind:error={password.error}
+                   bind:isSuccess={password.valid}
+                   regex={pwdRegex}
+                   password
+                   placeholder={isLoggingIn === false ? 'Password (NOT YOUR MINECRAFT LOGIN)' : 'Password'} />
 
             {#if isLoggingIn === false}
-                <Input id="cpwd" bind:value={cpassword.val} regex={pwdRegex} password placeholder="Confirm Password" />
+                <Input bind:error={cpassword.error}
+                       bind:value={cpassword.val}
+                       bind:isSuccess={cpassword.valid}
+                       regex={pwdRegex}
+                       password
+                       placeholder="Confirm Password" />
             {/if}
 
             <Checkbox tw="mb-8 mt-4" id="remember" bind:checked={remember}>

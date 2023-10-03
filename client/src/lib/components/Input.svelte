@@ -1,21 +1,29 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte'
-    import { mouseStore } from '$lib/stores/location'
+    import Text from '$lib/components/Text.svelte'
 
+    export let color: 'neutral' | 'danger' | 'success' | 'warning' = 'neutral'
+    export let regex: RegExp | undefined = undefined
+    export let disabled = false
+    export let password = false
     export let placeholder = ''
     export let rounded = false
-    export let disabled = false
-    export let color: 'neutral' | 'danger' | 'success' | 'warning' = 'neutral'
-    export let password = false
+    export let isSuccess = false
     export let value = ''
-    export let tw = ''
-    export let regex: RegExp | undefined = undefined
+    export let error = ''
     export let id = 'c'
+    export let tw = ''
 
+    let actualColor = color
     let inputRef: undefined | HTMLInputElement
     let mainRef: undefined | HTMLDivElement
     let isFocused = false
 
+    $: {
+        if (error.length > 0) color = 'danger'
+        else if (isSuccess) color = 'success'
+        else color = actualColor
+    }
     $: placeholderIsTop = isFocused || value.length > 0
     const classnames = 'ring-1 ring-purple-500 outline outline-1 outline-offset-4 outline-purple-500/40'.split(' ')
     const dispatch = createEventDispatcher()
@@ -27,17 +35,17 @@
     }
 
     $: if (mainRef) {
-        mouseStore.onClick(() => {
+        mainRef.onclick = () => {
             isFocused = true
-        }, mainRef.getBoundingClientRect())
+        }
     }
 
     $: handleFocus(isFocused)
     const handleFocus = (f: boolean) => {
         if (!mainRef) return
         for (const c of classnames) {
-            if (f) {
-                inputRef?.focus()
+            if (f && inputRef) {
+                inputRef.focus()
                 mainRef.classList.add(c)
             } else mainRef.classList.remove(c)
         }
@@ -76,6 +84,10 @@
         <slot name="right" />
     </div>
     <div class="mt-1">
-        <slot name="below" />
+        {#if (error.length > 0)}
+            <Text size="sm" color="danger" b>{error}</Text>
+        {:else}
+            <slot name="below" />
+        {/if}
     </div>
 </div>
