@@ -27,8 +27,8 @@ func GraphQLHandler(ctx context.Context) {
 			Variables     map[string]interface{} `json:"variables"`
 		}
 		if err := json.NewDecoder(req.Body).Decode(&requestBody); err != nil {
-
-			//_ = res.AddError(err, handlers.INVALID_REQUEST_BODY, []string{"graphql.go"})
+			http.Error(res, err.Error(), http.StatusBadRequest)
+			return
 		}
 		result := graphql.Do(graphql.Params{
 			Schema:         generated.RootSchema,

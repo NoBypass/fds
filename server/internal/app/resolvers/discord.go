@@ -30,7 +30,7 @@ func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Dis
 		return nil, err
 	}
 
-	result, err := repository.GiveXp(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.DiscordId, input.Amount)
+	result, err := ogm.GiveXp(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.DiscordId, input.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Dis
 		discord.Xp = discord.Xp - levelMaxXp
 	}
 
-	result, err = repository.UpdateDiscord(ctx, ctx.Value("driver").(neo4j.DriverWithContext), discord)
+	result, err = ogm.UpdateDiscord(ctx, ctx.Value("driver").(neo4j.DriverWithContext), discord)
 	if err != nil {
 		return nil, err
 	}

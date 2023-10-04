@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/rs/cors"
 	"net/http"
-	"server/src/auth"
+	"server/internal/pkg/auth"
 )
 
 const (

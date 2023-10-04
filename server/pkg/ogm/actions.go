@@ -1,19 +1,17 @@
-package db
+package ogm
 
 import (
 	"fmt"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"net/http"
 	"reflect"
-	"server/src/api/handlers"
-	"server/src/utils"
+	"server/internal/pkg/misc"
 )
 
 // Find will find a node in the database by the values
 // of the struct passed in. It will return the node
 // found in the database, or an error if one occurred.
-func (db *DB[T]) Find(entity *T) (*T, error) {
-	values := utils.StructToMap(entity)
+func (db *OGM[T]) Find(entity *T) (*T, error) {
+	values := misc.StructToMap(entity)
 
 	var args string
 	for key := range values {
@@ -28,20 +26,18 @@ func (db *DB[T]) Find(entity *T) (*T, error) {
 	}
 
 	if result.Records == nil || len(result.Records) == 0 {
-		res := db.ctx.Value("res").(*handlers.Responder)
-		res.Status(http.StatusNotFound)
-		return nil, res.AddError(fmt.Errorf(name+" not found"), handlers.NODE_NOT_FOUND, []string{"db.go"})
+		return nil, fmt.Errorf(name + " not found")
 	}
 
-	entity, err = utils.MapResult(entity, result, "n")
+	entity, err = misc.MapResult(entity, result, "n")
 	return entity, err
 }
 
 // Create will create a node in the database by the struct
 // passed in. It will return the node created in the database,
 // or an error if one occurred.
-func (db *DB[T]) Create(entity *T) (*T, error) {
-	values := utils.StructToMap(entity)
+func (db *OGM[T]) Create(entity *T) (*T, error) {
+	values := misc.StructToMap(entity)
 
 	var args string
 	for key := range values {
@@ -54,6 +50,6 @@ func (db *DB[T]) Create(entity *T) (*T, error) {
 		return nil, err
 	}
 
-	entity, err = utils.MapResult(entity, result, "n")
+	entity, err = misc.MapResult(entity, result, "n")
 	return entity, err
 }
