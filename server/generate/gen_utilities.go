@@ -1,8 +1,9 @@
-package utils
+package generate
 
 import (
 	"fmt"
 	"regexp"
+	"server/src/utils"
 	"strings"
 )
 
@@ -44,7 +45,7 @@ func GenerateRootSchema(schema string) string {
 		} else if actionRegex.MatchString(line) {
 			strings.Trim(line, " ")
 			actionName := strings.Trim(strings.Split(line, "(")[0], " ")
-			lines[i] = "\t\t\t\"" + actionName + "\": " + FirstUpper(actionName) + name + ","
+			lines[i] = "\t\t\t\"" + actionName + "\": " + utils.FirstUpper(actionName) + name + ","
 		}
 	}
 
@@ -61,8 +62,8 @@ func GenerateSchema(schema string, root string) (string, string, string) {
 
 	for _, t := range *newSchema {
 		structs := []string{fmt.Sprintf("type %s struct {", t.Name)}
-		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{\n\tName: \"%s\", Fields: graphql.Fields{", FirstLower(t.Name), t.Name)}
-		mappers := []string{fmt.Sprintf("\nfunc ResultTo%s(result *neo4j.EagerResult) (*%s, error) {\n\tr, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name, FirstLower(t.Name)[:1])}
+		types := []string{fmt.Sprintf("var %sType = graphql.NewObject(graphql.ObjectConfig{\n\tName: \"%s\", Fields: graphql.Fields{", utils.FirstLower(t.Name), t.Name)}
+		mappers := []string{fmt.Sprintf("\nfunc ResultTo%s(result *neo4j.EagerResult) (*%s, error) {\n\tr, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", t.Name, t.Name, utils.FirstLower(t.Name)[:1])}
 		returns := []string{fmt.Sprintf("\treturn &%s{", t.Name)}
 
 		for _, field := range t.Fields {
@@ -74,7 +75,7 @@ func GenerateSchema(schema string, root string) (string, string, string) {
 			pointer := ""
 			nonnullString := "graphql." + field.GraphQLType
 			if !IsGraphQLType(field.GraphQLType) {
-				nonnullString = FirstLower(field.GraphQLType) + "Type"
+				nonnullString = utils.FirstLower(field.GraphQLType) + "Type"
 				pointer = "*"
 			}
 			if field.IsRequired {
@@ -87,7 +88,7 @@ func GenerateSchema(schema string, root string) (string, string, string) {
 				mappers = append(mappers, fmt.Sprintf("\t%s, err := neo4j.GetProperty[%s](r, \"%s\")\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GoType, field.JsonName))
 			} else {
 				mappers = append(mappers, fmt.Sprintf("\t%s, err := ResultTo%s(result)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n", field.GraphQLName, field.GraphQLType))
-				externalTypes += fmt.Sprintf("\t%sType.AddFieldConfig(\"%s\", &graphql.Field{Type: %s})\n", FirstLower(t.Name), field.GraphQLName, nonnullString)
+				externalTypes += fmt.Sprintf("\t%sType.AddFieldConfig(\"%s\", &graphql.Field{Type: %s})\n", utils.FirstLower(t.Name), field.GraphQLName, nonnullString)
 			}
 		}
 
@@ -97,7 +98,7 @@ func GenerateSchema(schema string, root string) (string, string, string) {
 					continue
 				}
 
-				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", rootField.GoName+key, FirstLower(t.Name))}
+				res := []string{fmt.Sprintf("var %s = &graphql.Field{\n\tType: %sType,\n\tArgs: graphql.FieldConfigArgument{", rootField.GoName+key, utils.FirstLower(t.Name))}
 				inputType := []string{fmt.Sprintf("type %sInput struct {", rootField.GoName)}
 				inputMapper := []string{fmt.Sprintf("\t\tinput := &models.%sInput{", rootField.GoName)}
 
@@ -107,8 +108,8 @@ func GenerateSchema(schema string, root string) (string, string, string) {
 						nonnullString = fmt.Sprintf("graphql.%s", parameter.Type)
 					}
 					res = append(res, fmt.Sprintf("\t\t\"%s\": &graphql.ArgumentConfig{\n\t\t\tType: %s,\n\t\t},", parameter.Name, nonnullString))
-					inputType = append(inputType, fmt.Sprintf("\t%s %s `json:\"%s\"`", FirstUpper(parameter.Name), parameter.GoType, parameter.Name))
-					inputMapper = append(inputMapper, fmt.Sprintf("\t\t\t%s: p.Args[\"%s\"].(%s),", FirstUpper(parameter.Name), parameter.Name, parameter.GoType))
+					inputType = append(inputType, fmt.Sprintf("\t%s %s `json:\"%s\"`", utils.FirstUpper(parameter.Name), parameter.GoType, parameter.Name))
+					inputMapper = append(inputMapper, fmt.Sprintf("\t\t\t%s: p.Args[\"%s\"].(%s),", utils.FirstUpper(parameter.Name), parameter.Name, parameter.GoType))
 				}
 
 				res = append(res, fmt.Sprintf("\t},\n\tResolve: func(p graphql.ResolveParams) (interface{}, error) {\n%s\t\treturn services.%s(p.Context, input)\n\t},", strings.Join(inputMapper, "\n")+"\t\t}\n\n", rootField.GoName+key))
@@ -145,8 +146,8 @@ func schemaToType(schema string) *map[string]Type {
 
 		} else if propertyRegex.MatchString(line) {
 			property := strings.Trim(strings.Split(line, ":")[0], " ")
-			goProperty := FirstUpper(property)
-			jsonProperty := ConvertCamelToSnake(property)
+			goProperty := utils.FirstUpper(property)
+			jsonProperty := utils.ConvertCamelToSnake(property)
 			isRequired := strings.Contains(line, "!")
 
 			trim := strings.Split(line, " ")
@@ -162,7 +163,7 @@ func schemaToType(schema string) *map[string]Type {
 			if resolverRegex.MatchString(line) {
 				paramString := strings.Split(strings.Split(line, "(")[1], ")")[0]
 				property := strings.Trim(strings.Split(line, "(")[0], " ")
-				goProperty := FirstUpper(property)
+				goProperty := utils.FirstUpper(property)
 				params := strings.Split(paramString, ",")
 				var parameters []Parameter
 				for _, param := range params {
@@ -222,7 +223,7 @@ func getGoType(input string) string {
 	case "id":
 		return "string"
 	default:
-		return FirstUpper(input)
+		return utils.FirstUpper(input)
 	}
 }
 

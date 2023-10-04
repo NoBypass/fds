@@ -1,11 +1,10 @@
-package main
+package generate
 
 import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
-	"server/src/utils"
 	"strings"
 	"time"
 )
@@ -17,7 +16,7 @@ type Config struct {
 
 //go:generate go run generate.go
 
-func main() {
+func generate() {
 	timestamp := time.Now().UnixNano()
 
 	config, err := readConfig()
@@ -52,7 +51,7 @@ func main() {
 		}
 
 		originalRootSchema = string(graphqlContent)
-		rootSchema = utils.GenerateRootSchema(string(graphqlContent))
+		rootSchema = GenerateRootSchema(string(graphqlContent))
 	}
 
 	for i := 0; i < len(files); i++ {
@@ -85,7 +84,7 @@ func main() {
 		if strings.HasPrefix(fileInfo.Name(), "schema") {
 			content += rootSchema + fmt.Sprintf("\n\nfunc InitSchema() {\n%s}\n", specialTypes)
 		} else {
-			c, model, external := utils.GenerateSchema(string(graphqlContent), originalRootSchema)
+			c, model, external := GenerateSchema(string(graphqlContent), originalRootSchema)
 			specialTypes += external
 			content += c
 
