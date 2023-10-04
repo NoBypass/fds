@@ -27,12 +27,14 @@ func NewClaims(role string) (*CustomClaims, error) {
 
 func Allow(ctx context.Context, roles []string) error {
 	claims := ctx.Value("claims").(*CustomClaims)
+	res := ctx.Value("res").(*handlers.Responder)
 	for _, role := range roles {
 		if claims.Role == role {
 			return nil
 		}
 	}
-	return handlers.HttpError(ctx, http.StatusUnauthorized, fmt.Sprintf("you don't have permission to access this. role: %s", claims.Role))
+	res.Status(http.StatusUnauthorized)
+	return res.AddError(fmt.Errorf("you don't have permission to access this. role: %s", claims.Role), handlers.UNAUTHORIZED, []string{"auth.go"})
 }
 
 func HasRole(ctx context.Context, role string) bool {

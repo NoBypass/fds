@@ -6,7 +6,6 @@ import (
 	"github.com/redis/go-redis/v9"
 	"net/http"
 	"server/src/api/handlers"
-	"server/src/api/handlers/logger"
 	"server/src/auth"
 	"time"
 )
@@ -21,6 +20,7 @@ func RateLimiterMiddleware(ctx context.Context) {
 	}
 	cache := ctx.Value("cache").(*redis.Client)
 	req := ctx.Value("req").(*http.Request)
+	res := ctx.Value("res").(*handlers.Responder)
 	ip := req.RemoteAddr
 
 	var rateLimit int64 = 25
@@ -43,8 +43,8 @@ func RateLimiterMiddleware(ctx context.Context) {
 		Member: now,
 	}).Result()
 	if err != nil {
-		handlers.Error(ctx, err)
-		logger.Error(err, "While adding timestamp to Redis")
+		res.Status(http.StatusInternalServerError)
+		_ = res.AddError(err, handlers.KNOWN_ERROR, []string{"rateLimiter.go", "While adding timestamp to Redis"})
 		return
 	}
 
@@ -52,13 +52,14 @@ func RateLimiterMiddleware(ctx context.Context) {
 
 	numRequests, err := cache.ZCard(ctx, ip).Result()
 	if err != nil {
-		handlers.Error(ctx, err)
-		logger.Error(err, "While counting timestamps in Redis")
+		res.Status(http.StatusInternalServerError)
+		_ = res.AddError(err, handlers.KNOWN_ERROR, []string{"rateLimiter.go", "While counting timestamps in Redis"})
 		return
 	}
 
 	if numRequests > rateLimit {
-		handlers.HttpError(ctx, http.StatusTooManyRequests, "Rate limit exceeded")
+		res.Status(http.StatusTooManyRequests)
+		_ = res.AddError(fmt.Errorf("rate limit exceeded"), handlers.RATE_LIMIT_EXCEEDED, []string{"rateLimiter.go", "Rate limit exceeded"})
 		return
 	}
 }

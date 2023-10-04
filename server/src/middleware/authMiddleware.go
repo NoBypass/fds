@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/rs/cors"
 	"net/http"
+	"server/src/api/handlers"
 	"server/src/auth"
 )
 
@@ -23,8 +24,10 @@ var c = cors.New(cors.Options{
 
 func Auth(ctx context.Context, run func(ctx context.Context)) http.Handler {
 	return c.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		responder := handlers.NewResponder(w)
+
 		ctx = context.WithValue(ctx, "req", r)
-		ctx = context.WithValue(ctx, "res", w)
+		ctx = context.WithValue(ctx, "res", responder)
 
 		claims, err := auth.ParseJWT(ctx, r.Header.Get("Authorization"))
 		if err == nil {

@@ -58,7 +58,9 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 
 	ok := utils.CompareHash(input.Password, account.Password)
 	if !ok {
-		return nil, handlers.HttpError(ctx, http.StatusUnauthorized, "incorrect password")
+		res := ctx.Value("res").(*handlers.Responder)
+		res.Status(http.StatusUnauthorized)
+		return nil, res.AddError(err, handlers.UNAUTHORIZED, []string{"accountService.go"})
 	}
 
 	claims, err := auth.NewClaims("user")

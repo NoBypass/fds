@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"net/http"
 	"server/src/api/handlers"
 	"server/src/auth"
 	"server/src/graph/generated/models"
@@ -38,9 +37,10 @@ func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Dis
 	if err != nil {
 		return nil, err
 	}
+	res := ctx.Value("res").(*handlers.Responder)
 
 	if claims.Role != "bot" && claims.Role != "admin" {
-		return nil, handlers.HttpError(ctx, http.StatusUnauthorized, "you do not have permission to give xp")
+		return nil, res.AddError(fmt.Errorf("you do not have permission to give xp"), handlers.UNAUTHORIZED, []string{"discordService.go"})
 	}
 
 	result, err := repository.GiveXp(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.DiscordId, input.Amount)
@@ -49,7 +49,7 @@ func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Dis
 	}
 
 	if result.Records == nil || len(result.Records) == 0 {
-		return nil, handlers.HttpError(ctx, http.StatusNotFound, fmt.Sprintf("could not find discord with id %s", input.DiscordId))
+		return nil, res.AddError(fmt.Errorf("could not find discord with id %s", input.DiscordId), handlers.NODE_NOT_FOUND, []string{"discordService.go"})
 	}
 	discord, err := utils.MapResult(&models.Discord{}, result, "d")
 	if err != nil {

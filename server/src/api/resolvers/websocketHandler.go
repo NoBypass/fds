@@ -43,7 +43,8 @@ func WebSocketHandler(ctx context.Context) {
 		if err != nil {
 			err := conn.WriteMessage(websocket.TextMessage, []byte("invalid request"))
 			if err != nil {
-				handlers.HttpError(ctx, http.StatusBadRequest, "invalid request")
+				res := ctx.Value("res").(*handlers.Responder)
+				_ = res.AddError(err, handlers.INVALID_REQUEST_BODY, []string{"websocketHandler.go"})
 				break
 			}
 			continue

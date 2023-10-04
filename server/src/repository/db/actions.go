@@ -28,7 +28,9 @@ func (db *DB[T]) Find(entity *T) (*T, error) {
 	}
 
 	if result.Records == nil || len(result.Records) == 0 {
-		return nil, handlers.HttpError(db.ctx, http.StatusNotFound, name+" not found")
+		res := db.ctx.Value("res").(*handlers.Responder)
+		res.Status(http.StatusNotFound)
+		return nil, res.AddError(fmt.Errorf(name+" not found"), handlers.NODE_NOT_FOUND, []string{"db.go"})
 	}
 
 	entity, err = utils.MapResult(entity, result, "n")
