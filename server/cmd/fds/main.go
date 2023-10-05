@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"github.com/fatih/color"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -15,7 +15,15 @@ import (
 )
 
 func main() {
-	fmt.Println("Starting FDS server")
+	color.New(color.FgHiMagenta, color.Bold).Println(`
+8888888  88888     88888      88888                                        
+88       88  88   88   88    88   88   8888                   8888         
+88888    88   88   888        888     88  88  88 88  88  88  88  88  88 88 
+88       88   88     888        888   888888  888 8  88  88  888888  888 8 
+88       88  88   88   88    88   88  88      88      8888   88      88    
+88       88888     88888      88888    88888  88       88     88888  88`)
+	color.New(color.FgHiWhite).Println("\nLogger output:")
+
 	generated.InitSchema()
 
 	r := mux.NewRouter()
@@ -26,13 +34,13 @@ func main() {
 	driver, cache := db.Connect(ctx)
 	ctx = context.WithValue(ctx, "driver", driver)
 	ctx = context.WithValue(ctx, "cache", cache)
-	fmt.Println("Connected to database")
+
+	r.Use(middleware.Logger)
 
 	// TODO use middleware to handle auth, rate limiting, etc.
 	r.Handle("/ws", middleware.Auth(ctx, handlers.WebSocketHandler))
 	r.Handle("/graphql", middleware.Auth(ctx, handlers.GraphQLHandler))
 
-	fmt.Println("Server started & graphql initialized")
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         "127.0.0.1:8080",
