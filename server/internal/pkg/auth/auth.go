@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"server/internal/app/global"
 	"server/internal/pkg/generated/models"
 	"server/internal/pkg/misc"
 )
@@ -43,10 +44,10 @@ func (c *CustomClaims) Generate(ctx context.Context) (string, error) {
 	return tokenString, nil
 }
 
-func ParseJWT(ctx context.Context, tokenString string) (*CustomClaims, error) {
+func ParseJWT(tokenString string) (*CustomClaims, error) {
 	c := &CustomClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, c, func(token *jwt.Token) (interface{}, error) {
-		return []byte(ctx.Value("env").(misc.ENV).JWTSecret), nil
+		return []byte(global.Get().Env.JWTSecret), nil
 	})
 
 	if err != nil {

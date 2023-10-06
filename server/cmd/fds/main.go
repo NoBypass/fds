@@ -1,16 +1,13 @@
 package main
 
 import (
-	"context"
 	"github.com/fatih/color"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"server/internal/app/handlers"
 	"server/internal/app/middleware"
-	"server/internal/pkg/db"
 	"server/internal/pkg/generated"
-	"server/internal/pkg/misc"
 	"time"
 )
 
@@ -27,19 +24,13 @@ func main() {
 	generated.InitSchema()
 
 	r := mux.NewRouter()
-	env := misc.FetchEnv()
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, "env", env)
-
-	driver, cache := db.Connect(ctx)
-	ctx = context.WithValue(ctx, "driver", driver)
-	ctx = context.WithValue(ctx, "cache", cache)
 
 	r.Use(middleware.Logger)
+	r.Use(middleware.Auth)
+	r.Use(middleware.RateLimiter)
 
-	// TODO use middleware to handle auth, rate limiting, etc.
-	r.Handle("/ws", middleware.Auth(ctx, handlers.WebSocketHandler))
-	r.Handle("/graphql", middleware.Auth(ctx, handlers.GraphQLHandler))
+	r.Handle("/ws", handlers.WebSocketHandler())
+	r.Handle("/graphql", handlers.GraphQLHandler())
 
 	srv := &http.Server{
 		Handler:      r,

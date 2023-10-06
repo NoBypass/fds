@@ -16,45 +16,47 @@ type GraphQLBody struct {
 	Variables     map[string]interface{} `json:"variables"`
 }
 
-func GraphQLHandler(ctx context.Context) {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
+func GraphQLHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+		defer cancel()
 
-	req := ctx.Value("req").(*http.Request)
-	res := ctx.Value("res").(http.ResponseWriter)
-	c := make(chan bool, 1)
+		req := ctx.Value("req").(*http.Request)
+		res := ctx.Value("res").(http.ResponseWriter)
+		c := make(chan bool, 1)
 
-	go func() { // stop routine after timeout
-		h := handler.New(&handler.Config{
-			Schema:     &generated.RootSchema,
-			Pretty:     true,
-			GraphiQL:   false,
-			Playground: true,
-		})
-
-		// If-Else statement to use GraphiQL along with the GraphQL handler
-		if req.Method == "POST" {
-			requestBody := req.Context().Value("requestBody").(GraphQLBody)
-
-			result := graphql.Do(graphql.Params{
-				Schema:         generated.RootSchema,
-				RequestString:  requestBody.Query,
-				Context:        ctx,
-				VariableValues: requestBody.Variables,
+		go func() {
+			h := handler.New(&handler.Config{
+				Schema:     &generated.RootSchema,
+				Pretty:     true,
+				GraphiQL:   false,
+				Playground: true,
 			})
 
-			_ = json.NewEncoder(res).Encode(result)
-		} else {
-			h.ServeHTTP(res, req)
-		}
-		c <- true
-	}()
+			// If-Else statement to use GraphiQL along with the GraphQL handler
+			if req.Method == "POST" {
+				requestBody := req.Context().Value("requestBody").(GraphQLBody)
 
-	select {
-	case <-c:
-		return
-	case <-ctx.Done():
-		http.Error(res, "Request took too long to execute.", http.StatusRequestTimeout)
-		return
-	}
+				result := graphql.Do(graphql.Params{
+					Schema:         generated.RootSchema,
+					RequestString:  requestBody.Query,
+					Context:        ctx,
+					VariableValues: requestBody.Variables,
+				})
+
+				_ = json.NewEncoder(res).Encode(result)
+			} else {
+				h.ServeHTTP(res, req)
+			}
+			c <- true
+		}()
+
+		select {
+		case <-c:
+			return
+		case <-ctx.Done():
+			http.Error(res, "Request took too long to execute.", http.StatusRequestTimeout)
+			return
+		}
+	})
 }
