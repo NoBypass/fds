@@ -1,7 +1,6 @@
 package global
 
 import (
-	"context"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/redis/go-redis/v9"
 	"server/internal/pkg/db"
@@ -20,9 +19,8 @@ var once sync.Once
 
 func Get() *Context {
 	once.Do(func() {
-		ctx := context.Background()
 		env := misc.FetchEnv()
-		driver, cache := db.Connect(ctx)
+		driver, cache := db.Connect(env)
 		store = &Context{
 			Env:    &env,
 			Driver: &driver,

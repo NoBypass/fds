@@ -7,8 +7,7 @@ import (
 	"server/internal/pkg/misc"
 )
 
-func Connect(ctx context.Context) (neo4j.DriverWithContext, *redis.Client) {
-	env := ctx.Value("env").(misc.ENV)
+func Connect(env misc.ENV) (neo4j.DriverWithContext, *redis.Client) {
 	driver, err := neo4j.NewDriverWithContext("neo4j://"+env.Persistent.URI,
 		neo4j.BasicAuth(env.Persistent.Username, env.Persistent.Password, ""),
 	)
@@ -21,6 +20,16 @@ func Connect(ctx context.Context) (neo4j.DriverWithContext, *redis.Client) {
 		Password: env.Cache.Password,
 		DB:       0,
 	})
+
+	err = driver.VerifyConnectivity(context.Background())
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = cache.Ping(context.Background()).Result()
+	if err != nil {
+		panic(err)
+	}
 
 	return driver, cache
 }

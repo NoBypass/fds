@@ -3,6 +3,7 @@ package ogm
 import (
 	"context"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"server/internal/app/global"
 )
 
 // OGM is a struct which contains the driver
@@ -19,7 +20,7 @@ type OGM[T any] struct {
 // with type safety.
 func New[T any](ctx context.Context) *OGM[T] {
 	return &OGM[T]{
-		driver: ctx.Value("driver").(neo4j.DriverWithContext),
+		driver: *global.Get().Driver,
 		ctx:    ctx,
 	}
 }

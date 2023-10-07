@@ -29,7 +29,7 @@ func (db *OGM[T]) Find(entity *T) (*T, error) {
 		return nil, fmt.Errorf(name + " not found")
 	}
 
-	entity, err = misc.MapResult(entity, result, "n")
+	entity, err = misc.MapResult(entity, result)
 	return entity, err
 }
 
@@ -50,6 +50,6 @@ func (db *OGM[T]) Create(entity *T) (*T, error) {
 		return nil, err
 	}
 
-	entity, err = misc.MapResult(entity, result, "n")
+	entity, err = misc.MapResult(entity, result)
 	return entity, err
 }

@@ -33,10 +33,10 @@ func (c *CustomClaims) Sign(subject *models.Account) *CustomClaims {
 	return c
 }
 
-func (c *CustomClaims) Generate(ctx context.Context) (string, error) {
+func (c *CustomClaims) Generate() (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 
-	tokenString, err := token.SignedString([]byte(ctx.Value("env").(misc.ENV).JWTSecret))
+	tokenString, err := token.SignedString([]byte(global.Get().Env.JWTSecret))
 	if err != nil {
 		return "", err
 	}

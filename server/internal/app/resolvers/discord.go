@@ -3,7 +3,7 @@ package resolvers
 import (
 	"context"
 	"fmt"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"server/internal/app/global"
 	"server/internal/pkg/auth"
 	"server/internal/pkg/generated/models"
 	"server/internal/pkg/misc"
@@ -30,7 +30,8 @@ func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Dis
 		return nil, err
 	}
 
-	result, err := ogm.GiveXp(ctx, ctx.Value("driver").(neo4j.DriverWithContext), input.DiscordId, input.Amount)
+	driver := *global.Get().Driver
+	result, err := ogm.GiveXp(ctx, driver, input.DiscordId, input.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +39,7 @@ func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Dis
 	if result.Records == nil || len(result.Records) == 0 {
 		return nil, fmt.Errorf("could not find discord with id %s", input.DiscordId)
 	}
-	discord, err := misc.MapResult(&models.Discord{}, result, "d")
+	discord, err := misc.MapResult(&models.Discord{}, result)
 	if err != nil {
 		return nil, err
 	}
@@ -49,11 +50,11 @@ func GiveXpMutation(ctx context.Context, input *models.GiveXpInput) (*models.Dis
 		discord.Xp = discord.Xp - levelMaxXp
 	}
 
-	result, err = ogm.UpdateDiscord(ctx, ctx.Value("driver").(neo4j.DriverWithContext), discord)
+	result, err = ogm.UpdateDiscord(ctx, driver, discord)
 	if err != nil {
 		return nil, err
 	}
-	discord, err = misc.MapResult(&models.Discord{}, result, "d")
+	discord, err = misc.MapResult(&models.Discord{}, result)
 	if err != nil {
 		return nil, err
 	}

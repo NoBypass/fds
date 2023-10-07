@@ -15,7 +15,6 @@ const (
 )
 
 var c = cors.New(cors.Options{
-	AllowedOrigins:   []string{"http://localhost:5173"},
 	AllowedMethods:   []string{"GET", "POST"},
 	AllowedHeaders:   []string{"Authorization", "Content-Type"},
 	AllowCredentials: true,

@@ -29,12 +29,13 @@ func (r *ResponseRecorder) Write(b []byte) (int, error) {
 }
 
 var dark = color.New(color.FgHiBlack)
-var pink = color.New(color.BgHiMagenta, color.FgHiWhite)
+var pinkBg = color.New(color.BgHiMagenta, color.FgHiWhite)
 var white = color.New(color.FgHiWhite)
 var red = color.New(color.FgHiRed, color.Bold)
 var green = color.New(color.FgHiGreen, color.Bold)
 var yellow = color.New(color.FgHiYellow, color.Bold)
 var cyan = color.New(color.FgHiCyan, color.Bold)
+var greenBg = color.New(color.BgHiGreen, color.FgHiWhite)
 
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -46,18 +47,24 @@ func Logger(next http.Handler) http.Handler {
 		}
 
 		var requestBody handlers.GraphQLBody
-		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+		if r.Method != http.MethodGet {
+			if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			r = r.WithContext(context.WithValue(r.Context(), "requestBody", requestBody))
 		}
-		r = r.WithContext(context.WithValue(r.Context(), "requestBody", requestBody))
 
 		next.ServeHTTP(recorder, r)
 
 		duration := time.Since(start)
 		formattedTime := start.Format("02/01/06 15:04:05")
 		dark.Print(formattedTime, " ")
-		pink.Print(" GraphQL ")
+		if r.Method == http.MethodGet {
+			greenBg.Print(" GET ")
+		} else {
+			pinkBg.Print(" GraphQL ")
+		}
 		white.Print(" | Status: ")
 		if recorder.Status < 400 {
 			green.Print(recorder.Status)
@@ -76,14 +83,18 @@ func Logger(next http.Handler) http.Handler {
 
 		white.Print(" | Size: ")
 		cyan.Printf("%dB", recorder.Size)
-		white.Print(" | Actions: ")
 
-		actions := formatGraphQLVariables(requestBody)
-		for i, action := range actions {
-			if i < 5 {
-				cyan.Print(action)
-			} else {
-				dark.Printf(" and %d more", len(actions)-5)
+		if r.Method == http.MethodPost {
+			white.Print(" | Actions: ")
+
+			actions := formatGraphQLVariables(requestBody)
+			for i, action := range actions {
+				if i < 5 {
+					cyan.Print(action)
+				} else {
+					dark.Printf(" and %d more", len(actions)-5)
+					break
+				}
 			}
 		}
 

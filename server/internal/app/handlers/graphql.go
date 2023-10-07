@@ -20,9 +20,6 @@ func GraphQLHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 		defer cancel()
-
-		req := ctx.Value("req").(*http.Request)
-		res := ctx.Value("res").(http.ResponseWriter)
 		c := make(chan bool, 1)
 
 		go func() {
@@ -34,8 +31,8 @@ func GraphQLHandler() http.Handler {
 			})
 
 			// If-Else statement to use GraphiQL along with the GraphQL handler
-			if req.Method == "POST" {
-				requestBody := req.Context().Value("requestBody").(GraphQLBody)
+			if r.Method == "POST" {
+				requestBody := r.Context().Value("requestBody").(GraphQLBody)
 
 				result := graphql.Do(graphql.Params{
 					Schema:         generated.RootSchema,
@@ -44,9 +41,9 @@ func GraphQLHandler() http.Handler {
 					VariableValues: requestBody.Variables,
 				})
 
-				_ = json.NewEncoder(res).Encode(result)
+				_ = json.NewEncoder(w).Encode(result)
 			} else {
-				h.ServeHTTP(res, req)
+				h.ServeHTTP(w, r)
 			}
 			c <- true
 		}()
@@ -55,7 +52,7 @@ func GraphQLHandler() http.Handler {
 		case <-c:
 			return
 		case <-ctx.Done():
-			http.Error(res, "Request took too long to execute.", http.StatusRequestTimeout)
+			http.Error(w, "Request took too long to execute.", http.StatusRequestTimeout)
 			return
 		}
 	})

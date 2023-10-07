@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"server/internal/pkg/generated/models"
@@ -20,6 +21,7 @@ func PlayerQuery(ctx context.Context, input *models.PlayerInput) (*models.Player
 	player, _ := players.Find(&models.Player{
 		Name: input.Name,
 	})
+	fmt.Printf("%+v\n", player)
 	if player != nil {
 		return player, nil
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"reflect"
 	"strings"
@@ -67,41 +68,28 @@ func TrimStringUntil(s, substr string) string {
 	return s[index:]
 }
 
-func MapResult[T any](input *T, result *neo4j.EagerResult, indexLetter string) (*T, error) {
+func MapResult[T any](input *T, result *neo4j.EagerResult) (*T, error) {
 	if len(result.Records) == 0 {
 		return nil, fmt.Errorf("no results found")
-	}
-	r, _, err := neo4j.GetRecordValue[neo4j.Node](result.Records[0], indexLetter)
-	if err != nil {
-		return nil, err
 	}
 
 	inputValue := *input
 	inputType := reflect.TypeOf(inputValue)
+
+	props := (*result.Records[0]).Values[0].(neo4j.Node).Props
+	newMap := make(map[string]any, len(props))
 	for i := 0; i < inputType.NumField(); i++ {
 		field := inputType.Field(i)
-		fieldType := field.Type
 		jsonTag := field.Tag.Get("json")
 
-		var val interface{}
-		switch fieldType.Kind() {
-		case reflect.String:
-			val, err = neo4j.GetProperty[string](r, jsonTag)
-		case reflect.Int64:
-			val, err = neo4j.GetProperty[int64](r, jsonTag)
-		case reflect.Bool:
-			val, err = neo4j.GetProperty[bool](r, jsonTag)
-		case reflect.Float64:
-			val, err = neo4j.GetProperty[float64](r, jsonTag)
-		default:
-			continue
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		reflect.ValueOf(input).Elem().Field(i).Set(reflect.ValueOf(val))
+		newMap[field.Name] = props[jsonTag]
 	}
+
+	err := mapstructure.Decode(newMap, &inputValue)
+	if err != nil {
+		return nil, err
+	}
+
 	*input = inputValue
 	return input, nil
 }
