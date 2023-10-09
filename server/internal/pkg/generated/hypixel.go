@@ -8,21 +8,21 @@ import (
 	"server/internal/pkg/generated/models"
 )
 
-var playerType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Player", Fields: graphql.Fields{
-		"UUID": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-		"name": &graphql.Field{
+var verifiedWithType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "VerifiedWith", Fields: graphql.Fields{
+		"verifiedAt": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
 		},
 	},
 },
 )
 
-var verifiedWithType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "VerifiedWith", Fields: graphql.Fields{
-		"verifiedAt": &graphql.Field{
+var playerType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Player", Fields: graphql.Fields{
+		"UUID": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"name": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
 		},
 	},

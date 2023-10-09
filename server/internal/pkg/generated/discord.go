@@ -10,13 +10,16 @@ import (
 
 var discordType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Discord", Fields: graphql.Fields{
-		"name": &graphql.Field{
+		"discordId": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
+		},
+		"joined": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.Boolean),
 		},
 		"lastDailyAt": &graphql.Field{
 			Type: graphql.Int,
 		},
-		"discordId": &graphql.Field{
+		"name": &graphql.Field{
 			Type: graphql.String,
 		},
 		"streak": &graphql.Field{
@@ -31,21 +34,6 @@ var discordType = graphql.NewObject(graphql.ObjectConfig{
 	},
 },
 )
-var DiscordQuery = &graphql.Field{
-	Type: discordType,
-	Args: graphql.FieldConfigArgument{
-		"discordId": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		input := &models.DiscordInput{
-			DiscordId: p.Args["discordId"].(string)}
-
-		return resolvers.DiscordQuery(p.Context, input)
-	},
-}
-
 var CreateDiscordMutation = &graphql.Field{
 	Type: discordType,
 	Args: graphql.FieldConfigArgument{
@@ -81,5 +69,20 @@ var GiveXpMutation = &graphql.Field{
 			Amount:    p.Args["amount"].(int64)}
 
 		return resolvers.GiveXpMutation(p.Context, input)
+	},
+}
+
+var DiscordQuery = &graphql.Field{
+	Type: discordType,
+	Args: graphql.FieldConfigArgument{
+		"discordId": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		input := &models.DiscordInput{
+			DiscordId: p.Args["discordId"].(string)}
+
+		return resolvers.DiscordQuery(p.Context, input)
 	},
 }

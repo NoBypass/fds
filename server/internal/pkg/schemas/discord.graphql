@@ -1,9 +1,10 @@
 type Discord {
-    name: String!
+    discordId: String!
+    joined: Boolean!
+    verifiedWith: VerifiedWith
     lastDailyAt: Int
-    discordId: String
+    name: String
     streak: Int
     level: Int
     xp: Int
-    verifiedWith: VerifiedWith
 }
