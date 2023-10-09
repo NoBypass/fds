@@ -1,5 +1,3 @@
-import type { ResError } from '$lib/types/api'
-
 const query = async <T>(req: {
     query: string,
     variables: any,
