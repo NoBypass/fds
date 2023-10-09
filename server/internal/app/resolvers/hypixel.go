@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
+	"server/internal/app/global"
 	"server/internal/pkg/generated/models"
 	"server/pkg/ogm"
 )
@@ -17,11 +17,11 @@ type NewPlayer struct {
 }
 
 func PlayerQuery(ctx context.Context, input *models.PlayerInput) (*models.Player, error) {
-	players := ogm.New[models.Player](ctx)
-	player, _ := players.Find(&models.Player{
-		Name: input.Name,
+	db := global.Get().DB
+	res, _ := db.Query("MATCH (p:Player) WHERE toLower(p.name) = toLower($name) RETURN p", map[string]any{
+		"name": input.Name,
 	})
-	fmt.Printf("%+v\n", player)
+	player, _ := ogm.Map(&models.Player{}, res, "p")
 	if player != nil {
 		return player, nil
 	}
@@ -41,8 +41,13 @@ func PlayerQuery(ctx context.Context, input *models.PlayerInput) (*models.Player
 		log.Fatalf("Error decoding JSON: %v", err)
 	}
 
-	return players.Create(&models.Player{
-		Uuid: newPlayerInput.ID,
-		Name: newPlayerInput.Name,
-	})
+	res, err = db.Query("CREATE (p:Player { name: $name, uuid: $uuid }) RETURN p",
+		map[string]any{
+			"name": newPlayerInput.Name,
+			"uuid": newPlayerInput.ID,
+		})
+	if err != nil {
+		return nil, err
+	}
+	return ogm.Map(&models.Player{}, res, "p")
 }

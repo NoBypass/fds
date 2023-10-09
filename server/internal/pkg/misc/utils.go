@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"github.com/mitchellh/mapstructure"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"reflect"
 	"strings"
 	"time"
@@ -58,40 +56,6 @@ func MaxOutAt(input int64, max int64) int64 {
 		return max
 	}
 	return input
-}
-
-func TrimStringUntil(s, substr string) string {
-	index := strings.Index(s, substr)
-	if index == -1 {
-		return s
-	}
-	return s[index:]
-}
-
-func MapResult[T any](input *T, result *neo4j.EagerResult) (*T, error) {
-	if len(result.Records) == 0 {
-		return nil, fmt.Errorf("no results found")
-	}
-
-	inputValue := *input
-	inputType := reflect.TypeOf(inputValue)
-
-	props := (*result.Records[0]).Values[0].(neo4j.Node).Props
-	newMap := make(map[string]any, len(props))
-	for i := 0; i < inputType.NumField(); i++ {
-		field := inputType.Field(i)
-		jsonTag := field.Tag.Get("json")
-
-		newMap[field.Name] = props[jsonTag]
-	}
-
-	err := mapstructure.Decode(newMap, &inputValue)
-	if err != nil {
-		return nil, err
-	}
-
-	*input = inputValue
-	return input, nil
 }
 
 func StructToMap[T any](input *T) map[string]any {

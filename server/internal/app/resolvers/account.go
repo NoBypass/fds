@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"context"
+	"server/internal/app/global"
 	"server/internal/pkg/auth"
 	"server/internal/pkg/generated/models"
 	"server/internal/pkg/misc"
@@ -11,8 +12,13 @@ import (
 )
 
 func AccountQuery(ctx context.Context, input *models.AccountInput) (*models.Account, error) {
-	accounts := ogm.New[models.Account](ctx)
-	account, err := accounts.Find(&models.Account{Name: input.Name})
+	records, err := global.Get().DB.Query("MATCH (a:Account { name: $name }) RETURN a", map[string]any{
+		"name": input.Name,
+	})
+	if err != nil {
+		return nil, err
+	}
+	account, err := ogm.Map(&models.Account{}, records, "a")
 	if err != nil {
 		return nil, err
 	}
@@ -26,8 +32,11 @@ func AccountQuery(ctx context.Context, input *models.AccountInput) (*models.Acco
 }
 
 func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Signin, error) {
-	accounts := ogm.New[models.Account](ctx)
-	account, err := accounts.Find(&models.Account{Name: input.Name})
+	db := global.Get().DB
+	records, err := db.Query("MATCH (a:Account { name: $name }) RETURN a",
+		map[string]any{
+			"name": input.Name,
+		})
 
 	if err != nil {
 		password, err := misc.Hash(input.Password)
@@ -35,14 +44,19 @@ func SigninMutation(ctx context.Context, input *models.SigninInput) (*models.Sig
 			return nil, err
 		}
 
-		account, err = accounts.Create(&models.Account{
-			Name:      input.Name,
-			Password:  password,
-			CreatedAt: strconv.FormatInt(time.Now().Unix(), 10),
-		})
+		records, err = db.Query("CREATE (a:Account { name: $name, email: $email, password: $password, role: $role, created_at: $created_at }) RETURN a",
+			map[string]any{
+				"name":       input.Name,
+				"password":   password,
+				"created_at": strconv.FormatInt(time.Now().Unix(), 10),
+			})
 		if err != nil {
 			return nil, err
 		}
+	}
+	account, err := ogm.Map(&models.Account{}, records, "a")
+	if err != nil {
+		return nil, err
 	}
 
 	ok := misc.CompareHash(input.Password, account.Password)
@@ -69,8 +83,18 @@ func ApiKeyQuery(ctx context.Context, input *models.ApiKeyInput) (*models.Signin
 		return nil, err
 	}
 
-	accounts := ogm.New[models.Account](ctx)
-	account, err := accounts.Find(&models.Account{Name: input.Name})
+	records, err := global.Get().DB.Query("MATCH (a:Account { name: $name }) RETURN a",
+		map[string]any{
+			"name": input.Name,
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	account, err := ogm.Map(&models.Account{}, records, "a")
+	if err != nil {
+		return nil, err
+	}
 
 	claims, err := auth.NewClaims(input.Role)
 	if err != nil {
