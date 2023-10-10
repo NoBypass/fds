@@ -7,5 +7,5 @@ type Signin {
 type Account {
     name: String!
     password: String!
-    createdAt: String!
+    created_at: String!
 }

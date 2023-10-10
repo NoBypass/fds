@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/fatih/color"
@@ -9,7 +10,10 @@ import (
 	"net/http"
 	"server/internal/app/middleware"
 	"server/internal/app/resolvers"
+	"server/internal/pkg/db"
 	"server/internal/pkg/generated"
+	"server/internal/pkg/misc"
+	"server/pkg/ogm"
 	"time"
 )
 
@@ -25,12 +29,20 @@ func main() {
 
 	r := mux.NewRouter()
 
+	env := misc.FetchEnv()
+	neo4j, redis := db.Connect(env)
 	r.Use(middleware.Logger)
-	r.Use(middleware.Auth)
-	r.Use(middleware.RateLimiter)
+	r.Use(middleware.Auth(&env))
+	r.Use(middleware.RateLimiter(redis))
 
 	r.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
-	r.Handle("/graphql", handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{}})))
+	r.Handle("/graphql", handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
+		Resolvers: &resolvers.Resolver{
+			OGM:   ogm.New(context.Background(), neo4j),
+			Cache: redis,
+			Env:   &env,
+		},
+	})))
 
 	srv := &http.Server{
 		Handler:      r,

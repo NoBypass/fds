@@ -53,32 +53,38 @@ type ComplexityRoot struct {
 	}
 
 	Discord struct {
-		DiscordID    func(childComplexity int) int
-		Joined       func(childComplexity int) int
-		LastDailyAt  func(childComplexity int) int
-		Level        func(childComplexity int) int
-		Name         func(childComplexity int) int
-		Streak       func(childComplexity int) int
-		VerifiedWith func(childComplexity int) int
-		Xp           func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Joined      func(childComplexity int) int
+		LastDailyAt func(childComplexity int) int
+		Level       func(childComplexity int) int
+		LinkedTo    func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Streak      func(childComplexity int) int
+		Xp          func(childComplexity int) int
+	}
+
+	LINKED_TO struct {
+		Discord  func(childComplexity int) int
+		LinkedAt func(childComplexity int) int
+		Player   func(childComplexity int) int
 	}
 
 	Mutation struct {
-		CreateDiscord func(childComplexity int, discordID string, name string) int
-		GiveXp        func(childComplexity int, discordID string, amount int) int
+		CreateDiscord func(childComplexity int, id string, name string) int
+		GiveXp        func(childComplexity int, id string, amount int) int
 		Signin        func(childComplexity int, name string, password string, remember *bool) int
 	}
 
 	Player struct {
-		Name         func(childComplexity int) int
-		UUID         func(childComplexity int) int
-		VerifiedWith func(childComplexity int) int
+		LinkedTo func(childComplexity int) int
+		Name     func(childComplexity int) int
+		UUID     func(childComplexity int) int
 	}
 
 	Query struct {
 		APIKey  func(childComplexity int, name string, role string) int
 		Account func(childComplexity int, name string) int
-		Discord func(childComplexity int, discordID string) int
+		Discord func(childComplexity int, id string) int
 		Player  func(childComplexity int, name string) int
 	}
 
@@ -87,22 +93,16 @@ type ComplexityRoot struct {
 		Role    func(childComplexity int) int
 		Token   func(childComplexity int) int
 	}
-
-	VerifiedWith struct {
-		Discord    func(childComplexity int) int
-		Player     func(childComplexity int) int
-		VerifiedAt func(childComplexity int) int
-	}
 }
 
 type MutationResolver interface {
 	Signin(ctx context.Context, name string, password string, remember *bool) (*models.Signin, error)
-	CreateDiscord(ctx context.Context, discordID string, name string) (*models.Discord, error)
-	GiveXp(ctx context.Context, discordID string, amount int) (*models.Discord, error)
+	CreateDiscord(ctx context.Context, id string, name string) (*models.Discord, error)
+	GiveXp(ctx context.Context, id string, amount int) (*models.Discord, error)
 }
 type QueryResolver interface {
 	Account(ctx context.Context, name string) (*models.Account, error)
-	Discord(ctx context.Context, discordID string) (*models.Discord, error)
+	Discord(ctx context.Context, id string) (*models.Discord, error)
 	Player(ctx context.Context, name string) (*models.Player, error)
 	APIKey(ctx context.Context, name string, role string) (*models.Signin, error)
 }
@@ -126,7 +126,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Account.createdAt":
+	case "Account.created_at":
 		if e.complexity.Account.CreatedAt == nil {
 			break
 		}
@@ -147,12 +147,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Account.Password(childComplexity), true
 
-	case "Discord.discordId":
-		if e.complexity.Discord.DiscordID == nil {
+	case "Discord.id":
+		if e.complexity.Discord.ID == nil {
 			break
 		}
 
-		return e.complexity.Discord.DiscordID(childComplexity), true
+		return e.complexity.Discord.ID(childComplexity), true
 
 	case "Discord.joined":
 		if e.complexity.Discord.Joined == nil {
@@ -161,7 +161,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Discord.Joined(childComplexity), true
 
-	case "Discord.lastDailyAt":
+	case "Discord.last_daily_at":
 		if e.complexity.Discord.LastDailyAt == nil {
 			break
 		}
@@ -174,6 +174,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Discord.Level(childComplexity), true
+
+	case "Discord.LINKED_TO":
+		if e.complexity.Discord.LinkedTo == nil {
+			break
+		}
+
+		return e.complexity.Discord.LinkedTo(childComplexity), true
 
 	case "Discord.name":
 		if e.complexity.Discord.Name == nil {
@@ -189,19 +196,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Discord.Streak(childComplexity), true
 
-	case "Discord.verifiedWith":
-		if e.complexity.Discord.VerifiedWith == nil {
-			break
-		}
-
-		return e.complexity.Discord.VerifiedWith(childComplexity), true
-
 	case "Discord.xp":
 		if e.complexity.Discord.Xp == nil {
 			break
 		}
 
 		return e.complexity.Discord.Xp(childComplexity), true
+
+	case "LINKED_TO.discord":
+		if e.complexity.LINKED_TO.Discord == nil {
+			break
+		}
+
+		return e.complexity.LINKED_TO.Discord(childComplexity), true
+
+	case "LINKED_TO.linked_at":
+		if e.complexity.LINKED_TO.LinkedAt == nil {
+			break
+		}
+
+		return e.complexity.LINKED_TO.LinkedAt(childComplexity), true
+
+	case "LINKED_TO.player":
+		if e.complexity.LINKED_TO.Player == nil {
+			break
+		}
+
+		return e.complexity.LINKED_TO.Player(childComplexity), true
 
 	case "Mutation.createDiscord":
 		if e.complexity.Mutation.CreateDiscord == nil {
@@ -213,7 +234,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateDiscord(childComplexity, args["discordId"].(string), args["name"].(string)), true
+		return e.complexity.Mutation.CreateDiscord(childComplexity, args["id"].(string), args["name"].(string)), true
 
 	case "Mutation.giveXp":
 		if e.complexity.Mutation.GiveXp == nil {
@@ -225,7 +246,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.GiveXp(childComplexity, args["discordId"].(string), args["amount"].(int)), true
+		return e.complexity.Mutation.GiveXp(childComplexity, args["id"].(string), args["amount"].(int)), true
 
 	case "Mutation.signin":
 		if e.complexity.Mutation.Signin == nil {
@@ -238,6 +259,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Signin(childComplexity, args["name"].(string), args["password"].(string), args["remember"].(*bool)), true
+
+	case "Player.LINKED_TO":
+		if e.complexity.Player.LinkedTo == nil {
+			break
+		}
+
+		return e.complexity.Player.LinkedTo(childComplexity), true
 
 	case "Player.name":
 		if e.complexity.Player.Name == nil {
@@ -252,13 +280,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Player.UUID(childComplexity), true
-
-	case "Player.verifiedWith":
-		if e.complexity.Player.VerifiedWith == nil {
-			break
-		}
-
-		return e.complexity.Player.VerifiedWith(childComplexity), true
 
 	case "Query.apiKey":
 		if e.complexity.Query.APIKey == nil {
@@ -294,7 +315,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Discord(childComplexity, args["discordId"].(string)), true
+		return e.complexity.Query.Discord(childComplexity, args["id"].(string)), true
 
 	case "Query.player":
 		if e.complexity.Query.Player == nil {
@@ -328,27 +349,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Signin.Token(childComplexity), true
-
-	case "VerifiedWith.discord":
-		if e.complexity.VerifiedWith.Discord == nil {
-			break
-		}
-
-		return e.complexity.VerifiedWith.Discord(childComplexity), true
-
-	case "VerifiedWith.player":
-		if e.complexity.VerifiedWith.Player == nil {
-			break
-		}
-
-		return e.complexity.VerifiedWith.Player(childComplexity), true
-
-	case "VerifiedWith.verifiedAt":
-		if e.complexity.VerifiedWith.VerifiedAt == nil {
-			break
-		}
-
-		return e.complexity.VerifiedWith.VerifiedAt(childComplexity), true
 
 	}
 	return 0, false
@@ -463,14 +463,14 @@ var sources = []*ast.Source{
 type Account {
     name: String!
     password: String!
-    createdAt: String!
+    created_at: String!
 }
 `, BuiltIn: false},
 	{Name: "../schemas/discord.graphqls", Input: `type Discord {
-    discordId: String!
+    id: String!
     joined: Boolean!
-    verifiedWith: VerifiedWith
-    lastDailyAt: Int
+    LINKED_TO: LINKED_TO
+    last_daily_at: Int
     name: String
     streak: Int
     level: Int
@@ -480,26 +480,26 @@ type Account {
 	{Name: "../schemas/hypixel.graphqls", Input: `type Player {
     uuid: String!
     name: String!
-    verifiedWith: VerifiedWith
+    LINKED_TO: LINKED_TO
 }
 
-type VerifiedWith {
-    verifiedAt: String!
+type LINKED_TO {
+    linked_at: String!
     player: Player!
     discord: Discord!
 }
 `, BuiltIn: false},
 	{Name: "../schemas/schema.graphqls", Input: `type Query {
     account(name: String!): Account
-    discord(discordId: String!): Discord
+    discord(id: String!): Discord
     player(name: String!): Player
     apiKey(name: String!, role: String!): Signin
 }
 
 type Mutation {
     signin(name: String!, password: String!, remember: Boolean): Signin
-    createDiscord(discordId: String!, name: String!): Discord
-    giveXp(discordId: String!, amount: Int!): Discord
+    createDiscord(id: String!, name: String!): Discord
+    giveXp(id: String!, amount: Int!): Discord
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -512,14 +512,14 @@ func (ec *executionContext) field_Mutation_createDiscord_args(ctx context.Contex
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["discordId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("discordId"))
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["discordId"] = arg0
+	args["id"] = arg0
 	var arg1 string
 	if tmp, ok := rawArgs["name"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
@@ -536,14 +536,14 @@ func (ec *executionContext) field_Mutation_giveXp_args(ctx context.Context, rawA
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["discordId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("discordId"))
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["discordId"] = arg0
+	args["id"] = arg0
 	var arg1 int
 	if tmp, ok := rawArgs["amount"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
@@ -647,14 +647,14 @@ func (ec *executionContext) field_Query_discord_args(ctx context.Context, rawArg
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["discordId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("discordId"))
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["discordId"] = arg0
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -799,8 +799,8 @@ func (ec *executionContext) fieldContext_Account_password(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Account_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Account) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Account_createdAt(ctx, field)
+func (ec *executionContext) _Account_created_at(ctx context.Context, field graphql.CollectedField, obj *models.Account) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Account_created_at(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -830,7 +830,7 @@ func (ec *executionContext) _Account_createdAt(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Account_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Account_created_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Account",
 		Field:      field,
@@ -843,8 +843,8 @@ func (ec *executionContext) fieldContext_Account_createdAt(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Discord_discordId(ctx context.Context, field graphql.CollectedField, obj *models.Discord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Discord_discordId(ctx, field)
+func (ec *executionContext) _Discord_id(ctx context.Context, field graphql.CollectedField, obj *models.Discord) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Discord_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -857,7 +857,7 @@ func (ec *executionContext) _Discord_discordId(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.DiscordID, nil
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -874,7 +874,7 @@ func (ec *executionContext) _Discord_discordId(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Discord_discordId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Discord_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Discord",
 		Field:      field,
@@ -931,8 +931,8 @@ func (ec *executionContext) fieldContext_Discord_joined(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Discord_verifiedWith(ctx context.Context, field graphql.CollectedField, obj *models.Discord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Discord_verifiedWith(ctx, field)
+func (ec *executionContext) _Discord_LINKED_TO(ctx context.Context, field graphql.CollectedField, obj *models.Discord) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Discord_LINKED_TO(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -945,7 +945,7 @@ func (ec *executionContext) _Discord_verifiedWith(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.VerifiedWith, nil
+		return obj.LinkedTo, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -954,12 +954,12 @@ func (ec *executionContext) _Discord_verifiedWith(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.VerifiedWith)
+	res := resTmp.(*models.LinkedTo)
 	fc.Result = res
-	return ec.marshalOVerifiedWith2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐVerifiedWith(ctx, field.Selections, res)
+	return ec.marshalOLINKED_TO2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐLinkedTo(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Discord_verifiedWith(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Discord_LINKED_TO(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Discord",
 		Field:      field,
@@ -967,21 +967,21 @@ func (ec *executionContext) fieldContext_Discord_verifiedWith(ctx context.Contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "verifiedAt":
-				return ec.fieldContext_VerifiedWith_verifiedAt(ctx, field)
+			case "linked_at":
+				return ec.fieldContext_LINKED_TO_linked_at(ctx, field)
 			case "player":
-				return ec.fieldContext_VerifiedWith_player(ctx, field)
+				return ec.fieldContext_LINKED_TO_player(ctx, field)
 			case "discord":
-				return ec.fieldContext_VerifiedWith_discord(ctx, field)
+				return ec.fieldContext_LINKED_TO_discord(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type VerifiedWith", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type LINKED_TO", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Discord_lastDailyAt(ctx context.Context, field graphql.CollectedField, obj *models.Discord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Discord_lastDailyAt(ctx, field)
+func (ec *executionContext) _Discord_last_daily_at(ctx context.Context, field graphql.CollectedField, obj *models.Discord) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Discord_last_daily_at(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1008,7 +1008,7 @@ func (ec *executionContext) _Discord_lastDailyAt(ctx context.Context, field grap
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Discord_lastDailyAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Discord_last_daily_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Discord",
 		Field:      field,
@@ -1185,6 +1185,164 @@ func (ec *executionContext) fieldContext_Discord_xp(ctx context.Context, field g
 	return fc, nil
 }
 
+func (ec *executionContext) _LINKED_TO_linked_at(ctx context.Context, field graphql.CollectedField, obj *models.LinkedTo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LINKED_TO_linked_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LinkedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LINKED_TO_linked_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LINKED_TO",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LINKED_TO_player(ctx context.Context, field graphql.CollectedField, obj *models.LinkedTo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LINKED_TO_player(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Player, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.Player)
+	fc.Result = res
+	return ec.marshalNPlayer2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐPlayer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LINKED_TO_player(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LINKED_TO",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "uuid":
+				return ec.fieldContext_Player_uuid(ctx, field)
+			case "name":
+				return ec.fieldContext_Player_name(ctx, field)
+			case "LINKED_TO":
+				return ec.fieldContext_Player_LINKED_TO(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Player", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LINKED_TO_discord(ctx context.Context, field graphql.CollectedField, obj *models.LinkedTo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LINKED_TO_discord(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Discord, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.Discord)
+	fc.Result = res
+	return ec.marshalNDiscord2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐDiscord(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LINKED_TO_discord(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LINKED_TO",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Discord_id(ctx, field)
+			case "joined":
+				return ec.fieldContext_Discord_joined(ctx, field)
+			case "LINKED_TO":
+				return ec.fieldContext_Discord_LINKED_TO(ctx, field)
+			case "last_daily_at":
+				return ec.fieldContext_Discord_last_daily_at(ctx, field)
+			case "name":
+				return ec.fieldContext_Discord_name(ctx, field)
+			case "streak":
+				return ec.fieldContext_Discord_streak(ctx, field)
+			case "level":
+				return ec.fieldContext_Discord_level(ctx, field)
+			case "xp":
+				return ec.fieldContext_Discord_xp(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Discord", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_signin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_signin(ctx, field)
 	if err != nil {
@@ -1259,7 +1417,7 @@ func (ec *executionContext) _Mutation_createDiscord(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateDiscord(rctx, fc.Args["discordId"].(string), fc.Args["name"].(string))
+		return ec.resolvers.Mutation().CreateDiscord(rctx, fc.Args["id"].(string), fc.Args["name"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1281,14 +1439,14 @@ func (ec *executionContext) fieldContext_Mutation_createDiscord(ctx context.Cont
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "discordId":
-				return ec.fieldContext_Discord_discordId(ctx, field)
+			case "id":
+				return ec.fieldContext_Discord_id(ctx, field)
 			case "joined":
 				return ec.fieldContext_Discord_joined(ctx, field)
-			case "verifiedWith":
-				return ec.fieldContext_Discord_verifiedWith(ctx, field)
-			case "lastDailyAt":
-				return ec.fieldContext_Discord_lastDailyAt(ctx, field)
+			case "LINKED_TO":
+				return ec.fieldContext_Discord_LINKED_TO(ctx, field)
+			case "last_daily_at":
+				return ec.fieldContext_Discord_last_daily_at(ctx, field)
 			case "name":
 				return ec.fieldContext_Discord_name(ctx, field)
 			case "streak":
@@ -1329,7 +1487,7 @@ func (ec *executionContext) _Mutation_giveXp(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GiveXp(rctx, fc.Args["discordId"].(string), fc.Args["amount"].(int))
+		return ec.resolvers.Mutation().GiveXp(rctx, fc.Args["id"].(string), fc.Args["amount"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1351,14 +1509,14 @@ func (ec *executionContext) fieldContext_Mutation_giveXp(ctx context.Context, fi
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "discordId":
-				return ec.fieldContext_Discord_discordId(ctx, field)
+			case "id":
+				return ec.fieldContext_Discord_id(ctx, field)
 			case "joined":
 				return ec.fieldContext_Discord_joined(ctx, field)
-			case "verifiedWith":
-				return ec.fieldContext_Discord_verifiedWith(ctx, field)
-			case "lastDailyAt":
-				return ec.fieldContext_Discord_lastDailyAt(ctx, field)
+			case "LINKED_TO":
+				return ec.fieldContext_Discord_LINKED_TO(ctx, field)
+			case "last_daily_at":
+				return ec.fieldContext_Discord_last_daily_at(ctx, field)
 			case "name":
 				return ec.fieldContext_Discord_name(ctx, field)
 			case "streak":
@@ -1473,8 +1631,8 @@ func (ec *executionContext) fieldContext_Player_name(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Player_verifiedWith(ctx context.Context, field graphql.CollectedField, obj *models.Player) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Player_verifiedWith(ctx, field)
+func (ec *executionContext) _Player_LINKED_TO(ctx context.Context, field graphql.CollectedField, obj *models.Player) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Player_LINKED_TO(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1487,7 +1645,7 @@ func (ec *executionContext) _Player_verifiedWith(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.VerifiedWith, nil
+		return obj.LinkedTo, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1496,12 +1654,12 @@ func (ec *executionContext) _Player_verifiedWith(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*models.VerifiedWith)
+	res := resTmp.(*models.LinkedTo)
 	fc.Result = res
-	return ec.marshalOVerifiedWith2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐVerifiedWith(ctx, field.Selections, res)
+	return ec.marshalOLINKED_TO2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐLinkedTo(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Player_verifiedWith(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Player_LINKED_TO(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Player",
 		Field:      field,
@@ -1509,14 +1667,14 @@ func (ec *executionContext) fieldContext_Player_verifiedWith(ctx context.Context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "verifiedAt":
-				return ec.fieldContext_VerifiedWith_verifiedAt(ctx, field)
+			case "linked_at":
+				return ec.fieldContext_LINKED_TO_linked_at(ctx, field)
 			case "player":
-				return ec.fieldContext_VerifiedWith_player(ctx, field)
+				return ec.fieldContext_LINKED_TO_player(ctx, field)
 			case "discord":
-				return ec.fieldContext_VerifiedWith_discord(ctx, field)
+				return ec.fieldContext_LINKED_TO_discord(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type VerifiedWith", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type LINKED_TO", field.Name)
 		},
 	}
 	return fc, nil
@@ -1562,8 +1720,8 @@ func (ec *executionContext) fieldContext_Query_account(ctx context.Context, fiel
 				return ec.fieldContext_Account_name(ctx, field)
 			case "password":
 				return ec.fieldContext_Account_password(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Account_createdAt(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Account_created_at(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Account", field.Name)
 		},
@@ -1596,7 +1754,7 @@ func (ec *executionContext) _Query_discord(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Discord(rctx, fc.Args["discordId"].(string))
+		return ec.resolvers.Query().Discord(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1618,14 +1776,14 @@ func (ec *executionContext) fieldContext_Query_discord(ctx context.Context, fiel
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "discordId":
-				return ec.fieldContext_Discord_discordId(ctx, field)
+			case "id":
+				return ec.fieldContext_Discord_id(ctx, field)
 			case "joined":
 				return ec.fieldContext_Discord_joined(ctx, field)
-			case "verifiedWith":
-				return ec.fieldContext_Discord_verifiedWith(ctx, field)
-			case "lastDailyAt":
-				return ec.fieldContext_Discord_lastDailyAt(ctx, field)
+			case "LINKED_TO":
+				return ec.fieldContext_Discord_LINKED_TO(ctx, field)
+			case "last_daily_at":
+				return ec.fieldContext_Discord_last_daily_at(ctx, field)
 			case "name":
 				return ec.fieldContext_Discord_name(ctx, field)
 			case "streak":
@@ -1692,8 +1850,8 @@ func (ec *executionContext) fieldContext_Query_player(ctx context.Context, field
 				return ec.fieldContext_Player_uuid(ctx, field)
 			case "name":
 				return ec.fieldContext_Player_name(ctx, field)
-			case "verifiedWith":
-				return ec.fieldContext_Player_verifiedWith(ctx, field)
+			case "LINKED_TO":
+				return ec.fieldContext_Player_LINKED_TO(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Player", field.Name)
 		},
@@ -2032,168 +2190,10 @@ func (ec *executionContext) fieldContext_Signin_account(ctx context.Context, fie
 				return ec.fieldContext_Account_name(ctx, field)
 			case "password":
 				return ec.fieldContext_Account_password(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Account_createdAt(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Account_created_at(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Account", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _VerifiedWith_verifiedAt(ctx context.Context, field graphql.CollectedField, obj *models.VerifiedWith) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_VerifiedWith_verifiedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.VerifiedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_VerifiedWith_verifiedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "VerifiedWith",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _VerifiedWith_player(ctx context.Context, field graphql.CollectedField, obj *models.VerifiedWith) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_VerifiedWith_player(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Player, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.Player)
-	fc.Result = res
-	return ec.marshalNPlayer2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐPlayer(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_VerifiedWith_player(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "VerifiedWith",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "uuid":
-				return ec.fieldContext_Player_uuid(ctx, field)
-			case "name":
-				return ec.fieldContext_Player_name(ctx, field)
-			case "verifiedWith":
-				return ec.fieldContext_Player_verifiedWith(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Player", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _VerifiedWith_discord(ctx context.Context, field graphql.CollectedField, obj *models.VerifiedWith) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_VerifiedWith_discord(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Discord, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.Discord)
-	fc.Result = res
-	return ec.marshalNDiscord2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐDiscord(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_VerifiedWith_discord(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "VerifiedWith",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "discordId":
-				return ec.fieldContext_Discord_discordId(ctx, field)
-			case "joined":
-				return ec.fieldContext_Discord_joined(ctx, field)
-			case "verifiedWith":
-				return ec.fieldContext_Discord_verifiedWith(ctx, field)
-			case "lastDailyAt":
-				return ec.fieldContext_Discord_lastDailyAt(ctx, field)
-			case "name":
-				return ec.fieldContext_Discord_name(ctx, field)
-			case "streak":
-				return ec.fieldContext_Discord_streak(ctx, field)
-			case "level":
-				return ec.fieldContext_Discord_level(ctx, field)
-			case "xp":
-				return ec.fieldContext_Discord_xp(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Discord", field.Name)
 		},
 	}
 	return fc, nil
@@ -4001,8 +4001,8 @@ func (ec *executionContext) _Account(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "createdAt":
-			out.Values[i] = ec._Account_createdAt(ctx, field, obj)
+		case "created_at":
+			out.Values[i] = ec._Account_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -4040,8 +4040,8 @@ func (ec *executionContext) _Discord(ctx context.Context, sel ast.SelectionSet, 
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Discord")
-		case "discordId":
-			out.Values[i] = ec._Discord_discordId(ctx, field, obj)
+		case "id":
+			out.Values[i] = ec._Discord_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -4050,10 +4050,10 @@ func (ec *executionContext) _Discord(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "verifiedWith":
-			out.Values[i] = ec._Discord_verifiedWith(ctx, field, obj)
-		case "lastDailyAt":
-			out.Values[i] = ec._Discord_lastDailyAt(ctx, field, obj)
+		case "LINKED_TO":
+			out.Values[i] = ec._Discord_LINKED_TO(ctx, field, obj)
+		case "last_daily_at":
+			out.Values[i] = ec._Discord_last_daily_at(ctx, field, obj)
 		case "name":
 			out.Values[i] = ec._Discord_name(ctx, field, obj)
 		case "streak":
@@ -4062,6 +4062,55 @@ func (ec *executionContext) _Discord(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Discord_level(ctx, field, obj)
 		case "xp":
 			out.Values[i] = ec._Discord_xp(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var lINKED_TOImplementors = []string{"LINKED_TO"}
+
+func (ec *executionContext) _LINKED_TO(ctx context.Context, sel ast.SelectionSet, obj *models.LinkedTo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, lINKED_TOImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LINKED_TO")
+		case "linked_at":
+			out.Values[i] = ec._LINKED_TO_linked_at(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "player":
+			out.Values[i] = ec._LINKED_TO_player(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "discord":
+			out.Values[i] = ec._LINKED_TO_discord(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4160,8 +4209,8 @@ func (ec *executionContext) _Player(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "verifiedWith":
-			out.Values[i] = ec._Player_verifiedWith(ctx, field, obj)
+		case "LINKED_TO":
+			out.Values[i] = ec._Player_LINKED_TO(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4334,55 +4383,6 @@ func (ec *executionContext) _Signin(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "account":
 			out.Values[i] = ec._Signin_account(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var verifiedWithImplementors = []string{"VerifiedWith"}
-
-func (ec *executionContext) _VerifiedWith(ctx context.Context, sel ast.SelectionSet, obj *models.VerifiedWith) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, verifiedWithImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("VerifiedWith")
-		case "verifiedAt":
-			out.Values[i] = ec._VerifiedWith_verifiedAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "player":
-			out.Values[i] = ec._VerifiedWith_player(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "discord":
-			out.Values[i] = ec._VerifiedWith_discord(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5119,6 +5119,13 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
+func (ec *executionContext) marshalOLINKED_TO2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐLinkedTo(ctx context.Context, sel ast.SelectionSet, v *models.LinkedTo) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._LINKED_TO(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOPlayer2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐPlayer(ctx context.Context, sel ast.SelectionSet, v *models.Player) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -5147,13 +5154,6 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOVerifiedWith2ᚖserverᚋinternalᚋpkgᚋgeneratedᚋmodelsᚐVerifiedWith(ctx context.Context, sel ast.SelectionSet, v *models.VerifiedWith) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._VerifiedWith(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

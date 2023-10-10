@@ -1,8 +1,8 @@
 type Discord {
-    discordId: String!
+    id: String!
     joined: Boolean!
-    verifiedWith: VerifiedWith
-    lastDailyAt: Int
+    LINKED_TO: LINKED_TO
+    last_daily_at: Int
     name: String
     streak: Int
     level: Int

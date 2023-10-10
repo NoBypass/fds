@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"reflect"
-	"strings"
 	"time"
 	"unicode"
 )
@@ -43,31 +41,6 @@ func ConvertCamelToSnake(input string) string {
 	return output.String()
 }
 
-func FirstLower(input string) string {
-	return strings.ToLower(input[:1]) + input[1:]
-}
-
-func FirstUpper(input string) string {
-	return strings.ToUpper(input[:1]) + input[1:]
-}
-
-func MaxOutAt(input int64, max int64) int64 {
-	if input > max {
-		return max
-	}
-	return input
-}
-
-func StructToMap[T any](input *T) map[string]any {
-	values := make(map[string]any)
-	inputType := reflect.TypeOf(*input)
-	for i := 0; i < inputType.NumField(); i++ {
-		field := inputType.Field(i)
-		value := reflect.ValueOf(input).Elem().FieldByName(field.Name).Interface()
-		if reflect.DeepEqual(value, reflect.Zero(field.Type).Interface()) {
-			continue
-		}
-		values[ConvertCamelToSnake(field.Name)] = value
-	}
-	return values
+func RemoveAtIndex(s []string, index int) []string {
+	return append(s[:index], s[index+1:]...)
 }

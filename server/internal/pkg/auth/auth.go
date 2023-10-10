@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"server/internal/app/global"
 	"server/internal/pkg/generated/models"
 	"server/internal/pkg/misc"
 )
@@ -33,10 +32,10 @@ func (c *CustomClaims) Sign(subject *models.Account) *CustomClaims {
 	return c
 }
 
-func (c *CustomClaims) Generate() (string, error) {
+func (c *CustomClaims) Generate(env *misc.ENV) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 
-	tokenString, err := token.SignedString([]byte(global.Get().Env.JWTSecret))
+	tokenString, err := token.SignedString([]byte(env.JWTSecret))
 	if err != nil {
 		return "", err
 	}
@@ -44,10 +43,10 @@ func (c *CustomClaims) Generate() (string, error) {
 	return tokenString, nil
 }
 
-func ParseJWT(tokenString string) (*CustomClaims, error) {
+func ParseJWT(tokenString string, env *misc.ENV) (*CustomClaims, error) {
 	c := &CustomClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, c, func(token *jwt.Token) (interface{}, error) {
-		return []byte(global.Get().Env.JWTSecret), nil
+		return []byte(env.JWTSecret), nil
 	})
 
 	if err != nil {

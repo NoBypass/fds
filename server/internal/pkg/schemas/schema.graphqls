@@ -1,12 +1,12 @@
 type Query {
     account(name: String!): Account
-    discord(discordId: String!): Discord
+    discord(id: String!): Discord
     player(name: String!): Player
     apiKey(name: String!, role: String!): Signin
 }
 
 type Mutation {
     signin(name: String!, password: String!, remember: Boolean): Signin
-    createDiscord(discordId: String!, name: String!): Discord
-    giveXp(discordId: String!, amount: Int!): Discord
+    createDiscord(id: String!, name: String!): Discord
+    giveXp(id: String!, amount: Int!): Discord
 }

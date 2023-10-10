@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"server/internal/pkg/generated"
 	"server/internal/pkg/generated/models"
+	"server/pkg/ogm"
 )
 
 // Signin is the resolver for the signin field.
@@ -17,12 +18,12 @@ func (r *mutationResolver) Signin(ctx context.Context, name string, password str
 }
 
 // CreateDiscord is the resolver for the createDiscord field.
-func (r *mutationResolver) CreateDiscord(ctx context.Context, discordID string, name string) (*models.Discord, error) {
+func (r *mutationResolver) CreateDiscord(ctx context.Context, id string, name string) (*models.Discord, error) {
 	panic(fmt.Errorf("not implemented: CreateDiscord - createDiscord"))
 }
 
 // GiveXp is the resolver for the giveXp field.
-func (r *mutationResolver) GiveXp(ctx context.Context, discordID string, amount int) (*models.Discord, error) {
+func (r *mutationResolver) GiveXp(ctx context.Context, id string, amount int) (*models.Discord, error) {
 	panic(fmt.Errorf("not implemented: GiveXp - giveXp"))
 }
 
@@ -32,12 +33,14 @@ func (r *queryResolver) Account(ctx context.Context, name string) (*models.Accou
 }
 
 // Discord is the resolver for the discord field.
-func (r *queryResolver) Discord(ctx context.Context, discordID string) (*models.Discord, error) {
+func (r *queryResolver) Discord(ctx context.Context, id string) (*models.Discord, error) {
 	panic(fmt.Errorf("not implemented: Discord - discord"))
 }
 
 // Player is the resolver for the player field.
 func (r *queryResolver) Player(ctx context.Context, name string) (*models.Player, error) {
+	err := ogm.WithPreload[models.Player](ctx, &models.Player{})
+	fmt.Println(err)
 	panic(fmt.Errorf("not implemented: Player - player"))
 }
 
