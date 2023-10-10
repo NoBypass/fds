@@ -1,13 +1,9 @@
 package middleware
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/fatih/color"
 	"net/http"
-	"server/internal/app/handlers"
-	"strings"
 	"time"
 )
 
@@ -46,15 +42,6 @@ func Logger(next http.Handler) http.Handler {
 			Size:           0,
 		}
 
-		var requestBody handlers.GraphQLBody
-		if r.Method != http.MethodGet {
-			if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			r = r.WithContext(context.WithValue(r.Context(), "requestBody", requestBody))
-		}
-
 		next.ServeHTTP(recorder, r)
 
 		duration := time.Since(start)
@@ -84,33 +71,6 @@ func Logger(next http.Handler) http.Handler {
 		white.Print(" | Size: ")
 		cyan.Printf("%dB", recorder.Size)
 
-		if r.Method == http.MethodPost {
-			white.Print(" | Actions: ")
-
-			actions := formatGraphQLVariables(requestBody)
-			for i, action := range actions {
-				if i < 5 {
-					cyan.Print(action)
-				} else {
-					dark.Printf(" and %d more", len(actions)-5)
-					break
-				}
-			}
-		}
-
 		fmt.Println()
 	})
-}
-
-func formatGraphQLVariables(body handlers.GraphQLBody) []string {
-	var res []string
-
-	lines := strings.Split(body.Query, "\n")[1:]
-	for _, line := range lines {
-		if strings.Contains(line, "{") {
-			res = append(res, strings.TrimSpace(strings.Split(line, "(")[0]))
-		}
-	}
-
-	return res
 }

@@ -1,2 +1,0 @@
-graphql: ../../internal/pkg/schemas       # Path to the GraphQL schema files
-generated: ../../internal/pkg/generated   # Path of where to generate the go files
