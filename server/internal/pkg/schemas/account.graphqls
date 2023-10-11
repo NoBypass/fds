@@ -6,14 +6,29 @@ type Signin {
 
 type Account {
     name: String!
-    password: String!
     created_at: String!
+    LINKED_TO: LINKED_TO!
+}
+
+type Self {
+    name: String!
+    created_at: String!
+    password: String!
+    role: String!
+    salt: String!
+    LINKED_TO: LINKED_TO!
+}
+
+type LINKED_TO {
+    linked_at: String!
+    account: Account!
+    player: Player!
 }
 
 extend type Query {
     apiKey(name: String!, role: String!): Signin
     account(name: String!): Account
-    self: Account
+    self: Self
 }
 
 extend type Mutation {

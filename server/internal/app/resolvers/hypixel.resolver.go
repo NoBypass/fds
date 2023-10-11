@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"server/internal/pkg/generated/models"
@@ -25,8 +26,18 @@ func (r *queryResolver) Player(ctx context.Context, name string) (*models.Player
 		return nil, fmt.Errorf("could not find %s on mojang api", name)
 	}
 	defer response.Body.Close()
+	newPlayer := NewPlayer{}
+	if err := json.NewDecoder(response.Body).Decode(&newPlayer); err != nil {
+		return nil, err
+	}
 
-	// TODO create player in db
+	records, err := r.OGM.Query("CREATE (p:Player {name: $name, uuid: $uuid})", map[string]any{
+		"name": newPlayer.Name,
+		"uuid": newPlayer.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	return player, nil
+	return ogm.Map(player, records, "p")
 }

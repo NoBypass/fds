@@ -1,10 +1,11 @@
 type Player {
     uuid: String!
     name: String!
-    LINKED_TO: LINKED_TO
+    VERIFIED_WITH: VERIFIED_WITH!
+    LINKED_TO: LINKED_TO!
 }
 
-type LINKED_TO {
+type VERIFIED_WITH {
     linked_at: String!
     player: Player!
     discord: Discord!

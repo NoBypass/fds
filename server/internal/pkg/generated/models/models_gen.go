@@ -3,36 +3,52 @@
 package models
 
 type Account struct {
-	Name      string `json:"name"`
-	Password  string `json:"password"`
-	CreatedAt string `json:"created_at"`
+	Name      string    `json:"name"`
+	CreatedAt string    `json:"created_at"`
+	LinkedTo  *LinkedTo `json:"LINKED_TO"`
 }
 
 type Discord struct {
-	ID          string    `json:"id"`
-	Joined      bool      `json:"joined"`
-	LinkedTo    *LinkedTo `json:"LINKED_TO,omitempty"`
-	LastDailyAt *int      `json:"last_daily_at,omitempty"`
-	Name        *string   `json:"name,omitempty"`
-	Streak      *int      `json:"streak,omitempty"`
-	Level       *int      `json:"level,omitempty"`
-	Xp          *int      `json:"xp,omitempty"`
+	ID           string        `json:"id"`
+	Joined       bool          `json:"joined"`
+	VerifiedWith *VerifiedWith `json:"VERIFIED_WITH,omitempty"`
+	LastDailyAt  *int          `json:"last_daily_at,omitempty"`
+	Name         *string       `json:"name,omitempty"`
+	Streak       *int          `json:"streak,omitempty"`
+	Level        *int          `json:"level,omitempty"`
+	Xp           *int          `json:"xp,omitempty"`
 }
 
 type LinkedTo struct {
 	LinkedAt string   `json:"linked_at"`
+	Account  *Account `json:"account"`
 	Player   *Player  `json:"player"`
-	Discord  *Discord `json:"discord"`
 }
 
 type Player struct {
-	UUID     string    `json:"uuid"`
-	Name     string    `json:"name"`
-	LinkedTo *LinkedTo `json:"LINKED_TO,omitempty"`
+	UUID         string        `json:"uuid"`
+	Name         string        `json:"name"`
+	VerifiedWith *VerifiedWith `json:"VERIFIED_WITH"`
+	LinkedTo     *LinkedTo     `json:"LINKED_TO"`
+}
+
+type Self struct {
+	Name      string    `json:"name"`
+	CreatedAt string    `json:"created_at"`
+	Password  string    `json:"password"`
+	Role      string    `json:"role"`
+	Salt      string    `json:"salt"`
+	LinkedTo  *LinkedTo `json:"LINKED_TO"`
 }
 
 type Signin struct {
 	Token   string   `json:"token"`
 	Role    string   `json:"role"`
 	Account *Account `json:"account"`
+}
+
+type VerifiedWith struct {
+	LinkedAt string   `json:"linked_at"`
+	Player   *Player  `json:"player"`
+	Discord  *Discord `json:"discord"`
 }
