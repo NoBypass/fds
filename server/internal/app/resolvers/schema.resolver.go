@@ -39,9 +39,8 @@ func (r *queryResolver) Discord(ctx context.Context, id string) (*models.Discord
 
 // Player is the resolver for the player field.
 func (r *queryResolver) Player(ctx context.Context, name string) (*models.Player, error) {
-	err := ogm.WithPreload[models.Player](ctx, &models.Player{})
-	fmt.Println(err)
-	panic(fmt.Errorf("not implemented: Player - player"))
+	o := ogm.WithPreload(ctx, r.OGM, &models.Player{})
+	return o.Find(map[string]any{"name": name}, "WHERE toLower(p.name) = toLower($name)")
 }
 
 // APIKey is the resolver for the apiKey field.

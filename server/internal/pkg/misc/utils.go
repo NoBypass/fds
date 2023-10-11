@@ -1,46 +1,32 @@
 package misc
 
 import (
-	"bytes"
-	"encoding/base64"
-	"fmt"
+	"strings"
 	"time"
-	"unicode"
 )
 
-func GenerateUUID(args ...any) string {
-	currentTime := time.Now().UnixNano()
-	bytes := []byte{byte(currentTime)}
-
-	for _, arg := range args {
-		bytes = append(bytes, []byte(fmt.Sprintf("%v", arg))...)
+func JoinStrMap(m map[string]string, sep string) string {
+	var str string
+	for _, v := range m {
+		str += v + sep
 	}
+	return str
+}
 
-	encoded := base64.StdEncoding.EncodeToString(bytes)
-	return encoded
+func JoinStrArrMap(m map[string][]string, sep string) string {
+	var str string
+	for k, v := range m {
+		for _, item := range v {
+			str += k + "." + item + sep
+		}
+	}
+	return str
 }
 
 func GetNowInMs() int64 {
-	return time.Now().UnixMilli()
+	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
-func ConvertCamelToSnake(input string) string {
-	var output bytes.Buffer
-
-	for i, char := range input {
-		if unicode.IsUpper(char) {
-			if i > 0 {
-				output.WriteRune('_')
-			}
-			output.WriteRune(unicode.ToLower(char))
-		} else {
-			output.WriteRune(char)
-		}
-	}
-
-	return output.String()
-}
-
-func RemoveAtIndex(s []string, index int) []string {
-	return append(s[:index], s[index+1:]...)
+func DeSnake(s string) string {
+	return strings.ToLower(strings.ReplaceAll(s, "_", ""))
 }

@@ -3,76 +3,76 @@ package ogm
 import (
 	"context"
 	"fmt"
+	"github.com/mitchellh/mapstructure"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"reflect"
 	"server/internal/pkg/misc"
 	"strings"
-	"unicode"
 )
 
 type Constructor[T any] struct {
-	Selectors []string
-	Root      *T
+	Queries map[string]string
+	Fields  map[string][]string
+	NameMap map[string]string
+	Root    *T
+	ctx     context.Context
+	*OGM
 }
 
-func WithPreload[T any](ctx context.Context, root *T) *Constructor[T] {
+func WithPreload[T any](ctx context.Context, ogm *OGM, root *T) *Constructor[T] {
 	pre := misc.GetPreloads(ctx, strings.ToLower(reflect.TypeOf(*root).Name()))
-	// [name LINKED_TO LINKED_TO.linkedAt] -> `(p:Player)-[l:LINKED_TO]->()` & `RETURN p.name, l.linkedAt`
-	// TODO: implement preloads to query conversion
-	cypherQuery, rv := generateCypherQuery(pre)
-	fmt.Println(cypherQuery, rv)
+	queries, fields, nameMap := generateCypherQuery(pre)
 
-	return &Constructor[T]{}
+	return &Constructor[T]{
+		Queries: queries,
+		NameMap: nameMap,
+		Fields:  fields,
+		Root:    root,
+		ctx:     ctx,
+		OGM:     ogm,
+	}
 }
 
-func generateCypherQuery(preloads []string) (map[string]string, map[string][]string) {
-	queries := make(map[string]string)
-	returnVars := make(map[string][]string)
-
-	for _, preload := range preloads {
-		split := strings.Split(preload, ".")
-
-		varName := strings.ToLower(split[len(split)-2][:1]) + fmt.Sprintf("%d", len(split)-1)
-		varVal := strings.ToLower(split[len(split)-1])
-		returnVars[varName] = append(returnVars[varName], varVal)
-
-		str := strings.Join(split[:len(split)-1], ".")
-		if _, ok := queries[str]; ok {
-			continue
-		}
-
-		filter := strings.Join(split[:len(split)-2], ".")
-		if _, ok := queries[filter]; ok {
-			delete(queries, filter)
-		}
-
-		queries[str] = ""
+func (c *Constructor[T]) Find(args map[string]any, extra string) (*T, error) {
+	query := fmt.Sprintf("MATCH %s", misc.JoinStrMap(c.Queries, " MATCH "))
+	query = query[:len(query)-len("MATCH ")]
+	query += extra + " RETURN " + misc.JoinStrArrMap(c.Fields, ", ")
+	records, err := c.OGM.Query(query[:len(query)-2], args)
+	if err != nil {
+		return nil, err
 	}
 
-	for k, _ := range queries {
-		queries[k] = generator(k, &returnVars)
+	if records == nil {
+		return nil, fmt.Errorf("no records found")
 	}
-	return queries, returnVars
+
+	return c.Map(records)
 }
 
-func generator(preload string, returnVars *map[string][]string) string {
-	split := strings.Split(preload, ".")
-	query := ""
+func (c *Constructor[T]) Map(records []*neo4j.Record) (*T, error) {
+	m := make(map[string]any)
+	for qk, _ := range c.Queries {
+		subelements := strings.Split(qk, ".")
+		working := m
+		for i, subelement := range subelements {
+			noSnake := misc.DeSnake(subelement)
+			if i != 0 {
+				working[noSnake] = make(map[string]any)
+				working, _ = working[noSnake].(map[string]any)
+			}
 
-	for _, s := range split {
-		rVar := strings.ToLower(s)
-		if _, ok := (*returnVars)[rVar]; ok {
-			rVar += rVar[:1]
-		}
-
-		if unicode.IsUpper(rune(s[0])) {
-			query += fmt.Sprintf("-[%s:%s]->", rVar, s)
-		} else {
-			query += fmt.Sprintf("(%s:%s)", rVar, strings.ToUpper(s[:1])+s[1:])
+			for j, key := range records[0].Keys {
+				s := strings.Split(key, ".")
+				if s[len(s)-2] == c.NameMap[subelement] {
+					working[misc.DeSnake(s[len(s)-1])] = records[0].Values[j]
+				}
+			}
 		}
 	}
 
-	if strings.HasSuffix(query, "->") {
-		return query + "()"
+	err := mapstructure.Decode(m, c.Root)
+	if err != nil {
+		return nil, err
 	}
-	return query
+	return c.Root, nil
 }
