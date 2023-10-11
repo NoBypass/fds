@@ -9,3 +9,7 @@ type LINKED_TO {
     player: Player!
     discord: Discord!
 }
+
+extend type Query {
+    player(name: String!): Player
+}

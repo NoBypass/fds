@@ -6,46 +6,17 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 	"server/internal/pkg/generated"
-	"server/internal/pkg/generated/models"
-	"server/pkg/ogm"
 )
 
-// Signin is the resolver for the signin field.
-func (r *mutationResolver) Signin(ctx context.Context, name string, password string, remember *bool) (*models.Signin, error) {
-	panic(fmt.Errorf("not implemented: Signin - signin"))
+// Empty is the resolver for the _empty field.
+func (r *mutationResolver) Empty(ctx context.Context) (*string, error) {
+	return nil, nil
 }
 
-// CreateDiscord is the resolver for the createDiscord field.
-func (r *mutationResolver) CreateDiscord(ctx context.Context, id string, name string) (*models.Discord, error) {
-	panic(fmt.Errorf("not implemented: CreateDiscord - createDiscord"))
-}
-
-// GiveXp is the resolver for the giveXp field.
-func (r *mutationResolver) GiveXp(ctx context.Context, id string, amount int) (*models.Discord, error) {
-	panic(fmt.Errorf("not implemented: GiveXp - giveXp"))
-}
-
-// Account is the resolver for the account field.
-func (r *queryResolver) Account(ctx context.Context, name string) (*models.Account, error) {
-	panic(fmt.Errorf("not implemented: Account - account"))
-}
-
-// Discord is the resolver for the discord field.
-func (r *queryResolver) Discord(ctx context.Context, id string) (*models.Discord, error) {
-	panic(fmt.Errorf("not implemented: Discord - discord"))
-}
-
-// Player is the resolver for the player field.
-func (r *queryResolver) Player(ctx context.Context, name string) (*models.Player, error) {
-	o := ogm.WithPreload(ctx, r.OGM, &models.Player{})
-	return o.Find(map[string]any{"name": name}, "WHERE toLower(p.name) = toLower($name)")
-}
-
-// APIKey is the resolver for the apiKey field.
-func (r *queryResolver) APIKey(ctx context.Context, name string, role string) (*models.Signin, error) {
-	panic(fmt.Errorf("not implemented: APIKey - apiKey"))
+// Empty is the resolver for the _empty field.
+func (r *queryResolver) Empty(ctx context.Context) (*string, error) {
+	return nil, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

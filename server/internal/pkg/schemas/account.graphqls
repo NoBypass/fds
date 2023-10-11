@@ -9,3 +9,13 @@ type Account {
     password: String!
     created_at: String!
 }
+
+extend type Query {
+    apiKey(name: String!, role: String!): Signin
+    account(name: String!): Account
+    self: Account
+}
+
+extend type Mutation {
+    signin(name: String!, password: String!, remember: Boolean): Signin
+}

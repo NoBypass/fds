@@ -8,3 +8,12 @@ type Discord {
     level: Int
     xp: Int
 }
+
+extend type Query {
+    discord(id: String!): Discord
+}
+
+extend type Mutation {
+    createDiscord(id: String!, name: String!): Discord
+    giveXp(id: String!, amount: Int!): Discord
+}
