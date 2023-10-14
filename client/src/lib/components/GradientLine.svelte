@@ -1,0 +1,1 @@
+<div class="z-50 h-px w-screen bg-gradient-to-r from-transparent via-white/30 to-transparent" />

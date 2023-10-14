@@ -10,6 +10,8 @@ export default {
       boxShadow: (theme) => ({
         'inset-primary': `inset 0 0 12px ${theme('colors.purple.400/25%')}`,
         'inset-neutral': `inset 0 0 12px ${theme('colors.gray.400/25%')}`,
+        'inset-bottom': `inset 0 -1px 0 0 ${theme('colors.white/70%')}`,
+        'inset-bottom-2': `inset 0 -2px 0 0 ${theme('colors.white')}`,
       }),
       spacing: {
         '104': '26rem',
