@@ -12,6 +12,9 @@
     import Shadows from '$lib/components/Shadows.svelte'
     import Alertbox from '$lib/components/Alertbox.svelte'
     import { mouseStore } from '$lib/stores/location'
+    import GradientLine from '$lib/components/GradientLine.svelte'
+    import Discord from '$lib/assets/icons/Discord.svelte'
+    import Link from '$lib/components/Link.svelte'
 
     let showCommandPalette = false
     let showSuccessModal = false
@@ -82,7 +85,7 @@
         </div>
     </nav>
 </ResponsiveContainer>
-<div class="z-50 h-px w-screen bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+<GradientLine />
 
 <ResponsiveContainer>
     <SuccessModal open={showSuccessModal} on:close={() => showSuccessModal = false} />
@@ -90,3 +93,31 @@
 
     <slot />
 </ResponsiveContainer>
+
+<footer class="mt-16 fixed bottom-0">
+    <GradientLine />
+    <ResponsiveContainer tw="grid grid-cols-9 grid-rows-1 pt-6 pb-6">
+        <Text color="darkened" tw="col-start-1 col-end-4">
+            <Text type="h3" b>About</Text>
+            This is a non-profit community project for all of the Hypixel community to enjoy. We are not affiliated with
+            Hypixel or Mojang in any way. If you have questions, suggestions, or concerns, please join our <Link>Discord
+            Server</Link> and open a ticket or if you want it to be worked on immediately, open an issue on our
+            <Link>GitHub</Link> repository. If you want to contribute to the project, please read the
+            <Link>How To Contribute</Link> page.
+        </Text>
+
+        <ul class="col-start-6 col-end-8">
+            <Text color="darkened" type="h3" b>FDS</Text>
+            <li><Link>Discord Server</Link></li>
+            <li><Link>/g join FDS Employees</Link></li>
+        </ul>
+
+        <ul class="col-start-9">
+            <Text color="darkened" type="h3" b>Project</Text>
+            <li><Link>How To Contribute</Link></li>
+            <li><Link>Roadmap</Link></li>
+            <li><Link>GitHub</Link></li>
+            <li><Link>YouTube</Link></li>
+        </ul>
+    </ResponsiveContainer>
+</footer>
