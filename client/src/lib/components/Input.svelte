@@ -18,6 +18,7 @@
     let inputRef: undefined | HTMLInputElement
     let mainRef: undefined | HTMLDivElement
     let isFocused = false
+    let leftRef: undefined | HTMLElement
 
     $: {
         if (error.length > 0) color = 'danger'
@@ -68,15 +69,21 @@
 
         if (!isFocused) isFocused = true
     }
+
+    $: translate = leftRef ? leftRef.getBoundingClientRect().width+6 : 0
 </script>
 
 <div class="pt-8 {tw}">
-    <label for={id} class="z-0 {placeholderIsTop ? '-translate-y-8' : 'translate-y-1 translate-x-2.5 whitespace-nowrap hover:cursor-text'} absolute text-white/50 transition duration-150">
+    <label for={id}
+           style="transform: {placeholderIsTop ? 'translateY(-2rem)' : `translateY(0.25rem) translateX(${10+translate}px)`}"
+           class="z-0 {placeholderIsTop ? '' : 'whitespace-nowrap hover:cursor-text'} absolute text-white/50 transition duration-150">
         {placeholder}
     </label>
     <div bind:this={mainRef}
          class="{colors[color]} space-between cursor-text transition duration-150 bg-transparent items-center gap-2 py-1 border flex {rounded ? 'rounded-full' : 'rounded-lg'} px-2.5">
-        <slot name="left" />
+        <div bind:this={leftRef}>
+            <slot name="left" />
+        </div>
         <input on:blur={() => isFocused = false}
                on:input={handleInput}
                on:focus={() => isFocused = true}
