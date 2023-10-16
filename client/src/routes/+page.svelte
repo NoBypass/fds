@@ -21,7 +21,7 @@
 </style>
 
 <main class="flex items-center justify-center">
-    <div class="w-full lg:gap-32 gap-20 lg:mt-32 mt-20 flex flex-col items-center">
+    <div class="w-full lg:gap-32 gap-20 lg:mt-22 mt-14 flex flex-col items-center">
         <Text tw="text-4xl lg:text-6xl text-center">Search for <Text type="s" color="gradient" b>any<br>Player</Text> on the network</Text>
         <Input bind:this={inputRef} placeholder="Search for a Player / Guild / Leaderboard..." rounded tw="lg:w-3/5 md:w-4/5 sm:w-11/12">
             <MagnifyIcon slot="left" tw="w-5 h-5 text-neutral-400" />

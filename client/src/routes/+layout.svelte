@@ -39,6 +39,7 @@
 <style>
     :global(body) {
         @apply bg-slate-950 text-white;
+        overflow-x: hidden;
     }
 </style>
 
@@ -87,17 +88,19 @@
 </ResponsiveContainer>
 <GradientLine />
 
-<ResponsiveContainer>
-    <SuccessModal open={showSuccessModal} on:close={() => showSuccessModal = false} />
-    <ConfirmationModal open={showConfirmationModal} on:close={() => showConfirmationModal = false} />
+<main class="mt-14">
+    <ResponsiveContainer>
+        <SuccessModal open={showSuccessModal} on:close={() => showSuccessModal = false} />
+        <ConfirmationModal open={showConfirmationModal} on:close={() => showConfirmationModal = false} />
 
-    <slot />
-</ResponsiveContainer>
+        <slot />
+    </ResponsiveContainer>
+</main>
 
-<footer class="mt-16 fixed bottom-0">
+<footer class="mt-16 bottom-0">
     <GradientLine />
-    <ResponsiveContainer tw="grid grid-cols-9 grid-rows-1 pt-6 pb-6">
-        <Text color="darkened" tw="col-start-1 col-end-4">
+    <ResponsiveContainer tw="grid grid-cols-9 grid-rows-2 pt-6 pb-6">
+        <Text color="darkened" tw="col-span-4 row-span-2">
             <Text type="h3" b>About</Text>
             This is a non-profit community project for all of the Hypixel community to enjoy. We are not affiliated with
             Hypixel or Mojang in any way. If you have questions, suggestions, or concerns, please join our <Link>Discord
@@ -112,7 +115,7 @@
             <li><Link>/g join FDS Employees</Link></li>
         </ul>
 
-        <ul class="col-start-9">
+        <ul class="md:col-start-9 col-start-6 md:row-start-1 row-start-2 col-span-4">
             <Text color="darkened" type="h3" b>Project</Text>
             <li><Link>How To Contribute</Link></li>
             <li><Link>Roadmap</Link></li>
