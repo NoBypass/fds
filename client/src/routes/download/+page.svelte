@@ -1,7 +1,10 @@
 <script lang="ts">
     import Text from '$lib/components/Text.svelte'
     import Button from '$lib/components/Button.svelte'
-    import Link from '$lib/components/Link.svelte'
+    import Slider from '$lib/components/Slider.svelte'
+    import SlideA from '$lib/components/Slides/SlideA.svelte'
+    import SlideB from '$lib/components/Slides/SlideB.svelte'
+    import SlideC from '$lib/components/Slides/SlideC.svelte'
 </script>
 
 <main class="w-full items-center flex flex-col">
@@ -20,7 +23,9 @@
         </Button>
     </section>
 
-    <section>
+
+    <section class="flex text-center items-center flex-col">
         <Text type="h1" b>Features</Text>
+        <Slider children={[SlideA, SlideB, SlideC]}></Slider>
     </section>
 </main>
