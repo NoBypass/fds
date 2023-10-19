@@ -7,6 +7,7 @@
     export let type: 'fancy' | 'primary' | 'normal' | 'transparent' = 'normal'
     export let href = ''
     export let tw = ''
+    export let noRipple = false
 
     const styles = {
         fancy: 'bg-gradient-primary normal-b',
@@ -24,6 +25,7 @@
         if (buttonRef) {
             if (href != '') window.location.replace(href)
 
+            if (noRipple) return
             const ripple = document.createElement('span')
             const bounds = buttonRef.getBoundingClientRect()
             ripple.style.left = `${e.clientX - bounds.left}px`

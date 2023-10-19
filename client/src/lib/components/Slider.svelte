@@ -1,44 +1,59 @@
 <script lang="ts">
     import type { ComponentType } from 'svelte'
+    import DoubleRight from '$lib/assets/icons/DoubleRight.svelte'
+    import DoubleLeft from '$lib/assets/icons/DoubleLeft.svelte'
+    import Button from '$lib/components/Button.svelte'
 
     export let children: ComponentType[] = []
 
-    let fullRef: HTMLDivElement | undefined
-    let singleRef: HTMLDivElement | undefined
+    let containerRef: HTMLDivElement | undefined
     let offset = 0
-    $: width = singleRef?.offsetWidth || 0
-    $: fullWidth = fullRef?.offsetWidth || 0
+    $: width = containerRef?.clientWidth || 0
+    $: fullWidth = width * children.length
 
     const left = () => {
         offset += width
-        if (offset > fullWidth - (2 * width)) {
+        if (offset > 0) {
             offset -= fullWidth
         }
     }
 
     const right = () => {
         offset -= width
-        if (offset < -fullWidth + (2 * width)) {
+        if (offset < -fullWidth + width) {
             offset += fullWidth
         }
     }
 </script>
 
-<div class="flex">
-    <button class="z-20" on:click={left}>Left</button>
+<div class="grid w-full mb-4 items-center relative" bind:this={containerRef}>
+    <Button noRipple
+            type="transparent"
+            tw="z-20 absolute h-full w-12 flex items-center justify-center"
+            on:click={left}>
+        <DoubleLeft />
+    </Button>
 
-    <div bind:this={fullRef} class="z-0 flex transition-all duration-200" style="transform: translateX({offset}px)">
-        {#each children as child}
-            <div bind:this={singleRef} class="border border-red-500">
-                <svelte:component this={child}/>
-            </div>
-        {/each}
+    <div class="overflow-x-hidden" style="width: {width}px">
+        <div class="z-0 flex transition-all duration-300" style="transform: translateX({offset}px)">
+            {#each children as child}
+                <div>
+                    <svelte:component this={child} width={containerRef?.clientWidth || 0}/>
+                </div>
+            {/each}
+        </div>
     </div>
 
-    <button class="z-20" on:click={right}>Right</button>
+    <Button noRipple
+            type="transparent"
+            tw="z-20 absolute h-full w-12 flex items-center justify-center place-self-end"
+            on:click={right}>
+        <DoubleRight />
+    </Button>
 </div>
+
 <div class="flex gap-2">
     {#each children as child}
-        <span id={children.indexOf(child).toString()} class="w-1.5 h-1.5 bg-white/60 rounded-full" />
+        <span id={children.indexOf(child).toString()} class="w-1 h-1 bg-white/60 rounded-full" />
     {/each}
 </div>

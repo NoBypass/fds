@@ -2,9 +2,7 @@
     import Text from '$lib/components/Text.svelte'
     import Button from '$lib/components/Button.svelte'
     import Slider from '$lib/components/Slider.svelte'
-    import SlideA from '$lib/components/Slides/SlideA.svelte'
-    import SlideB from '$lib/components/Slides/SlideB.svelte'
-    import SlideC from '$lib/components/Slides/SlideC.svelte'
+    import SlidePlaceholder from '$lib/components/Slides/SlidePlaceholder.svelte'
 </script>
 
 <main class="w-full items-center flex flex-col">
@@ -24,8 +22,8 @@
     </section>
 
 
-    <section class="flex text-center items-center flex-col">
-        <Text type="h1" b>Features</Text>
-        <Slider children={[SlideA, SlideB, SlideC]}></Slider>
+    <section class="flex w-full text-center items-center flex-col">
+        <Text tw="mb-6" type="h1" b>Features</Text>
+        <Slider children={[SlidePlaceholder, SlidePlaceholder, SlidePlaceholder]}></Slider>
     </section>
 </main>
