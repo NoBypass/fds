@@ -13,13 +13,14 @@
     import Alertbox from '$lib/components/Alertbox.svelte'
     import { mouseStore } from '$lib/stores/location'
     import GradientLine from '$lib/components/GradientLine.svelte'
-    import Discord from '$lib/assets/icons/Discord.svelte'
     import Link from '$lib/components/Link.svelte'
+    import { onMount } from 'svelte'
 
     let showCommandPalette = false
     let showSuccessModal = false
     let showConfirmationModal = false
     let token: string | undefined
+    let mobileMenuOpen = false
 
     $: if (typeof localStorage !== 'undefined' && showSuccessModal != undefined) {
         token = localStorage.getItem('token') || undefined
@@ -34,12 +35,25 @@
         localStorage.removeItem('self')
         token = undefined
     }
+
+    $: {
+        if (typeof document !== 'undefined') {
+            toggleScroll(mobileMenuOpen)
+        }
+    }
+
+    const toggleScroll = (open: boolean) => {
+        if (open) {
+            document.body.style.overflowY = 'hidden'
+        } else {
+            document.body.style.overflowY = 'auto'
+        }
+    }
 </script>
 
 <style>
     :global(body) {
-        @apply bg-slate-950 text-white;
-        overflow-x: hidden;
+        @apply bg-slate-950 text-white overflow-y-hidden;
     }
 </style>
 
@@ -47,11 +61,25 @@
                on:click={mouseStore.click}/>
 
 <Alertbox />
+<nav class="transition-all duration-150 absolute w-screen h-screen bg-slate-950/60 backdrop-blur-xl z-10 {mobileMenuOpen ? 'opacity-100' : 'opacity-0'}">
+    <ul class="mt-32 text-center flex flex-col gap-8">
+        {#each links as link, i}
+            <li class="transition-all duration-500 {mobileMenuOpen ? 'opacity-100' : 'opacity-0'}" style="transition-delay: {i*100}ms">
+                <a class="hover:text-white text-white/60 transition duration-150" on:click={() => mobileMenuOpen = false} href="/{link === links[0] ? '' : link.toLowerCase()}">
+                    <Text type="h1">
+                        {link}
+                    </Text>
+                </a>
+            </li>
+        {/each}
+    </ul>
+</nav>
+
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
 <div class="z-0 opacity-40 w-screen overflow-hidden">
     <Shadows />
 </div>
-<ResponsiveContainer tw="bg-white/5">
+<ResponsiveContainer tw="z-20 bg-white/5">
     <nav class="grid grid-rows-none grid-cols-3 w-full h-20">
 
         <div class="flex items-center gap-2">
@@ -61,7 +89,7 @@
             <Text type="h3" b>FDS</Text>
         </div>
 
-        <div class="flex items-center gap-8 justify-self-center">
+        <div class="items-center gap-8 justify-self-center md:flex hidden">
             <ul class="flex border-gray-500/50 rounded-full px-0.5 py-0.5 border">
                 {#each links as link}
                     <li class="py-2 px-4 ring-inset ring-white/40 hover:ring-1 rounded-full hover:bg-white/5 transition duration-300">
@@ -71,7 +99,7 @@
             </ul>
         </div>
 
-        <div class="justify-self-end self-center">
+        <div class="col-start-3 gap-12 justify-self-end self-center flex">
             {#if (!token)}
                 <Button type="primary" href="/login">Login</Button>
             {:else}
@@ -83,10 +111,14 @@
                     </ul>
                 </Dropdown>
             {/if}
+            <Button on:click={() => mobileMenuOpen = !mobileMenuOpen} tw="{mobileMenuOpen ? '' : 'gap-1.5'} md:hidden w-10 flex items-center justify-center flex-col">
+                <span class="transition-all duration-150 bg-white/60 w-6 h-[3px] block rounded-full {mobileMenuOpen ? 'rotate-45 translate-y-px' : ''}" />
+                <span class="transition-all duration-150 bg-white/60 w-6 h-[3px] block rounded-full {mobileMenuOpen ? '-rotate-45 -translate-y-px' : ''}" />
+            </Button>
         </div>
     </nav>
 </ResponsiveContainer>
-<GradientLine />
+<GradientLine tw="z-20" />
 
 <main class="mt-14">
     <ResponsiveContainer>

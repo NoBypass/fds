@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { twMerge } from 'tailwind-merge'
+
     export let tw = ''
     export let size: '2xl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs' = '2xl'
 
@@ -12,6 +14,6 @@
     }
 </script>
 
-<div class="{sizes[size]} relative {tw}">
+<div class="{twMerge(sizes[size], tw)} relative">
     <slot />
 </div>
