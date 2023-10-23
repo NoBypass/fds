@@ -44,7 +44,6 @@
     $: handleFocus(isFocused)
     const handleFocus = (f: boolean) => {
         if (!mainRef) return
-        console.log('confirmed'+placeholder)
         for (const c of classnames) {
             if (f && inputRef) {
                 inputRef.focus()

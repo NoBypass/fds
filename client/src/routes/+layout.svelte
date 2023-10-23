@@ -14,21 +14,18 @@
     import { mouseStore } from '$lib/stores/location'
     import GradientLine from '$lib/components/GradientLine.svelte'
     import Link from '$lib/components/Link.svelte'
-    import { onMount } from 'svelte'
 
+    const links = ['Home', 'Player', 'Leaderboards', 'Download']
     let showCommandPalette = false
     let showSuccessModal = false
     let showConfirmationModal = false
     let token: string | undefined
     let mobileMenuOpen = false
+    let currentPath = links[0]
 
     $: if (typeof localStorage !== 'undefined' && showSuccessModal != undefined) {
         token = localStorage.getItem('token') || undefined
     }
-
-    const links = [
-        'Home', 'Player', 'Leaderboards', 'Download'
-    ]
 
     const logout = () => {
         localStorage.removeItem('token')
@@ -61,14 +58,20 @@
                on:click={mouseStore.click}/>
 
 <Alertbox />
-<nav class="transition-all duration-150 absolute w-screen h-screen bg-slate-950/60 backdrop-blur-xl z-10 {mobileMenuOpen ? 'opacity-100' : 'opacity-0'}">
+<nav class="transition-opacity duration-150 absolute w-screen h-screen bg-slate-950/60 backdrop-blur-xl z-10 {mobileMenuOpen ? 'opacity-100' : 'opacity-0 hidden'}">
     <ul class="mt-32 text-center flex flex-col gap-8">
         {#each links as link, i}
             <li class="transition-all duration-500 {mobileMenuOpen ? 'opacity-100' : 'opacity-0'}" style="transition-delay: {i*100}ms">
-                <a class="hover:text-white text-white/60 transition duration-150" on:click={() => mobileMenuOpen = false} href="/{link === links[0] ? '' : link.toLowerCase()}">
-                    <Text type="h1">
-                        {link}
-                    </Text>
+                <a on:click={() => currentPath = link} class="hover:text-white text-white/60 transition duration-150" on:click={() => mobileMenuOpen = false} href="/{link === links[0] ? '' : link.toLowerCase()}">
+                    {#if link === currentPath}
+                        <Text type="h1" color='gradient'>
+                            {link}
+                        </Text>
+                    {:else}
+                        <Text type="h1">
+                            {link}
+                        </Text>
+                    {/if}
                 </a>
             </li>
         {/each}
@@ -93,7 +96,15 @@
             <ul class="flex border-gray-500/50 rounded-full px-0.5 py-0.5 border">
                 {#each links as link}
                     <li class="py-2 px-4 ring-inset ring-white/40 hover:ring-1 rounded-full hover:bg-white/5 transition duration-300">
-                        <a href="/{link === links[0] ? '' : link.toLowerCase()}">{link}</a>
+                        <a on:click={() => currentPath = link} href="/{link === links[0] ? '' : link.toLowerCase()}">
+                            {#if link === currentPath}
+                                <Text color='gradient'>
+                                    {link}
+                                </Text>
+                            {:else}
+                                {link}
+                            {/if}
+                        </a>
                     </li>
                 {/each}
             </ul>

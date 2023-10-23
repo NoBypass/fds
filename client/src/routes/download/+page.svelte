@@ -21,7 +21,6 @@
         </Button>
     </section>
 
-
     <section class="flex w-full text-center items-center flex-col">
         <Text tw="mb-6" type="h1" b>Features</Text>
         <Slider children={[SlidePlaceholder, SlidePlaceholder, SlidePlaceholder]}></Slider>
