@@ -14,7 +14,7 @@ A description of what the bug is.
 Who's experience doing what is impacted by this bug and how?
 
 **How To Recreate**
-Clear and consise instructions on how to recreate the bug.
+Clear and concise instructions on how to recreate the bug.
 
 **Optional: Technical Description**
 A technical description of how this request should be implemented. If you know any existing projects that might make this easier, feel free to link those.
