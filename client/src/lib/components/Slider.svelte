@@ -7,22 +7,19 @@
     export let children: ComponentType[] = []
 
     let containerRef: HTMLDivElement | undefined
-    let offset = 0
+    let active = 0
     $: width = containerRef?.clientWidth || 0
     $: fullWidth = width * children.length
+    $: offset = -width * active
 
     const left = () => {
-        offset += width
-        if (offset > 0) {
-            offset -= fullWidth
-        }
+        if (active === 0) active = children.length - 1
+        else active--
     }
 
     const right = () => {
-        offset -= width
-        if (offset < -fullWidth + width) {
-            offset += fullWidth
-        }
+        if (active === children.length - 1) active = 0
+        else active++
     }
 </script>
 
@@ -52,8 +49,10 @@
     </Button>
 </div>
 
-<div class="flex gap-2">
-    {#each children as child}
-        <span id={children.indexOf(child).toString()} class="w-1 h-1 bg-white/60 rounded-full" />
+<div class="flex">
+    {#each children as child, i}
+        <div on:click={() => active = i} id={i} class="p-1.5 cursor-pointer grid place-content-center">
+            <span class="rounded-full block transition-all duration-150 {i === active ? 'w-2 h-2 bg-white' : 'w-1.5 h-1.5 bg-white/60'}" />
+        </div>
     {/each}
 </div>
