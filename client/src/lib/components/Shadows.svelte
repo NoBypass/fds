@@ -18,20 +18,31 @@
         size: number
     }
 
+    const blur = 50
+    const amount = 12
+    const max = 300
     let canvas: HTMLCanvasElement | undefined
     let c: null | CanvasRenderingContext2D
+    let shadows: Shadow[] = []
+    let isStopped = false
+    let iterations = 0
+    let start = 0
     let w = 0
     let h = 0
 
-    const blur = 50
-    const amount = 12
-    let shadows: Shadow[] = []
-
     const animate = () => {
+        if (isStopped) return
         requestAnimationFrame(animate)
+
         w = innerWidth
         if (shadows.length < amount) spawn()
         if (shadows.reduce((acc, shadow) => acc + shadow.opacity, 0) < amount/2 - 0.1) spawn()
+
+        if (iterations < 10) iterations++
+        switch (iterations) {
+            case 5: start = new Date().getTime(); break
+            case 10: isStopped = new Date().getTime() - start > max; break
+        }
 
         c!.clearRect(0, 0, w, h)
         for (let i = 0; i < shadows.length; i++) {
