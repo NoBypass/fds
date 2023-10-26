@@ -7,7 +7,7 @@
     export let type: 'fancy' | 'primary' | 'normal' | 'transparent' = 'normal'
     export let href = ''
     export let tw = ''
-    export let noRipple = false
+    export let noAnim = false
 
     const styles = {
         fancy: 'bg-gradient-primary normal-b',
@@ -18,14 +18,14 @@
 
     let buttonRef: undefined | HTMLElement
     let dispatch = createEventDispatcher()
-    $: styleClass = `${disabled ? styles[type].split(' ').filter(c => !c.startsWith('hover:')).join(' ') : styles[type]} ${disabled ? 'opacity-50 saturate-50 ' : 'active:scale-[.97]'}`
+    $: styleClass = noAnim ? '' : `${disabled ? styles[type].split(' ').filter(c => !c.startsWith('hover:')).join(' ') : styles[type]} ${disabled ? 'opacity-50 saturate-50 ' : 'active:scale-[.97]'}`
 
     const handleClick = (e: MouseEvent) => {
         dispatch('click', e)
         if (buttonRef) {
             if (href != '') window.location.replace(href)
 
-            if (noRipple) return
+            if (noAnim) return
             const ripple = document.createElement('span')
             const bounds = buttonRef.getBoundingClientRect()
             ripple.style.left = `${e.clientX - bounds.left}px`

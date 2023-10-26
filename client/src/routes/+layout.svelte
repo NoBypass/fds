@@ -98,7 +98,7 @@
                     <li class="py-2 px-4 ring-inset ring-white/40 hover:ring-1 rounded-full hover:bg-white/5 transition duration-300">
                         <a on:click={() => currentPath = link} href="/{link === links[0] ? '' : link.toLowerCase()}">
                             {#if link === currentPath}
-                                <Text color='gradient'>
+                                <Text color='gradient' b>
                                     {link}
                                 </Text>
                             {:else}
