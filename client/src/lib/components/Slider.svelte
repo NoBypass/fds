@@ -9,7 +9,6 @@
     let containerRef: HTMLDivElement | undefined
     let active = 0
     $: width = containerRef?.clientWidth || 0
-    $: fullWidth = width * children.length
     $: offset = -width * active
 
     const left = () => {

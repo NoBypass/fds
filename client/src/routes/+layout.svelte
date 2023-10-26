@@ -50,7 +50,7 @@
 
 <style>
     :global(body) {
-        @apply bg-slate-950 text-white overflow-y-hidden;
+        @apply bg-slate-950 text-white;
     }
 </style>
 
@@ -58,7 +58,7 @@
                on:click={mouseStore.click}/>
 
 <Alertbox />
-<nav class="transition-opacity duration-150 absolute w-screen h-screen bg-slate-950/60 backdrop-blur-xl z-10 {mobileMenuOpen ? 'opacity-100' : 'opacity-0 hidden'}">
+<nav class="transition-opacity duration-150 absolute w-full h-screen bg-slate-950/60 backdrop-blur-xl z-10 {mobileMenuOpen ? 'opacity-100' : 'opacity-0 hidden'}">
     <ul class="mt-32 text-center flex flex-col gap-8">
         {#each links as link, i}
             <li class="transition-all duration-500 {mobileMenuOpen ? 'opacity-100' : 'opacity-0'}" style="transition-delay: {i*100}ms">
@@ -79,7 +79,7 @@
 </nav>
 
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
-<div class="z-0 opacity-40 w-screen overflow-hidden">
+<div class="z-0 opacity-40 w-full overflow-hidden">
     <Shadows />
 </div>
 <ResponsiveContainer tw="z-20 bg-white/5">

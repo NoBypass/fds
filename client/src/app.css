@@ -6,3 +6,21 @@
     border-bottom: 2px rgba(0, 0, 0, 0.2) solid;
     border-top: 2px rgba(255, 255, 255, 0.2) solid;
 }
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px grey;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(115, 115, 115);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
