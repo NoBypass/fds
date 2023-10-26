@@ -1,5 +1,6 @@
 <script lang="ts">
     import { twMerge } from 'tailwind-merge'
+    import Tri from '$lib/assets/icons/Tri.svelte'
 
     export let tw = ''
 
@@ -26,11 +27,12 @@
 
 <svelte:window on:keydown={handleKeyDown} on:click={handleClick} />
 
-<div>
-    <div aria-hidden="true" class="cursor-pointer" on:click={show}>
-        <slot name="trigger" />
+<button class="gap-1 cursor-pointer" on:click={show}>
+    <div class="flex items-center gap-1">
+        <slot name="title" />
+        <Tri tw="w-4 h-4" />
     </div>
-    <div class="{twMerge(`${open ? 'scale-100 opacity-100' : 'scale-0 opacity-0'} p-2 transition-all duration-100 ease-in-out absolute bg-neutral-900 rounded-lg min-w-[180px]`, tw)}">
-        <slot name="content" />
+    <div class="{twMerge(`${open ? 'scale-100 opacity-100' : 'scale-0 opacity-0'} border border-slate-600/40 z-50 backdrop-blur-sm p-2 transition-all duration-100 ease-in-out absolute bg-slate-950/60 rounded-lg min-w-[180px]`, tw)}">
+        <slot />
     </div>
-</div>
+</button>

@@ -6,6 +6,7 @@ export default {
       backgroundImage: (theme) => ({
         'gradient-primary': `linear-gradient(120deg, ${theme('colors.purple.500')}, ${theme('colors.indigo.500')})`,
         'gradient-neutral': `linear-gradient(to bottom, ${theme('colors.gray.800/8%')}, ${theme('colors.gray.950/50%')})`,
+        'radial': `radial-gradient(circle at 50% 50%, ${theme('colors.purple.500')}, transparent)`,
       }),
       boxShadow: (theme) => ({
         'inset-primary': `inset 0 0 12px ${theme('colors.purple.400/25%')}`,

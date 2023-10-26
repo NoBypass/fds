@@ -24,11 +24,11 @@
 </script>
 
 <div class="grid w-full mb-4 items-center relative" bind:this={containerRef}>
-    <Button noRipple
+    <Button noAnim
             type="transparent"
             tw="z-20 absolute h-full w-12 flex items-center justify-center"
             on:click={left}>
-        <DoubleLeft />
+        <DoubleLeft tw="scale-[2.3]" />
     </Button>
 
     <div class="overflow-x-hidden" style="width: {width}px">
@@ -41,18 +41,18 @@
         </div>
     </div>
 
-    <Button noRipple
+    <Button noAnim
             type="transparent"
             tw="z-20 absolute h-full w-12 flex items-center justify-center place-self-end"
             on:click={right}>
-        <DoubleRight />
+        <DoubleRight tw="scale-[2.3]" />
     </Button>
 </div>
 
 <div class="flex h-5">
-    {#each children as child, i}
-        <div on:click={() => active = i} id={i} class="p-1.5 cursor-pointer grid place-content-center">
+    {#each children as _, i}
+        <button on:click={() => active = i} class="p-1.5 cursor-pointer grid place-content-center">
             <span class="rounded-full block transition-all duration-150 {i === active ? 'w-2 h-2 bg-white' : 'w-1.5 h-1.5 bg-white/60'}" />
-        </div>
+        </button>
     {/each}
 </div>

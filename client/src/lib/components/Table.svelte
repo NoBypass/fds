@@ -1,7 +1,9 @@
 <script lang="ts">
     import Tri from '$lib/assets/icons/Tri.svelte'
     import Button from '$lib/components/Button.svelte'
+    import { twMerge } from 'tailwind-merge'
 
+    export let tw = ''
     export let data: any[] = []
     export let columns: string[] = []
     let sorting: {[key: string]: boolean} = {}
@@ -21,8 +23,8 @@
     }
 </script>
 
-<table class="border-collapse w-full">
-    <tr class="bg-slate-950/40">
+<table class={twMerge('border-collapse w-full', tw)}>
+    <tr class="bg-slate-950/60">
         {#each columns as col, i}
             <th class="text-left {getBorder(i)}">
                 <Button noAnim on:click={() => sort(col)} type="transparent" tw="group hover:opacity-70 flex gap-2 py-1.5 px-3 w-full items-center cursor-pointer">
@@ -35,7 +37,7 @@
         {/each}
     </tr>
     {#each data as row}
-        <tr class="hover:bg-slate-950/20">
+        <tr class="hover:bg-slate-600/20 cursor-pointer">
             {#each columns as col, i}
                 <td class="px-3 py-1.5 {getBorder(i)}">{row[col]}</td>
             {/each}
