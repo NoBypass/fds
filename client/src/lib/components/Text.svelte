@@ -4,7 +4,7 @@
     export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md'
     export let type: 'p' | 's' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = 'p'
     export let tw = ''
-    export let color: 'neutral' | 'danger' | 'gradient' | 'darkened' = 'neutral'
+    export let color: 'neutral' | 'danger' | 'gradient' | 'darkened' | 'fade-r' = 'neutral'
 
     const sizes = {
         xs: 'text-xs',
@@ -19,6 +19,7 @@
         danger: 'text-rose-700',
         gradient: 'bg-gradient-primary bg-clip-text text-transparent',
         darkened: 'text-white/50',
+        'fade-r': 'bg-gradient-fade-r bg-clip-text text-transparent',
     }
 
     const className = `${sizes[size]} ${colors[color]} ${tw} ${o ? 'opacity-70' : ''} ${b ? 'font-bold' : ''}`
