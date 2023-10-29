@@ -49,8 +49,11 @@
 </script>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Raleway&display=swap');
+
     :global(body) {
         @apply bg-slate-950 text-white;
+        font-family: Inter, sans-serif;
     }
 </style>
 

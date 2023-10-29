@@ -5,6 +5,7 @@ export default {
     extend: {
       backgroundImage: (theme) => ({
         'gradient-primary': `linear-gradient(120deg, ${theme('colors.purple.500')}, ${theme('colors.indigo.500')})`,
+        'gradient-fade-r': `linear-gradient(90deg, ${theme('colors.purple.500')} 10%, ${theme('colors.purple.500/0%')} 90%)`,
         'gradient-neutral': `linear-gradient(to bottom, ${theme('colors.gray.800/8%')}, ${theme('colors.gray.950/50%')})`,
         'radial': `radial-gradient(circle at 50% 50%, ${theme('colors.purple.500')}, transparent)`,
       }),
@@ -45,6 +46,9 @@ export default {
       screens: {
         '2xl': '1536px',
         '3xl': '1920px',
+      },
+      fontSize: {
+        '11xl': '9rem',
       },
     },
   },
