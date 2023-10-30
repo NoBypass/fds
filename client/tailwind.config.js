@@ -5,7 +5,8 @@ export default {
     extend: {
       backgroundImage: (theme) => ({
         'gradient-primary': `linear-gradient(120deg, ${theme('colors.purple.500')}, ${theme('colors.indigo.500')})`,
-        'gradient-fade-r': `linear-gradient(90deg, ${theme('colors.purple.500')} 10%, ${theme('colors.purple.500/0%')} 90%)`,
+        'gradient-fade-r': `linear-gradient(90deg, ${theme('colors.slate.950/0%')} 35%, ${theme('colors.slate.950')} 95%)`,
+        'gradient-fade-b': `linear-gradient(0deg, ${theme('colors.slate.950')} 30%, ${theme('colors.slate.950/0%')} 80%)`,
         'gradient-neutral': `linear-gradient(to bottom, ${theme('colors.gray.800/8%')}, ${theme('colors.gray.950/50%')})`,
         'radial': `radial-gradient(circle at 50% 50%, ${theme('colors.purple.500')}, transparent)`,
       }),

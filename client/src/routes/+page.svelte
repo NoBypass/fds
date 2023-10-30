@@ -28,7 +28,7 @@
             <Text slot="right" b type="h6" tw="text-neutral-400">CTRL+K</Text>
         </Input>
 
-        <div class="cards grid text-center md:grid-cols-3 w-full 3xl:px-36 gap-4">
+        <div class="cards grid text-center md:grid-cols-3 w-full 3xl:px-20 gap-4">
             <Card>
                 <Text b type="h3">Country Leaderboards</Text>
                 <Text o>...and many more unique ways to compare players.</Text>
@@ -44,27 +44,25 @@
         </div>
     </section>
 
-    <section class="flex items-center mt-16">
-        <Text tw="text-11xl" color="fade-r" b>3M</Text>
-        <Text tw="text-lg -translate-x-14 w-104">View the statistics of over 3 million players across
+    <section class="grid grid-rows-2 grid-cols-1 md:grid-cols-2 md:grid-rows-1 items-center mt-16 w-full">
+        <div class="grid w-full h-full relative">
+            <Text tw="text-11xl place-self-center md:place-self-end" color="primary" b>3M</Text>
+            <div class="bg-gradient-fade-b md:bg-gradient-fade-r h-full w-full absolute md:w-64 md:place-self-end" />
+        </div>
+        <Text tw="text-lg md:-translate-x-12 md:translate-y-0 -translate-y-32 text-center md:text-left max-w-lg">View the statistics of over 3 million players across
             multiple servers. By registering you can view even more of your
             stats, climb leaderboards and much more!</Text>
     </section>
 
-    <section class="flex my-16 items-center text-right">
-        <Text tw="text-lg translate-x-10 w-104">You can choose to delete all your data that does not
+    <section class="grid grid-rows-2 grid-cols-1 md:grid-cols-2 md:grid-rows-1 items-center mt-16">
+        <Text tw="text-lg md:translate-x-10 md:translate-y-0 -translate-y-14 z-10 text-center md:text-right row-start-2 md:row-start-1 max-w-lg">You can choose to delete all your data that does not
             come from public API's at any time you want. Alongside many other features, you also
             get to choose to delay data to the public.</Text>
-
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" class="h-28">
-            <defs>
-                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style="stop-opacity: 0" />
-                    <stop offset="100%" style="stop-color: #a855f7; stop-opacity: 1" />
-                </linearGradient>
-            </defs>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
-                  stroke="url(#gradient)" />
-        </svg>
+        <div class="grid w-full h-full relative z-0 row-start-1 md:col-start-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" class="h-32 text-purple-500 place-self-center md:justify-self-start md:self-center" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            <div class="bg-gradient-fade-b md:bg-gradient-fade-r h-full w-full md:w-36 absolute md:rotate-180 translate-x-2" />
+        </div>
     </section>
 </main>
