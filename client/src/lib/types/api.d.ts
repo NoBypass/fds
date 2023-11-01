@@ -7,3 +7,11 @@ export type ResError = {
     msg: string
     error: string
 }
+
+export type Leaderboard = {
+    rank: string
+    country: string
+    name: string
+    stars: string
+    fkdr: string
+}
