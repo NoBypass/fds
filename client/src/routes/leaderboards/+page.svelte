@@ -7,6 +7,7 @@
     import DropdownOptions from '$lib/components/DropdownOptions.svelte'
     import DoubleRight from '$lib/assets/icons/DoubleRight.svelte'
     import DoubleLeft from '$lib/assets/icons/DoubleLeft.svelte'
+    import type { Leaderboard } from '$lib/types/api'
 
     let rand: any[] = []
     for (let i = 0; i < 100; i++) {
@@ -45,6 +46,17 @@
             showing = generateBetween(pages-5, pages)
         }
     }
+
+    const testData: Leaderboard[] = []
+    for (let i = 0; i < 100; i++) {
+        testData.push({
+            rank: `${i+1}`,
+            country: 'CH',
+            name: 'name'+i,
+            stars: `${Math.floor(Math.random()*2000)}`,
+            fkdr: `${Math.floor(Math.random()*5000)/100}`,
+        })
+    }
 </script>
 
 <Text type="h1" tw="mb-10">Leaderboards</Text>
@@ -60,7 +72,15 @@
     </Dropdown>
 </div>
 
-<Table tw="mt-2" columns={['a', 'b', 'c']} data={rand.slice(page*playersPerPageNum, (page+1)*playersPerPageNum)} />
+<Table tw="mt-2" limit={playersPerPageNum} offset={playersPerPageNum*page} data={testData} let:item let:col>
+    {#if col === 'country'}
+        <img class="rounded-sm"
+             src="https://flagcdn.com/h20/{item.toLowerCase()}.png"
+             alt={item}>
+    {:else}
+        {item}
+    {/if}
+</Table>
 
 <div class="w-full flex justify-center mt-8 gap-1">
     <ul class="flex border border-slate-600/40 rounded-lg">
