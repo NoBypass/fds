@@ -3,6 +3,9 @@
     import Input from '$lib/components/Input.svelte'
     import Text from '$lib/components/Text.svelte'
     import Card from '$lib/components/Card.svelte'
+    import Index from '$lib/assets/images/index.png'
+    import LB from '$lib/assets/images/lb.png'
+    import Session from '$lib/assets/images/session.png'
     import type { SvelteComponent } from 'svelte'
 
     let inputRef: undefined | SvelteComponent | HTMLElement
@@ -18,6 +21,11 @@
             @apply grid grid-rows-6 h-64;
         }
     }
+
+    img {
+        mask-image: linear-gradient(to top, rgba(0, 0, 0, 1.0) 50%, transparent 100%);
+        @apply -z-10 w-full absolute bottom-0 left-0;
+    }
 </style>
 
 <main class="flex flex-col items-center justify-center">
@@ -32,14 +40,17 @@
             <Card>
                 <Text b type="h3">Country Leaderboards</Text>
                 <Text o>...and many more unique ways to compare players.</Text>
+                <img src={LB} alt="Leaderboard showcase">
             </Card>
             <Card>
                 <Text b type="h3">Legal Sessions</Text>
                 <Text o>...which you can track using our safe open source app!</Text>
+                <img src={Session} alt="Legal session showcase">
             </Card>
             <Card>
                 <Text b type="h3">Ranked with ELO</Text>
                 <Text o>...achieved through a complex game analysis tool.</Text>
+                <img src={Index} alt="ELO showcase">
             </Card>
         </div>
     </section>
