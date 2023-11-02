@@ -57,6 +57,9 @@
     }
 </style>
 
+<svelte:head>
+    <title>FDS</title>
+</svelte:head>
 <svelte:window on:mousemove={(e) => mouseStore.move(e.clientX, e.clientY)}
                on:click={mouseStore.click}/>
 
