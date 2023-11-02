@@ -15,7 +15,8 @@
     import GradientLine from '$lib/components/GradientLine.svelte'
     import Link from '$lib/components/Link.svelte'
 
-    const links = ['Home', 'Player', 'Leaderboards', 'Download']
+    const links = ['Home', 'Info', 'Leaderboards', 'Download']
+    // const links = ['Home', 'Player', 'Leaderboards', 'Download']
     let showCommandPalette = false
     let showSuccessModal = false
     let showConfirmationModal = false
@@ -31,20 +32,6 @@
         localStorage.removeItem('token')
         localStorage.removeItem('self')
         token = undefined
-    }
-
-    $: {
-        if (typeof document !== 'undefined') {
-            toggleScroll(mobileMenuOpen)
-        }
-    }
-
-    const toggleScroll = (open: boolean) => {
-        if (open) {
-            document.body.style.overflowY = 'hidden'
-        } else {
-            document.body.style.overflowY = 'auto'
-        }
     }
 </script>
 
@@ -85,10 +72,10 @@
 </nav>
 
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
-<div class="z-0 opacity-40 w-full overflow-hidden">
+<div class="z-0 opacity-40 w-full">
     <Shadows />
 </div>
-<ResponsiveContainer tw="z-20 bg-white/5">
+<ResponsiveContainer tw="z-20 bg-white/5 top-0 sticky backdrop-blur-md">
     <nav class="grid grid-rows-none grid-cols-3 w-full h-20">
 
         <div class="flex items-center gap-2">
@@ -134,10 +121,10 @@
             </Button>
         </div>
     </nav>
+    <GradientLine tw="z-20" />
 </ResponsiveContainer>
-<GradientLine tw="z-20" />
 
-<main class="mt-14">
+<main class="mt-16">
     <ResponsiveContainer>
         <SuccessModal open={showSuccessModal} on:close={() => showSuccessModal = false} />
         <ConfirmationModal open={showConfirmationModal} on:close={() => showConfirmationModal = false} />

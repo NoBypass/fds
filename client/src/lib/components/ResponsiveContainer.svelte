@@ -14,6 +14,6 @@
     }
 </script>
 
-<div class="{twMerge(sizes[size], tw)} relative">
+<div class="{twMerge(sizes[size], 'relative', tw)}">
     <slot />
 </div>
