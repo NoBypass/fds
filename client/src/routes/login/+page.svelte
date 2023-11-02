@@ -139,7 +139,7 @@
 </script>
 
 <main class="h-[60vh] grid">
-    <Card tw="place-self-center w-96">
+    <Card tw="place-self-center sm:w-96 w-full">
         <form class="grid px-2 pb-2">
             <Text tw="mb-2" b type="h2">{isLoggingIn === undefined ? 'Login / Register' : isLoggingIn ? 'Login' : 'Register'}</Text>
             <Input bind:value={name.val}

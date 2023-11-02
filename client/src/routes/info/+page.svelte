@@ -4,7 +4,7 @@
     import Card from '$lib/components/Card.svelte'
 </script>
 
-<div class="flex gap-2 mb-16">
+<div class="flex flex-col md:flex-row gap-2 mb-16">
     <Card tw="rounded-2xl">Lines of Code: <Text type="s" b>32,694</Text></Card>
     <Card tw="rounded-2xl">Commits: <Text type="s" b>202</Text></Card>
     <Card tw="rounded-2xl">Contributors: <Text type="s" b>2</Text></Card>

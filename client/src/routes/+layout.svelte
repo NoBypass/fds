@@ -51,11 +51,14 @@
                on:click={mouseStore.click}/>
 
 <Alertbox />
-<nav class="transition-opacity duration-150 absolute w-full h-screen bg-slate-950/60 backdrop-blur-xl z-10 {mobileMenuOpen ? 'opacity-100' : 'opacity-0 hidden'}">
+<nav class="transition-opacity duration-150 absolute w-full bg-slate-950/60 backdrop-blur-xl overflow-hidden z-40 {mobileMenuOpen ? 'opacity-100 h-screen' : 'opacity-0 h-0'}">
     <ul class="mt-32 text-center flex flex-col gap-8">
         {#each links as link, i}
-            <li class="transition-all duration-500 {mobileMenuOpen ? 'opacity-100' : 'opacity-0'}" style="transition-delay: {i*100}ms">
-                <a on:click={() => currentPath = link} class="hover:text-white text-white/60 transition duration-150" on:click={() => mobileMenuOpen = false} href="/{link === links[0] ? '' : link.toLowerCase()}">
+            <li class="transition-opacity duration-300 ease-in {mobileMenuOpen ? 'opacity-100' : 'opacity-0'}"
+                style="transition-delay: {i*50}ms">
+                <a on:click={() => currentPath = link}
+                   class="hover:text-white text-white/60 transition duration-150"
+                   on:click={() => mobileMenuOpen = false} href="/{link === links[0] ? '' : link.toLowerCase()}">
                     {#if link === currentPath}
                         <Text type="h1" color='gradient'>
                             {link}
@@ -75,7 +78,7 @@
 <div class="z-0 opacity-40 w-full">
     <Shadows />
 </div>
-<ResponsiveContainer tw="z-20 bg-white/5 top-0 sticky backdrop-blur-md">
+<ResponsiveContainer tw="z-50 bg-white/5 top-0 sticky backdrop-blur-md">
     <nav class="grid grid-rows-none grid-cols-3 w-full h-20">
 
         <div class="flex items-center gap-2">

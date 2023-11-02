@@ -28,26 +28,28 @@
     $: if (!columns || columns.length !== keys.length) columns = keys
 </script>
 
-<table class={twMerge('border-collapse w-full', tw)}>
-    <tr class="bg-slate-950/60">
-        {#each columns as col, i}
-            <th class="text-left {getBorder(i)}">
-                <Button noAnim on:click={() => sort(col)} type="transparent" tw="group hover:opacity-70 flex gap-2 py-1.5 px-3 w-full items-center cursor-pointer">
-                    {col[0].toUpperCase() + col.slice(1)}
-                    <div class="w-6 h-6 cursor-pointer grid place-content-center transition-opacity duration-150 group-hover:opacity-100 {sorting[col] === undefined ? 'opacity-0' : ''}">
-                        <Tri tw="w-3.5 h-3.5 transition-transform duration-150 {sorting[col] ? 'rotate-180' : 'rotate-0'}" stroke={2.5} />
-                    </div>
-                </Button>
-            </th>
-        {/each}
-    </tr>
-    {#each data.slice(offset, limit+offset) as row}
-        <tr class="hover:bg-slate-600/20 cursor-pointer">
+<div class="overflow-x-auto">
+    <table class={twMerge('border-collapse table-auto w-full', tw)}>
+        <tr class="bg-slate-950/60">
             {#each columns as col, i}
-                <td class="px-3 py-1.5 {getBorder(i)}">
-                    <slot item={row[col]} col={col} />
-                </td>
+                <th class="text-left {getBorder(i)}">
+                    <Button noAnim on:click={() => sort(col)} type="transparent" tw="group hover:opacity-70 flex gap-2 py-1.5 px-3 w-full items-center cursor-pointer">
+                        {col[0].toUpperCase() + col.slice(1)}
+                        <div class="w-6 h-6 cursor-pointer grid place-content-center transition-opacity duration-150 group-hover:opacity-100 {sorting[col] === undefined ? 'opacity-0' : ''}">
+                            <Tri tw="w-3.5 h-3.5 transition-transform duration-150 {sorting[col] ? 'rotate-180' : 'rotate-0'}" stroke={2.5} />
+                        </div>
+                    </Button>
+                </th>
             {/each}
         </tr>
-    {/each}
-</table>
+        {#each data.slice(offset, limit+offset) as row}
+            <tr class="hover:bg-slate-600/20 cursor-pointer">
+                {#each columns as col, i}
+                    <td class="px-3 py-1.5 {getBorder(i)}">
+                        <slot item={row[col]} col={col} />
+                    </td>
+                {/each}
+            </tr>
+        {/each}
+    </table>
+</div>

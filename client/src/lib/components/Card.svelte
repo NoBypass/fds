@@ -19,14 +19,14 @@
 </script>
 
 <div class={twMerge('group bg-white/[.01] border border-white/10 hover:border-white/[.15] bg-gradient-neutral rounded-3xl relative transition duration-300 overflow-hidden backdrop-blur-xl', noAnim ? '' : '', tw)}>
-    <span bind:this={ref} class="z-10 absolute group-hover:opacity-[.03] opacity-0 transition-opacity duration-300"
+    <span bind:this={ref} class="absolute group-hover:opacity-[.03] opacity-0 transition-opacity duration-300"
           style="background: radial-gradient(rgba(255,255,255) 0, transparent {rad}px);
               width: {rad*2}px;
               height: {rad*2}px;
               top: {mouseLocation.y}px;
               left: {mouseLocation.x}px;"
     />
-    <div class="z-0 relative p-4">
+    <div class="relative p-4">
         <slot />
     </div>
 </div>
