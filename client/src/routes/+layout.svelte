@@ -14,6 +14,7 @@
     import { mouseStore } from '$lib/stores/location'
     import GradientLine from '$lib/components/GradientLine.svelte'
     import Link from '$lib/components/Link.svelte'
+    import { page } from '$app/stores'
 
     const links = ['Home', 'Info', 'Leaderboards', 'Download']
     // const links = ['Home', 'Player', 'Leaderboards', 'Download']
@@ -22,7 +23,6 @@
     let showConfirmationModal = false
     let token: string | undefined
     let mobileMenuOpen = false
-    let currentPath = links[0]
 
     $: if (typeof localStorage !== 'undefined' && showSuccessModal != undefined) {
         token = localStorage.getItem('token') || undefined
@@ -33,6 +33,9 @@
         localStorage.removeItem('self')
         token = undefined
     }
+
+    $: path = $page.url.pathname.replace('/', '')
+    $: currentPath = path === '' ? 'home' : path
 </script>
 
 <style>
@@ -56,10 +59,9 @@
         {#each links as link, i}
             <li class="transition-opacity duration-300 ease-in {mobileMenuOpen ? 'opacity-100' : 'opacity-0'}"
                 style="transition-delay: {i*50}ms">
-                <a on:click={() => currentPath = link}
-                   class="hover:text-white text-white/60 transition duration-150"
+                <a class="hover:text-white text-white/60 transition duration-150"
                    on:click={() => mobileMenuOpen = false} href="/{link === links[0] ? '' : link.toLowerCase()}">
-                    {#if link === currentPath}
+                    {#if link.toLowerCase() == currentPath}
                         <Text type="h1" color='gradient'>
                             {link}
                         </Text>
@@ -75,7 +77,7 @@
 </nav>
 
 <CommandPalette on:close={() => showCommandPalette = false} open={showCommandPalette}>test <br> test <br> test</CommandPalette>
-<div class="z-0 opacity-40 w-full">
+<div class="z-0 opacity-40 w-full absolute">
     <Shadows />
 </div>
 <ResponsiveContainer tw="z-50 bg-white/5 top-0 sticky backdrop-blur-md">
@@ -92,8 +94,8 @@
             <ul class="flex border-gray-500/50 rounded-full px-0.5 py-0.5 border">
                 {#each links as link}
                     <li class="py-2 px-4 ring-inset ring-white/40 hover:ring-1 rounded-full hover:bg-white/5 transition duration-300">
-                        <a on:click={() => currentPath = link} href="/{link === links[0] ? '' : link.toLowerCase()}">
-                            {#if link === currentPath}
+                        <a href="/{link === links[0] ? '' : link.toLowerCase()}">
+                            {#if link.toLowerCase() == currentPath}
                                 <Text color='gradient' b>
                                     {link}
                                 </Text>

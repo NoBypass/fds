@@ -33,13 +33,13 @@
         <Text tw="text-4xl lg:text-6xl text-center">Search for <Text type="s" color="gradient" b>any<br>Player</Text> on the network</Text>
         <Input bind:this={inputRef} placeholder="Search for a Player" rounded tw="lg:w-3/5 md:w-4/5 sm:w-11/12">
             <MagnifyIcon slot="left" tw="w-5 h-5 text-neutral-400" />
-            <Text slot="right" b type="h6" tw="text-neutral-400">CTRL+K</Text>
+            <!-- <Text slot="right" b type="h6" tw="text-neutral-400">CTRL+K</Text> -->
         </Input>
 
         <div class="cards grid text-center md:grid-cols-3 w-full 3xl:px-20 gap-4">
             <Card>
                 <Text b type="h3">Country Leaderboards</Text>
-                <Text o>...and many more unique ways to compare players.</Text>
+                <Text tw="md:mt-0 mt-4" o>...and many more unique ways to compare players.</Text>
                 <img src={LB} alt="Leaderboard showcase">
             </Card>
             <Card>
