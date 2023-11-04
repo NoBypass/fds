@@ -4,10 +4,7 @@
     import Input from '$lib/components/Input.svelte'
     import Checkbox from '$lib/components/Checkbox.svelte'
     import Button from '$lib/components/Button.svelte'
-    import { alertStore } from '$lib/stores/alertStore'
     import Spinner from '$lib/components/Spinner.svelte'
-    import api from '$lib/api/graphql'
-    import type { ResError } from '$lib/types/api'
 
     const initialState = {
         name: {
@@ -37,12 +34,12 @@
     const pwdRegex = /^.{0,64}$/
     let isLoggingIn: boolean | undefined
 
+    $: name.valid = name.val.length > 0 && name.error === '' && name.resolved
     $: {
-        name.valid = name.val.length > 0 && name.error === '' && name.resolved
-        password.valid = password.val.length > 0 && password.error === ''
         cpassword.error = cpassword.val !== password.val && cpassword.val.length > 0 ? 'Passwords do not match.' : ''
         cpassword.valid = cpassword.val.length > 0 && cpassword.error === '' || !!isLoggingIn
-
+    }
+    $: {
         if (password.val.length === 0) {
             password.error = ''
         } else if (password.val.length < 10) {
@@ -58,83 +55,12 @@
         } else {
             password.error = ''
         }
-    }
 
-    const loginConfig = () => {
-        name.error = ''
-        name.isLoading = false
-        name.resolved = true
-        isLoggingIn = true
-    }
-
-    $: {
-        if (name.val !== name.prevName) {
-            name.lastChange = Date.now()
-            name.prevName = name.val
-
-            setTimeout(() => {
-                if (name.lastChange + 500 < Date.now()) {
-                    name.isLoading = true
-                    api.account.name(name.val).then(({ data }) => {
-                        name.val = data.name
-                        loginConfig()
-                    }).catch(async (err: ResError) => {
-                        if (err.status === 404) {
-                            return await accountNotTaken()
-                        }
-
-                        name.error = err.msg
-                        name.isLoading = false
-                        name.resolved = true
-                        alertStore.push(err.msg, 'danger')
-                    })
-                }
-            }, 500)
-        }
-    }
-
-    const accountNotTaken = async () => {
-        isLoggingIn = false
-        api.player.name(name.val).then(({ data }) => {
-            name.val = data.name
-            console.log(data)
-            name.error = ''
-        }).catch((err: ResError) => {
-            if (err.status === 404) {
-                name.error = 'This Minecraft account does not exist.'
-            } else {
-                alertStore.push(err.msg, 'danger')
-            }
-        })
-
-        name.isLoading = false
-        name.resolved = true
+        password.valid = password.val.length > 0 && password.error === ''
     }
 
     const auth = () => {
-        if (!name.valid || !password.valid) {
-            alertStore.push('Unexpected error, please fill out all the fields correctly.', 'danger')
-            return
-        }
-
-        api.auth({
-            name: name.val,
-            password: password.val,
-            remember
-        }).then(({ data }) => {
-            name.val = data.account.name
-            localStorage.setItem('token', data.token)
-            loginConfig()
-            return
-        }).catch((err: ResError) => {
-            if (err.status === 404) {
-                alertStore.push('This account does not exist.', 'danger')
-            } else if (err.status === 401) {
-                alertStore.push('Incorrect password.', 'danger')
-            } else {
-                alertStore.push(err.msg, 'danger')
-            }
-        })
+        // TODO: implement
     }
 </script>
 

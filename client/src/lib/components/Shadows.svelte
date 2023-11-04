@@ -114,6 +114,6 @@
     })
 </script>
 
-<div class="overflow-hidden bg-transparent absolute" style="width: {w}px; height: {h}px">
+<div class="overflow-hidden bg-transparent absolute w-full" style="height: {h}px">
     <canvas style="opacity: .7; transform: translateX(-{blur}px), translateY(-{blur*2}px); filter: blur({blur}px)" bind:this={canvas} width={w} height={h} />
 </div>
