@@ -15,6 +15,7 @@
     import GradientLine from '$lib/components/GradientLine.svelte'
     import Link from '$lib/components/Link.svelte'
     import { page } from '$app/stores'
+    import DropdownOptions from '$lib/components/DropdownOptions.svelte'
 
     const links = ['Home', 'Info', 'Leaderboards', 'Download']
     // const links = ['Home', 'Player', 'Leaderboards', 'Download']
@@ -54,15 +55,15 @@
                on:click={mouseStore.click}/>
 
 <Alertbox />
-<nav class="transition-opacity duration-150 absolute w-full bg-slate-950/60 backdrop-blur-xl overflow-hidden z-40 {mobileMenuOpen ? 'opacity-100 h-screen' : 'opacity-0 h-0'}">
+<nav class="transition-opacity duration-150 fixed w-full bg-slate-950/60 backdrop-blur-xl overflow-hidden z-40 {mobileMenuOpen ? 'opacity-100 h-screen' : 'opacity-0 h-0'}">
     <ul class="mt-32 text-center flex flex-col gap-8">
         {#each links as link, i}
             <li class="transition-opacity duration-300 ease-in {mobileMenuOpen ? 'opacity-100' : 'opacity-0'}"
                 style="transition-delay: {i*50}ms">
                 <a class="hover:text-white text-white/60 transition duration-150"
                    on:click={() => mobileMenuOpen = false} href="/{link === links[0] ? '' : link.toLowerCase()}">
-                    {#if link.toLowerCase() == currentPath}
-                        <Text type="h1" color='gradient'>
+                    {#if link.toLowerCase() === currentPath}
+                        <Text type="h1" color='gradient' b>
                             {link}
                         </Text>
                     {:else}
@@ -95,7 +96,7 @@
                 {#each links as link}
                     <li class="py-2 px-4 ring-inset ring-white/40 hover:ring-1 rounded-full hover:bg-white/5 transition duration-300">
                         <a href="/{link === links[0] ? '' : link.toLowerCase()}">
-                            {#if link.toLowerCase() == currentPath}
+                            {#if link.toLowerCase() === currentPath}
                                 <Text color='gradient' b>
                                     {link}
                                 </Text>
@@ -112,12 +113,15 @@
             {#if (!token)}
                 <Button type="primary" href="/login">Login</Button>
             {:else}
-                <Dropdown>
-                    <Avatar slot="trigger" />
-                    <ul slot="content">
-                        <DropdownItem>Settings</DropdownItem>
-                        <DropdownItem on:click={logout} color="danger">Logout</DropdownItem>
-                    </ul>
+                <Dropdown noArrow>
+                    <Avatar slot="title" />
+                    <DropdownOptions items={['Settings', 'Logout']} let:item>
+                        {#if (item === 'Logout')}
+                            <Text color="danger">{item}</Text>
+                        {:else}
+                            {item}
+                        {/if}
+                    </DropdownOptions>
                 </Dropdown>
             {/if}
             <Button on:click={() => mobileMenuOpen = !mobileMenuOpen} tw="{mobileMenuOpen ? '' : 'gap-1.5'} md:hidden w-10 flex items-center justify-center flex-col">
@@ -138,7 +142,7 @@
     </ResponsiveContainer>
 </main>
 
-<footer class="mt-16 bottom-0">
+<footer class="mt-16">
     <GradientLine />
     <ResponsiveContainer tw="grid grid-cols-9 grid-rows-2 pt-6 pb-6">
         <Text color="darkened" tw="col-span-4 row-span-2">
