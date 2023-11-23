@@ -4,6 +4,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 type ENV struct {
@@ -22,7 +23,9 @@ type ENV struct {
 }
 
 func FetchEnv() ENV {
-	file := "env.yml"
+	workingDir, _ := os.Getwd()
+	workingDir, _ = filepath.Abs(filepath.Join(workingDir, "../../"))
+	file := workingDir + "/env.yml"
 	data, err := os.ReadFile(file)
 	if err != nil {
 		log.Fatalf("Error reading config file: %v", err)

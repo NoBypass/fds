@@ -26,6 +26,6 @@ func (r *queryResolver) Account(ctx context.Context, name string) (*models.Accou
 }
 
 // Self is the resolver for the self field.
-func (r *queryResolver) Self(ctx context.Context) (*models.Account, error) {
+func (r *queryResolver) Self(ctx context.Context) (*models.Self, error) {
 	panic(fmt.Errorf("not implemented: Self - self"))
 }
