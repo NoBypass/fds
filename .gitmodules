@@ -1,6 +1,0 @@
-[submodule "fds-backend"]
-	path = fds-backend
-	url = https://github.com/NoBypass/fds-backend.git
-[submodule "fds-bot"]
-	path = fds-bot
-	url = https://github.com/NoBypass/fds-bot.git
