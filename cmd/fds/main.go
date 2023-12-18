@@ -20,10 +20,14 @@ func main() {
  / _// // /\ \  _\ \/ -_) __/ |/ / -_) __/
 /_/ /____/___/ /___/\__/_/  |___/\__/_/   ` + consts.Purple.Sprint(VERSION) + `
 Backend API for all FDS services written in ` + consts.WhiteOnCyan.Sprint(" GO ") + `
-__________________________________________
+________________________________________________
 `)
 
+	config := middleware.ReadConfig()
+
 	e.Use(middleware.Logger())
+	e.Use(middleware.Timeout())
+	e.Use(middleware.Configure(config))
 
 	e.GET("/discord", routes.Discord)
 
