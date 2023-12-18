@@ -1,54 +1,31 @@
 package main
 
 import (
-	"context"
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/fatih/color"
-	"github.com/gorilla/mux"
-	"log"
-	"net/http"
-	"server/internal/app/middleware"
-	"server/internal/app/resolvers"
-	"server/internal/pkg/db"
-	"server/internal/pkg/generated"
-	"server/internal/pkg/misc"
-	"server/pkg/ogm"
-	"time"
+	"fmt"
+	"github.com/labstack/echo/v4"
+	"server/internal/fds/middleware"
+	"server/internal/fds/routes"
+	"server/internal/pkg/consts"
 )
 
+const VERSION = "v0.2.0"
+
 func main() {
-	color.New(color.FgHiMagenta, color.Bold).Println(`
-8888888  88888     88888      88888                                        
-88       88  88   88   88    88   88   8888                   8888         
-88888    88   88   888        888     88  88  88 88  88  88  88  88  88 88 
-88       88   88     888        888   888888  888 8  88  88  888888  888 8 
-88       88  88   88   88    88   88  88      88      8888   88      88    
-88       88888     88888      88888    88888  88       88     88888  88`)
-	color.New(color.FgHiWhite).Println("\nLogger output:")
+	e := echo.New()
 
-	r := mux.NewRouter()
+	e.HideBanner = true
+	fmt.Println(`
+   _______  ____  ____
+  / __/ _ \/ __/ / __/__ _____  _____ ____
+ / _// // /\ \  _\ \/ -_) __/ |/ / -_) __/
+/_/ /____/___/ /___/\__/_/  |___/\__/_/   ` + consts.Purple.Sprint(VERSION) + `
+Backend API for all FDS services written in ` + consts.WhiteOnCyan.Sprint(" GO ") + `
+__________________________________________
+`)
 
-	env := misc.FetchEnv()
-	neo4j, redis := db.Connect(env)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Auth(&env))
-	r.Use(middleware.RateLimiter(redis))
+	e.Use(middleware.Logger())
 
-	r.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
-	r.Handle("/graphql", handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
-		Resolvers: &resolvers.Resolver{
-			OGM:   ogm.New(context.Background(), neo4j),
-			Cache: redis,
-			Env:   &env,
-		},
-	})))
+	e.GET("/discord", routes.Discord)
 
-	srv := &http.Server{
-		Handler:      r,
-		Addr:         "127.0.0.1:8080",
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
-	}
-	log.Fatal(srv.ListenAndServe())
+	e.Logger.Fatal(e.Start(":8080"))
 }
