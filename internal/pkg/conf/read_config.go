@@ -1,9 +1,6 @@
-package middleware
+package conf
 
-import (
-	"github.com/labstack/echo/v4"
-	"github.com/magiconair/properties"
-)
+import "github.com/magiconair/properties"
 
 type Config struct {
 	Server struct {
@@ -23,15 +20,6 @@ type Config struct {
 			Expiration int    `properties:"expiration"`
 		} `properties:"jwt"`
 	} `properties:"authentication"`
-}
-
-func Configure(config *Config) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Set("config", config)
-			return next(c)
-		}
-	}
 }
 
 func ReadConfig() *Config {

@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
-	"server/internal/fds/middleware"
-	"server/internal/fds/routes"
+	"server/internal/core/middleware"
+	"server/internal/core/routes"
+	"server/internal/pkg/conf"
 	"server/internal/pkg/consts"
 )
 
@@ -23,11 +24,12 @@ Backend API for all FDS services written in ` + consts.WhiteOnCyan.Sprint(" GO "
 ________________________________________________
 `)
 
-	config := middleware.ReadConfig()
+	config := conf.ReadConfig()
+	ctx := conf.Construct(config)
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Timeout())
-	e.Use(middleware.Configure(config))
+	e.Use(middleware.Configure(ctx))
 
 	e.GET("/discord", routes.Discord)
 
