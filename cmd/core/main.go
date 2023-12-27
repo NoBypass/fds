@@ -31,7 +31,8 @@ ________________________________________________
 	e.Use(middleware.Timeout())
 	e.Use(middleware.Configure(ctx))
 
-	e.GET("/discord", routes.Discord)
+	discord := e.Group("/discord")
+	discord.POST("/signup", routes.DiscordSignup)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
