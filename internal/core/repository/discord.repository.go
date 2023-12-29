@@ -2,7 +2,11 @@ package repository
 
 import "server/internal/pkg/model"
 
-func (r *Repository) CreateDiscord(input *model.DiscordMemberInput) error {
+type DiscordRepository interface {
+	CreateDiscord(input *model.DiscordSignupInput) error
+}
+
+func (r *Repository) CreateDiscord(input *model.DiscordSignupInput) error {
 	discordMember := model.DiscordMember{
 		Nick: input.Nick,
 	}

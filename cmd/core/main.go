@@ -29,10 +29,10 @@ ________________________________________________
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Timeout())
-	e.Use(middleware.Configure(ctx))
 
 	discord := e.Group("/discord")
 	discord.POST("/signup", routes.DiscordSignup)
+	discord.GET("/:id/daily", routes.DiscordDaily)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
