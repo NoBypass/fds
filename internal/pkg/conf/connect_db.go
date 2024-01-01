@@ -3,10 +3,9 @@ package conf
 import (
 	"fmt"
 	"github.com/surrealdb/surrealdb.go"
-	"server/internal/core/repository"
 )
 
-func (c *Config) ConnectDB() *repository.Repository {
+func (c *Config) ConnectDB() *surrealdb.DB {
 	db, err := surrealdb.New(fmt.Sprintf("ws://%s:%d/rpc", c.Database.Host, c.Database.Port))
 	if err != nil {
 		panic(err)
@@ -25,5 +24,5 @@ func (c *Config) ConnectDB() *repository.Repository {
 		panic(err)
 	}
 
-	return repository.New(db)
+	return db
 }

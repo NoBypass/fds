@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"server/internal/core/controller"
 	"server/internal/core/middleware"
-	"server/internal/core/routes"
 	"server/internal/pkg/conf"
 	"server/internal/pkg/consts"
 )
@@ -25,14 +25,16 @@ ________________________________________________
 `)
 
 	config := conf.ReadConfig()
-	ctx := conf.Construct(config)
+	db := config.ConnectDB()
+
+	dcc := controller.NewDiscordController(db)
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Timeout())
 
 	discord := e.Group("/discord")
-	discord.POST("/signup", routes.DiscordSignup)
-	discord.GET("/:id/daily", routes.DiscordDaily)
+	discord.POST("/signup", dcc.Signup)
+	discord.PATCH("/:id/daily", dcc.Daily)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

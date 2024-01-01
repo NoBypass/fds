@@ -37,6 +37,8 @@ func Logger() echo.MiddlewareFunc {
 				str += consts.WhiteOnYellow.Sprint(" POST ")
 			case "PUT":
 				str += consts.WhiteOnBlue.Sprint(" PUT ")
+			case "PATCH":
+				str += consts.WhiteOnMagenta.Sprint(" PATCH ")
 			case "DELETE":
 				str += consts.WhiteOnRed.Sprint(" DELETE ")
 			}

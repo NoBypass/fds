@@ -1,3 +1,4 @@
+### Test signing up as a new discord member
 POST http://localhost:8080/discord/signup?id=672835870080106509&nick=NoBypass
 Content-Type: application/json
 
@@ -6,3 +7,6 @@ Content-Type: application/json
   "nick": "NoBypass"
 }
 
+### Test daily claiming
+PATCH http://localhost:8080/discord/672835870080106509/daily
+Content-Type: application/json
