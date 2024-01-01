@@ -1,2 +1,3 @@
-env.yml
+config.properties
 tmp/
+.idea
