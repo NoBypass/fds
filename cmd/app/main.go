@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/NoBypass/fds/internal/core/controller"
-	"github.com/NoBypass/fds/internal/core/middleware"
+	"github.com/NoBypass/fds/internal/app/controller"
+	"github.com/NoBypass/fds/internal/app/middleware"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/consts"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
-const VERSION = "v0.1.0"
+const VERSION = "v0.2.0"
 
 func main() {
 	e := echo.New()

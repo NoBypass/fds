@@ -4,5 +4,5 @@ const (
 	JWTWeb  = "web"
 	JWTBot  = "bot"
 	JWTApp  = "app"
-	JWTCore = "core"
+	JWTCore = "app"
 )

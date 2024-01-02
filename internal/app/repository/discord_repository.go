@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/NoBypass/fds/internal/core/custom_err"
+	"github.com/NoBypass/fds/internal/app/custom_err"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/surrealdb/surrealdb.go"
 	"math"
