@@ -18,6 +18,10 @@ type DiscordSignupInput struct {
 	Nick string `json:"nick"`
 }
 
+type DiscordBotLoginInput struct {
+	Pwd string `json:"pwd" query:"pwd"`
+}
+
 func (d *DiscordMember) AddXP(xp float64) {
 	d.XP += xp
 	needed := d.GetNeededXP()
