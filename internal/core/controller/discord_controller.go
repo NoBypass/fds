@@ -2,15 +2,15 @@ package controller
 
 import (
 	"errors"
+	"github.com/NoBypass/fds/internal/core/custom_err"
+	"github.com/NoBypass/fds/internal/core/repository"
+	"github.com/NoBypass/fds/internal/pkg/conf"
+	"github.com/NoBypass/fds/internal/pkg/consts"
+	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
 	"net/http"
-	"server/internal/core/custom_err"
-	"server/internal/core/repository"
-	"server/internal/pkg/conf"
-	"server/internal/pkg/consts"
-	"server/internal/pkg/model"
 	"time"
 )
 

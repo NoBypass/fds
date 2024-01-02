@@ -1,8 +1,8 @@
 package middleware
 
 import (
+	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/labstack/echo/v4"
-	"server/internal/pkg/conf"
 )
 
 func Prepare(config *conf.Config) echo.MiddlewareFunc {

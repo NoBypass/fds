@@ -1,11 +1,11 @@
 package repository
 
 import (
+	"github.com/NoBypass/fds/internal/core/custom_err"
+	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/surrealdb/surrealdb.go"
 	"math"
 	"math/rand"
-	"server/internal/core/custom_err"
-	"server/internal/pkg/model"
 	"time"
 )
 

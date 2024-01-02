@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/NoBypass/fds/internal/core/controller"
+	"github.com/NoBypass/fds/internal/core/middleware"
+	"github.com/NoBypass/fds/internal/pkg/conf"
+	"github.com/NoBypass/fds/internal/pkg/consts"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
-	"server/internal/core/controller"
-	"server/internal/core/middleware"
-	"server/internal/pkg/conf"
-	"server/internal/pkg/consts"
 )
 
 const VERSION = "v0.2.0"
