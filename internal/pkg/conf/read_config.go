@@ -1,35 +1,40 @@
 package conf
 
-import "github.com/magiconair/properties"
+import (
+	"os"
+	"strconv"
+)
 
 type Config struct {
-	Server struct {
-		Port int `properties:"port"`
-	} `properties:"server"`
-	Database struct {
-		Host      string `properties:"host"`
-		Port      int    `properties:"port"`
-		User      string `properties:"user"`
-		Password  string `properties:"password"`
-		Namespace string `properties:"namespace"`
-		Name      string `properties:"name"`
-	} `properties:"db"`
-	Authentication struct {
-		Jwt struct {
-			Secret string `properties:"secret"`
-		} `properties:"jwt"`
-		Bot struct {
-			Password string `properties:"password"`
-			Token    string `properties:"token"`
-		} `properties:"bot"`
-	} `properties:"authentication"`
+	Port        int
+	DBHost      string
+	DBPort      int
+	DBUser      string
+	DBPwd       string
+	DBNamespace string
+	DBName      string
+	JWTSecret   string
+	BotPwd      string
 }
 
 func ReadConfig() *Config {
-	var cfg Config
-	p := properties.MustLoadFile("config/config.properties", properties.UTF8)
-	if err := p.Decode(&cfg); err != nil {
-		panic("failed to load config file " + err.Error())
+	port, err := strconv.Atoi(os.Getenv("port"))
+	if err != nil {
+		port = 8080
 	}
-	return &cfg
+	dbPort, err := strconv.Atoi(os.Getenv("db_port"))
+	if err != nil {
+		dbPort = 8000
+	}
+	return &Config{
+		Port:        port,
+		DBHost:      os.Getenv("db_host"),
+		DBPort:      dbPort,
+		DBUser:      os.Getenv("db_user"),
+		DBPwd:       os.Getenv("db_pwd"),
+		DBNamespace: os.Getenv("db_namespace"),
+		DBName:      os.Getenv("db_name"),
+		JWTSecret:   os.Getenv("jwt_secret"),
+		BotPwd:      os.Getenv("bot_pwd"),
+	}
 }

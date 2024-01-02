@@ -6,21 +6,21 @@ import (
 )
 
 func (c *Config) ConnectDB() *surrealdb.DB {
-	db, err := surrealdb.New(fmt.Sprintf("ws://%s:%d/rpc", c.Database.Host, c.Database.Port))
+	db, err := surrealdb.New(fmt.Sprintf("ws://%s:%d/rpc", c.DBHost, c.DBPort))
 	if err != nil {
 		panic(err)
 	}
 
 	if _, err = db.Signin(map[string]interface{}{
-		"NS":   c.Database.Namespace,
-		"DB":   c.Database.Name,
-		"user": c.Database.User,
-		"pass": c.Database.Password,
+		"NS":   c.DBNamespace,
+		"DB":   c.DBName,
+		"user": c.DBUser,
+		"pass": c.DBPwd,
 	}); err != nil {
 		panic(err)
 	}
 
-	if _, err = db.Use(c.Database.Namespace, c.Database.Name); err != nil {
+	if _, err = db.Use(c.DBNamespace, c.DBName); err != nil {
 		panic(err)
 	}
 

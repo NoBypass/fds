@@ -7,7 +7,7 @@ import (
 
 func (c *Config) JWTConfig() *echojwt.Config {
 	return &echojwt.Config{
-		SigningKey: []byte(c.Authentication.Jwt.Secret),
+		SigningKey: []byte(c.JWTSecret),
 		Skipper: func(c echo.Context) bool {
 			path := c.Path()
 			if path == "/discord/bot-login" {

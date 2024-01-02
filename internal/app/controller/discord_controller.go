@@ -2,8 +2,8 @@ package controller
 
 import (
 	"errors"
-	"github.com/NoBypass/fds/internal/core/custom_err"
-	"github.com/NoBypass/fds/internal/core/repository"
+	"github.com/NoBypass/fds/internal/app/custom_err"
+	"github.com/NoBypass/fds/internal/app/repository"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/consts"
 	"github.com/NoBypass/fds/internal/pkg/model"
@@ -67,7 +67,7 @@ func (r *discordController) BotLogin(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid request query")
 	}
 
-	if input.Pwd != c.Get("config").(*conf.Config).Authentication.Bot.Password {
+	if input.Pwd != c.Get("config").(*conf.Config).BotPwd {
 		return c.String(http.StatusForbidden, "invalid password")
 	}
 
@@ -79,7 +79,7 @@ func (r *discordController) BotLogin(c echo.Context) error {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(c.Get("config").(*conf.Config).Authentication.Jwt.Secret))
+	signedToken, err := token.SignedString([]byte(c.Get("config").(*conf.Config).JWTSecret))
 	if err != nil {
 		return err
 	}

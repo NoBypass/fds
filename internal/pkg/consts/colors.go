@@ -13,5 +13,4 @@ var (
 	Red            = color.New(color.FgHiRed)
 	Green          = color.New(color.FgHiGreen)
 	Yellow         = color.New(color.FgHiYellow)
-	EmbedColor     = 0x2B2D31
 )
