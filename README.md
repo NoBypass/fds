@@ -1,8 +1,8 @@
 # FDS Core
 
 ## ToDo
-- [ ] Migrate from GraphQL to REST
-- [ ] Migrate from Neo4j to SurrealDB
+- [x] Migrate from GraphQL to REST
+- [x] Migrate from Neo4j to SurrealDB
 - [ ] Add FDS Bot to the project
 - [ ] Create REST documentation
 - [ ] Create HTTP bindings
@@ -11,5 +11,5 @@
 - [ ] Document WebSocket bindings
 - [ ] Create SSE bindings
 - [ ] Document SSE bindings
-- [ ] Migrate from Mux to Echo
-- [ ] Implement authentication
+- [x] Migrate from Mux to Echo
+- [x] Implement authentication
