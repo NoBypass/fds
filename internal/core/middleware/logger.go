@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/NoBypass/fds/internal/pkg/consts"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"server/internal/pkg/consts"
 )
 
 func Logger() echo.MiddlewareFunc {

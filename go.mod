@@ -1,4 +1,4 @@
-module server
+module github.com/NoBypass/fds
 
 go 1.20
 
@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/bwmarrin/discordgo v0.27.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
