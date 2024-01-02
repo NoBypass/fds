@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/NoBypass/fds/internal/bot/handlers"
 	"github.com/NoBypass/fds/internal/bot/lifecycle"
 	"github.com/NoBypass/fds/internal/pkg/conf"
+	"github.com/NoBypass/fds/internal/pkg/consts"
 	"github.com/bwmarrin/discordgo"
 	"log"
 	"os"
@@ -40,8 +42,20 @@ func init() {
 	log.Println("Session opened")
 }
 
+const VERSION = "v3.0.0"
+
 func main() {
 	defer s.Close()
+
+	fmt.Println(`
+   _______  ____   ___       __
+  / __/ _ \/ __/  / _ )___  / /_
+ / _// // /\ \   / _  / _ \/ __/
+/_/ /____/___/  /____/\___/\__/   ` + consts.Purple.Sprint(VERSION) + `
+The FDS Discord bot written in    ` + consts.WhiteOnCyan.Sprint(" GO ") + `
+________________________________________________
+`)
+
 	handlers.RegisterCommands(s)
 
 	s.AddHandler(handlers.Ready)
