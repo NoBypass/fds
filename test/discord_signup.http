@@ -1,5 +1,6 @@
 ### Test signing up as a new discord member
 POST http://localhost:8080/discord/signup?id=672835870080106509&nick=NoBypass
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjb3JlIiwic3ViIjoiYm90IiwiYXVkIjpbImJvdCJdLCJpYXQiOjE3MDQxNTgyOTd9.1p1Y1tAky8QOQhKe4GmLtwj0imWyS5qNM5D-fX-dGAk
 Content-Type: application/json
 
 {
@@ -9,4 +10,12 @@ Content-Type: application/json
 
 ### Test daily claiming
 PATCH http://localhost:8080/discord/672835870080106509/daily
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjb3JlIiwic3ViIjoiYm90IiwiYXVkIjpbImJvdCJdLCJpYXQiOjE3MDQxNTgyOTd9.1p1Y1tAky8QOQhKe4GmLtwj0imWyS5qNM5D-fX-dGAk
+
+### Test logging in as discord bot
+POST http://localhost:8080/discord/bot-login
 Content-Type: application/json
+
+{
+  "pwd": "1234"
+}
