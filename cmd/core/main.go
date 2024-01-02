@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/NoBypass/fds/internal/core/controller"
+	"github.com/NoBypass/fds/internal/core/middleware"
+	"github.com/NoBypass/fds/internal/pkg/conf"
+	"github.com/NoBypass/fds/internal/pkg/consts"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
-	"server/internal/core/controller"
-	"server/internal/core/middleware"
-	"server/internal/pkg/conf"
-	"server/internal/pkg/consts"
 )
 
-const VERSION = "v0.2.0"
+const VERSION = "v0.1.0"
 
 func main() {
 	e := echo.New()
@@ -31,10 +32,13 @@ ________________________________________________
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Timeout())
+	e.Use(middleware.Prepare(config))
 
 	discord := e.Group("/discord")
+	discord.Use(echojwt.WithConfig(*config.JWTConfig()))
 	discord.POST("/signup", dcc.Signup)
 	discord.PATCH("/:id/daily", dcc.Daily)
+	discord.POST("/bot-login", dcc.BotLogin)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

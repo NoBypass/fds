@@ -16,9 +16,12 @@ type Config struct {
 	} `properties:"db"`
 	Authentication struct {
 		Jwt struct {
-			Secret     string `properties:"secret"`
-			Expiration int    `properties:"expiration"`
+			Secret string `properties:"secret"`
 		} `properties:"jwt"`
+		Bot struct {
+			Password string `properties:"password"`
+			Token    string `properties:"token"`
+		} `properties:"bot"`
 	} `properties:"authentication"`
 }
 
