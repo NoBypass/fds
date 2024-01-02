@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"server/internal/core/controller"
 	"server/internal/core/middleware"
@@ -31,10 +32,13 @@ ________________________________________________
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Timeout())
+	e.Use(middleware.Prepare(config))
 
 	discord := e.Group("/discord")
+	discord.Use(echojwt.WithConfig(*config.JWTConfig()))
 	discord.POST("/signup", dcc.Signup)
 	discord.PATCH("/:id/daily", dcc.Daily)
+	discord.POST("/bot-login", dcc.BotLogin)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
