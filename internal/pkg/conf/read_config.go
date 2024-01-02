@@ -20,6 +20,7 @@ type Config struct {
 		} `properties:"jwt"`
 		Bot struct {
 			Password string `properties:"password"`
+			Token    string `properties:"token"`
 		} `properties:"bot"`
 	} `properties:"authentication"`
 }
