@@ -6,7 +6,7 @@ import (
 )
 
 func (c *Config) ConnectDB() *surrealdb.DB {
-	db, err := surrealdb.New(fmt.Sprintf("ws://%s:%d/rpc", c.DBHost, c.DBPort))
+	db, err := surrealdb.New(fmt.Sprintf("wss://%s/rpc", c.DBHost))
 	if err != nil {
 		panic(err)
 	}
