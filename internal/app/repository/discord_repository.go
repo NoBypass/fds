@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/NoBypass/fds/internal/app/custom_err"
+	"github.com/NoBypass/fds/internal/app/errs"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/surrealdb/surrealdb.go"
 	"math"
@@ -46,7 +46,7 @@ func (r *discordRepository) ClaimDaily(id string) (*model.DiscordMember, error) 
 		member.LastDailyClaim = time.Now().UnixMilli()
 		member.Streak++
 	} else {
-		return nil, custom_err.NewClaimedError()
+		return nil, errs.NewClaimedError()
 	}
 
 	_, err = r.DB.Update("discord_member:"+id, &member)

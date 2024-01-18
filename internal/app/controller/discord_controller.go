@@ -2,8 +2,10 @@ package controller
 
 import (
 	"errors"
-	"github.com/NoBypass/fds/internal/app/custom_err"
+	"fmt"
+	"github.com/NoBypass/fds/internal/app/errs"
 	"github.com/NoBypass/fds/internal/app/repository"
+	"github.com/NoBypass/fds/internal/app/wrap"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/consts"
 	"github.com/NoBypass/fds/internal/pkg/model"
@@ -33,24 +35,29 @@ func NewDiscordController(db *surrealdb.DB) DiscordController {
 func (r *discordController) Signup(c echo.Context) error {
 	var input model.DiscordSignupInput
 	err := c.Bind(&input)
+	e := wrap.Error(&c)
+
 	if err != nil {
-		return c.String(http.StatusBadRequest, "invalid request query")
+		return e.BadRequest("invalid request query")
 	}
 
 	err = r.Create(&input)
 	if err != nil {
 		return err
 	}
-	return c.String(http.StatusOK, "success")
+	return e.Success()
 }
 
 func (r *discordController) Daily(c echo.Context) error {
 	id := c.Param("id")
+	e := wrap.Error(&c)
 
 	member, err := r.ClaimDaily(id)
 	if err != nil {
-		var claimedErr *custom_err.ClaimedError
-		if errors.As(err, &claimedErr) {
+		var claimedErr *errs.ClaimedError
+		if errors.Is(err, surrealdb.ErrNoRow) {
+			return e.NotFound(fmt.Sprintf("user with id '%s'", id))
+		} else if errors.As(err, &claimedErr) {
 			return c.JSON(http.StatusForbidden, claimedErr)
 		} else {
 			return err
@@ -63,8 +70,10 @@ func (r *discordController) Daily(c echo.Context) error {
 func (r *discordController) BotLogin(c echo.Context) error {
 	input := model.DiscordBotLoginInput{}
 	err := c.Bind(&input)
+	e := wrap.Error(&c)
+
 	if err != nil {
-		return c.String(http.StatusBadRequest, "invalid request query")
+		return e.BadRequest("invalid request query")
 	}
 
 	if input.Pwd != c.Get("config").(*conf.Config).BotPwd {

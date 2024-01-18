@@ -1,4 +1,4 @@
-package custom_err
+package errs
 
 type ClaimedError struct {
 	Message string `json:"message"`
@@ -6,7 +6,7 @@ type ClaimedError struct {
 
 func NewClaimedError() *ClaimedError {
 	return &ClaimedError{
-		Message: "You have already claimed your daily reward today.",
+		Message: "you have already claimed your daily reward today.",
 	}
 }
 
