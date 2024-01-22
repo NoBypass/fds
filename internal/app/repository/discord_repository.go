@@ -11,7 +11,7 @@ import (
 
 type DiscordRepository interface {
 	Create(input *model.DiscordSignupInput) error
-	ClaimDaily(id string) (*model.DiscordMember, error)
+	ClaimDaily(id string) (*model.DiscordDailyResponse, error)
 }
 
 type discordRepository struct {
@@ -35,14 +35,17 @@ func (r *discordRepository) Create(input *model.DiscordSignupInput) error {
 	return nil
 }
 
-func (r *discordRepository) ClaimDaily(id string) (*model.DiscordMember, error) {
+func (r *discordRepository) ClaimDaily(id string) (*model.DiscordDailyResponse, error) {
 	member, err := surrealdb.SmartUnmarshal[model.DiscordMember](r.DB.Select("discord_member:" + id))
 	if err != nil {
 		return nil, err
 	}
 
+	oldLvl := member.Level
+	gain := math.Round(rand.Float64() * 500.0)
+	withBonus := gain * (1.0 + float64(member.Streak)*0.1)
 	if member.CanClaimDaily() {
-		member.AddXP(math.Round(rand.Float64() * 500.0 * (1.0 + float64(member.Streak)*0.1)))
+		member.AddXP(withBonus)
 		member.LastDailyClaim = time.Now().UnixMilli()
 		member.Streak++
 	} else {
@@ -53,5 +56,13 @@ func (r *discordRepository) ClaimDaily(id string) (*model.DiscordMember, error) 
 	if err != nil {
 		return nil, err
 	}
-	return &member, nil
+	return &model.DiscordDailyResponse{
+		XP:        member.XP,
+		Level:     member.Level,
+		Levelup:   oldLvl != member.Level,
+		Needed:    member.GetNeededXP(),
+		Streak:    member.Streak,
+		WithBonus: withBonus,
+		Gained:    gain,
+	}, nil
 }

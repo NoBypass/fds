@@ -8,7 +8,10 @@ import (
 func (c *Config) ConnectDB() *surrealdb.DB {
 	db, err := surrealdb.New(fmt.Sprintf("wss://%s/rpc", c.DBHost))
 	if err != nil {
-		panic(err)
+		db, err = surrealdb.New(fmt.Sprintf("ws://%s/rpc", c.DBHost))
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if _, err = db.Signin(map[string]interface{}{
