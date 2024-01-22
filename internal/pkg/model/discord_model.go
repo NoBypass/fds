@@ -15,11 +15,15 @@ type DiscordMember struct {
 
 type DiscordSignupInput struct {
 	ID   string `json:"id"`
-	Nick string `json:"nick"`
+	Name string `json:"name"`
 }
 
 type DiscordBotLoginInput struct {
 	Pwd string `json:"pwd" query:"pwd"`
+}
+
+type DiscordVerifyResponse struct {
+	Name string `json:"name"`
 }
 
 type DiscordDailyResponse struct {

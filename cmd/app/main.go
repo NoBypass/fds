@@ -36,7 +36,7 @@ ________________________________________________
 
 	discord := e.Group("/discord")
 	discord.Use(echojwt.WithConfig(*config.JWTConfig()))
-	discord.POST("/signup", dcc.Signup)
+	discord.POST("/verify", dcc.Verify)
 	discord.PATCH("/:id/daily", dcc.Daily)
 	discord.POST("/bot-login", dcc.BotLogin)
 

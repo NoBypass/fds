@@ -10,7 +10,7 @@ import (
 )
 
 type DiscordRepository interface {
-	Create(input *model.DiscordSignupInput) error
+	Create(input *model.MojangResponse) error
 	ClaimDaily(id string) (*model.DiscordDailyResponse, error)
 }
 
@@ -24,9 +24,9 @@ func NewDiscordRepository(db *surrealdb.DB) DiscordRepository {
 	}
 }
 
-func (r *discordRepository) Create(input *model.DiscordSignupInput) error {
+func (r *discordRepository) Create(input *model.MojangResponse) error {
 	discordMember := model.DiscordMember{
-		Nick: input.Nick,
+		Nick: input.Name,
 	}
 	_, err := r.DB.Create("discord_member:"+input.ID, &discordMember)
 	if err != nil {

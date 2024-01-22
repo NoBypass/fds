@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/NoBypass/fds/internal/app/custom_err"
 	"github.com/NoBypass/fds/internal/app/repository"
@@ -10,12 +11,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
 
 type DiscordController interface {
-	Signup(c echo.Context) error
+	Verify(c echo.Context) error
 	Daily(c echo.Context) error
 	BotLogin(c echo.Context) error
 }
@@ -30,18 +32,36 @@ func NewDiscordController(db *surrealdb.DB) DiscordController {
 	}
 }
 
-func (r *discordController) Signup(c echo.Context) error {
+func (r *discordController) Verify(c echo.Context) error {
 	var input model.DiscordSignupInput
 	err := c.Bind(&input)
 	if err != nil {
 		return c.String(http.StatusBadRequest, "invalid request query")
 	}
 
-	err = r.Create(&input)
+	var mojangResponse model.MojangResponse
+	resp, err := http.Get("https://api.mojang.com/users/profiles/minecraft/" + input.Name)
 	if err != nil {
 		return err
 	}
-	return c.String(http.StatusOK, "success")
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(bodyBytes, &mojangResponse)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(&mojangResponse)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, model.DiscordVerifyResponse{
+		Name: mojangResponse.Name,
+	})
 }
 
 func (r *discordController) Daily(c echo.Context) error {
