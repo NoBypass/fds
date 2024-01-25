@@ -12,30 +12,13 @@
     ID   string `json:"id"`
     Nick string `json:"nick"`
   }
-  ```  
-
-  ##### Responses
-  
-  | http code | content-type       | response                  |
-  |-----------|--------------------|---------------------------|
-  | `200`     | `application/text` | `"success"`               |
-  | `400`     | `application/text` | `"invalid request query"` |
-  | `500`     | `application/text` | `"internal server error"` |
+  ```
 </details>
 <details>
  <summary><code>POST</code> <code><b>/:id/daily</b></code> <code>Claim a daily reward for a Discord user by id</code></summary>
 
   ##### Request Parameters
-  - `id` the Discord id of the user whos daily should be claimed
-
-  ##### Responses
-  
-  | http code | content-type       | response                  |
-  |-----------|--------------------|---------------------------|
-  | `200`     | `application/json` | `"success"`               |
-  | `400`     | `application/json` | `"invalid request query"` |
-  | `404`     | `application/json` | `"invalid request query"` |
-  | `500`     | `application/json` | `"internal server error"` |
+  - `id` the Discord id of the user whose daily should be claimed
 </details>
 
 ## Environment Variables
@@ -52,6 +35,7 @@
 ## ToDo
 - [x] Migrate from GraphQL to REST
 - [x] Migrate from Neo4j to SurrealDB
+- [ ] Add response tables to API definition
 - [ ] Create REST documentation
 - [ ] Create HTTP bindings
 - [ ] Document HTTP bindings
