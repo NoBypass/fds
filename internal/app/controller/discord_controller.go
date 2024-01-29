@@ -1,99 +1,74 @@
 package controller
 
 import (
-	"errors"
-	"fmt"
-	"github.com/NoBypass/fds/internal/app/errs"
-	"github.com/NoBypass/fds/internal/app/repository"
-	"github.com/NoBypass/fds/internal/app/wrap"
+	"github.com/NoBypass/fds/internal/app/service"
 	"github.com/NoBypass/fds/internal/pkg/conf"
-	"github.com/NoBypass/fds/internal/pkg/consts"
-	"github.com/NoBypass/fds/internal/pkg/model"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
 	"net/http"
-	"time"
 )
 
 type DiscordController interface {
-	Signup(c echo.Context) error
+	Verify(c echo.Context) error
 	Daily(c echo.Context) error
 	BotLogin(c echo.Context) error
 }
 
 type discordController struct {
-	repository.DiscordRepository
+	service service.DiscordService
 }
 
 func NewDiscordController(db *surrealdb.DB) DiscordController {
 	return &discordController{
-		repository.NewDiscordRepository(db),
+		service: service.NewDiscordService(db),
 	}
 }
 
-func (r *discordController) Signup(c echo.Context) error {
-	var input model.DiscordSignupInput
-	err := c.Bind(&input)
-	e := wrap.Error(&c)
+func (c *discordController) Verify(ctx echo.Context) error {
+	errCh := make(chan error)
+	defer close(errCh)
 
-	if err != nil {
-		return e.BadRequest("invalid request query")
-	}
+	inputCh := c.service.ParseVerify(ctx, errCh)
+	memberCh := c.service.CreateMember(inputCh, errCh)
 
-	err = r.Create(&input)
-	if err != nil {
+	select {
+	case err := <-errCh:
 		return err
+	case member := <-memberCh:
+		return ctx.JSON(http.StatusOK, member)
 	}
-	return e.Success()
 }
 
-func (r *discordController) Daily(c echo.Context) error {
-	id := c.Param("id")
-	e := wrap.Error(&c)
+func (c *discordController) Daily(ctx echo.Context) error {
+	errCh := make(chan error)
+	defer close(errCh)
 
-	member, err := r.ClaimDaily(id)
-	if err != nil {
-		var claimedErr *errs.ClaimedError
-		if errors.Is(err, surrealdb.ErrNoRow) {
-			return e.NotFound(fmt.Sprintf("user with id '%s'", id))
-		} else if errors.As(err, &claimedErr) {
-			return c.JSON(http.StatusForbidden, claimedErr)
-		} else {
-			return err
-		}
-	}
+	inputCh := c.service.ParseDaily(ctx, errCh)
+	memberCh := c.service.GetMember(inputCh, errCh)
+	xpCh := c.service.CheckDaily(memberCh, errCh)
+	updatedMemberCh := c.service.GiveXP(memberCh, xpCh, errCh)
 
-	return c.JSON(http.StatusOK, *member)
-}
-
-func (r *discordController) BotLogin(c echo.Context) error {
-	input := model.DiscordBotLoginInput{}
-	err := c.Bind(&input)
-	e := wrap.Error(&c)
-
-	if err != nil {
-		return e.BadRequest("invalid request query")
-	}
-
-	if input.Pwd != c.Get("config").(*conf.Config).BotPwd {
-		return c.String(http.StatusForbidden, "invalid password")
-	}
-
-	claims := jwt.RegisteredClaims{
-		Issuer:   consts.JWTCore,
-		Subject:  consts.JWTBot,
-		Audience: []string{consts.JWTBot},
-		IssuedAt: jwt.NewNumericDate(time.Now()),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(c.Get("config").(*conf.Config).JWTSecret))
-	if err != nil {
+	select {
+	case err := <-errCh:
 		return err
+	case member := <-updatedMemberCh:
+		return ctx.JSON(http.StatusOK, member)
 	}
+}
 
-	return c.JSON(http.StatusOK, map[string]string{
-		"token": signedToken,
-	})
+func (c *discordController) BotLogin(ctx echo.Context) error {
+	errCh := make(chan error)
+	defer close(errCh)
+
+	inputCh := c.service.ParseBotLogin(ctx, errCh)
+	tokenCh := c.service.GetJWT(inputCh, ctx.Get("config").(*conf.Config), errCh)
+
+	select {
+	case err := <-errCh:
+		return err
+	case token := <-tokenCh:
+		return ctx.JSON(http.StatusOK, map[string]string{
+			"token": token,
+		})
+	}
 }

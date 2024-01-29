@@ -1,17 +1,14 @@
 package repository
 
 import (
-	"github.com/NoBypass/fds/internal/app/errs"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/surrealdb/surrealdb.go"
-	"math"
-	"math/rand"
-	"time"
 )
 
 type DiscordRepository interface {
-	Create(input *model.DiscordSignupInput) error
-	ClaimDaily(id string) (*model.DiscordMember, error)
+	Create(member *model.DiscordMember) error
+	Get(id string) (*model.DiscordMember, error)
+	Update(member *model.DiscordMember) error
 }
 
 type discordRepository struct {
@@ -24,34 +21,17 @@ func NewDiscordRepository(db *surrealdb.DB) DiscordRepository {
 	}
 }
 
-func (r *discordRepository) Create(input *model.DiscordSignupInput) error {
-	discordMember := model.DiscordMember{
-		Nick: input.Nick,
-	}
-	_, err := r.DB.Create("discord_member:"+input.ID, &discordMember)
-	if err != nil {
-		return err
-	}
-	return nil
+func (r *discordRepository) Create(member *model.DiscordMember) error {
+	_, err := surrealdb.SmartMarshal(r.DB.Create, member)
+	return err
 }
 
-func (r *discordRepository) ClaimDaily(id string) (*model.DiscordMember, error) {
+func (r *discordRepository) Get(id string) (*model.DiscordMember, error) {
 	member, err := surrealdb.SmartUnmarshal[model.DiscordMember](r.DB.Select("discord_member:" + id))
-	if err != nil {
-		return nil, err
-	}
+	return &member, err
+}
 
-	if member.CanClaimDaily() {
-		member.AddXP(math.Round(rand.Float64() * 500.0 * (1.0 + float64(member.Streak)*0.1)))
-		member.LastDailyClaim = time.Now().UnixMilli()
-		member.Streak++
-	} else {
-		return nil, errs.NewClaimedError()
-	}
-
-	_, err = r.DB.Update("discord_member:"+id, &member)
-	if err != nil {
-		return nil, err
-	}
-	return &member, nil
+func (r *discordRepository) Update(member *model.DiscordMember) error {
+	_, err := surrealdb.SmartMarshal(r.DB.Update, member)
+	return err
 }
