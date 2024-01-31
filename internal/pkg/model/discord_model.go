@@ -6,12 +6,12 @@ import (
 )
 
 type DiscordMember struct {
-	ID             string  `json:"id"`
-	Nick           string  `json:"nick"`
-	XP             float64 `json:"xp"`
-	LastDailyClaim int64   `json:"last_daily_claim"`
-	Level          int     `json:"level"`
-	Streak         int     `json:"streak"`
+	ID          string  `json:"id"`
+	Nick        string  `json:"nick"`
+	XP          float64 `json:"xp"`
+	LastDailyAt int64   `json:"last_daily_at"`
+	Level       int     `json:"level"`
+	Streak      int     `json:"streak"`
 }
 
 type DiscordVerifyInput struct {
@@ -40,5 +40,5 @@ func (d *DiscordMember) GetNeededXP() float64 {
 }
 
 func (d *DiscordMember) CanClaimDaily() bool {
-	return d.LastDailyClaim+24*60*60*1000 < time.Now().UnixMilli()
+	return d.LastDailyAt+24*60*60*1000 < time.Now().UnixMilli()
 }

@@ -6,15 +6,16 @@ import (
 )
 
 type Config struct {
-	Port        int
-	DBHost      string
-	DBPort      int
-	DBUser      string
-	DBPwd       string
-	DBNamespace string
-	DBName      string
-	JWTSecret   string
-	BotPwd      string
+	HypixelAPIKey string
+	DBNamespace   string
+	JWTSecret     string
+	BotPwd        string
+	DBHost        string
+	DBUser        string
+	DBName        string
+	DBPort        int
+	DBPwd         string
+	Port          int
 }
 
 func ReadConfig() *Config {

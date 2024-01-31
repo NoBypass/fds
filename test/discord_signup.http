@@ -1,5 +1,5 @@
 ### Test signing up as a new discord member
-POST http://localhost:8080/discord/signup?id=672835870080106509&nick=NoBypass
+POST http://localhost:8080/discord/verify
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjb3JlIiwic3ViIjoiYm90IiwiYXVkIjpbImJvdCJdLCJpYXQiOjE3MDQxNTgyOTd9.1p1Y1tAky8QOQhKe4GmLtwj0imWyS5qNM5D-fX-dGAk
 Content-Type: application/json
 

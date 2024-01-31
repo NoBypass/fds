@@ -29,13 +29,16 @@ func (c *discordController) Verify(ctx echo.Context) error {
 	defer close(errCh)
 
 	inputCh := c.service.ParseVerify(ctx, errCh)
-	memberCh := c.service.CreateMember(inputCh, errCh)
+	mojangProfileCh, memberCh := c.service.FetchMojangProfile(inputCh, errCh)
+	done := c.service.CreateMemberAndProfile(mojangProfileCh, memberCh, errCh)
 
 	select {
 	case err := <-errCh:
 		return err
-	case member := <-memberCh:
-		return ctx.JSON(http.StatusOK, member)
+	case <-done:
+		return ctx.JSON(http.StatusOK, map[string]bool{
+			"success": true,
+		})
 	}
 }
 
