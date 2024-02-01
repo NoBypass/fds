@@ -18,9 +18,9 @@ type discordController struct {
 	service service.DiscordService
 }
 
-func NewDiscordController(db *surrealdb.DB) DiscordController {
+func NewDiscordController(db *surrealdb.DB, config *conf.Config) DiscordController {
 	return &discordController{
-		service: service.NewDiscordService(db),
+		service.NewDiscordService(db, config),
 	}
 }
 
@@ -64,7 +64,7 @@ func (c *discordController) BotLogin(ctx echo.Context) error {
 	defer close(errCh)
 
 	inputCh := c.service.ParseBotLogin(ctx, errCh)
-	tokenCh := c.service.GetJWT(inputCh, ctx.Get("config").(*conf.Config), errCh)
+	tokenCh := c.service.GetJWT(inputCh, errCh)
 
 	select {
 	case err := <-errCh:

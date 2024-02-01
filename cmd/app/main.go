@@ -30,7 +30,7 @@ ________________________________________________
 	db := config.ConnectDB()
 
 	authService := auth.NewService(config.JWTSecret)
-	discordController := controller.NewDiscordController(db)
+	discordController := controller.NewDiscordController(db, config)
 
 	e.HTTPErrorHandler = errs.Handler
 

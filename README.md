@@ -31,6 +31,7 @@
 - `db_namespace` - The namespace of the database
 - `jwt_secret` - The secret used to sign JWTs
 - `bot_pwd` - The password of the Discord bot
+- `hypixel_api_key` - The Hypixel API key
 
 ## ToDo
 - [x] Migrate from GraphQL to REST
