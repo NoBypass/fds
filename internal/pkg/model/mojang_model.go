@@ -1,6 +1,7 @@
 package model
 
 type MojangProfile struct {
-	ID   string `json:"id"`
+	Date string
+	UUID string `json:"id"`
 	Name string `json:"name"`
 }

@@ -24,13 +24,14 @@ func NewDiscordController(db *surrealdb.DB, config *conf.Config) DiscordControll
 	}
 }
 
-func (c *discordController) Verify(ctx echo.Context) error {
-	errCh := make(chan error)
-	defer close(errCh)
+func (c discordController) Verify(ctx echo.Context) error {
+	errCh := c.service.InjectErrorChan()
 
-	inputCh := c.service.ParseVerify(ctx, errCh)
-	mojangProfileCh, memberCh := c.service.FetchMojangProfile(inputCh, errCh)
-	done := c.service.CreateMemberAndProfile(mojangProfileCh, memberCh, errCh)
+	inputCh := c.service.ParseVerify(ctx)
+	mojangProfileCh, memberCh := c.service.FetchMojangProfile(inputCh)
+	hypixelPlayerResCh, newMojangProfileCh := c.service.FetchHypixelPlayer(mojangProfileCh)
+	verifiedMemberCh, hypixelPlayerCh := c.service.VerifyHypixelSocials(memberCh, hypixelPlayerResCh)
+	done := c.service.Persist(newMojangProfileCh, verifiedMemberCh, hypixelPlayerCh)
 
 	select {
 	case err := <-errCh:
@@ -42,14 +43,13 @@ func (c *discordController) Verify(ctx echo.Context) error {
 	}
 }
 
-func (c *discordController) Daily(ctx echo.Context) error {
-	errCh := make(chan error)
-	defer close(errCh)
+func (c discordController) Daily(ctx echo.Context) error {
+	errCh := c.service.InjectErrorChan()
 
-	inputCh := c.service.ParseDaily(ctx, errCh)
-	memberCh := c.service.GetMember(inputCh, errCh)
-	xpCh := c.service.CheckDaily(memberCh, errCh)
-	updatedMemberCh := c.service.GiveXP(memberCh, xpCh, errCh)
+	inputCh := c.service.ParseDaily(ctx)
+	memberCh := c.service.GetMember(inputCh) // TODO: use surql
+	xpCh := c.service.CheckDaily(memberCh)
+	updatedMemberCh := c.service.GiveXP(memberCh, xpCh)
 
 	select {
 	case err := <-errCh:
@@ -59,12 +59,11 @@ func (c *discordController) Daily(ctx echo.Context) error {
 	}
 }
 
-func (c *discordController) BotLogin(ctx echo.Context) error {
-	errCh := make(chan error)
-	defer close(errCh)
+func (c discordController) BotLogin(ctx echo.Context) error {
+	errCh := c.service.InjectErrorChan()
 
-	inputCh := c.service.ParseBotLogin(ctx, errCh)
-	tokenCh := c.service.GetJWT(inputCh, errCh)
+	inputCh := c.service.ParseBotLogin(ctx)
+	tokenCh := c.service.GetJWT(inputCh)
 
 	select {
 	case err := <-errCh:

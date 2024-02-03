@@ -29,3 +29,11 @@ func TooManyRequests(msg string) *APIError {
 func Unauthorized(msg string) *APIError {
 	return NewAPIError(msg, http.StatusUnauthorized)
 }
+
+func NotFound(msg string) *APIError {
+	return NewAPIError(msg, http.StatusNotFound)
+}
+
+func Forbidden(msg string) *APIError {
+	return NewAPIError(msg, http.StatusForbidden)
+}

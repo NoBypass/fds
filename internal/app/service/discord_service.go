@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"github.com/NoBypass/fds/internal/app/errs"
 	"github.com/NoBypass/fds/internal/app/repository"
@@ -10,44 +9,53 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
-	"io/ioutil"
 	"math"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 )
 
 type DiscordService interface {
-	ParseBotLogin(c echo.Context, err chan<- error) <-chan model.DiscordBotLoginInput
-	ParseVerify(c echo.Context, err chan<- error) <-chan model.DiscordVerifyInput
-	ParseDaily(c echo.Context, err chan<- error) <-chan string
+	Service
+	ParseBotLogin(c echo.Context) <-chan model.DiscordBotLoginInput
+	ParseVerify(c echo.Context) <-chan model.DiscordVerifyInput
+	ParseDaily(c echo.Context) <-chan string
 
-	CreateMemberAndProfile(profile <-chan model.MojangProfile, member <-chan model.DiscordMember, err chan<- error) <-chan struct{}
-	GetMember(id <-chan string, err chan<- error) <-chan model.DiscordMember
+	Persist(profileCh <-chan model.MojangProfile, memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) <-chan struct{}
 
-	FetchMojangProfile(inputCh <-chan model.DiscordVerifyInput, err chan<- error) (<-chan model.MojangProfile, <-chan model.DiscordMember)
-	FetchHypixelPlayer(inputCh <-chan model.MojangProfile, err chan<- error) (<-chan model.HypixelPlayer, <-chan model.DiscordMember)
-	GiveXP(member <-chan model.DiscordMember, xp <-chan float64, err chan<- error) <-chan model.DiscordMember
-	GetJWT(input <-chan model.DiscordBotLoginInput, err chan<- error) <-chan string
-	CheckDaily(member <-chan model.DiscordMember, err chan<- error) <-chan float64
+	VerifyHypixelSocials(member <-chan model.DiscordMember, player <-chan model.HypixelPlayerResponse) (<-chan model.DiscordMember, <-chan model.HypixelPlayer)
+	FetchHypixelPlayer(inputCh <-chan model.MojangProfile) (<-chan model.HypixelPlayerResponse, <-chan model.MojangProfile)
+	FetchMojangProfile(inputCh <-chan model.DiscordVerifyInput) (<-chan model.MojangProfile, <-chan model.DiscordMember)
+	GiveXP(member <-chan model.DiscordMember, xp <-chan float64) <-chan model.DiscordMember
+	GetJWT(input <-chan model.DiscordBotLoginInput) <-chan string
+	CheckDaily(member <-chan model.DiscordMember) <-chan float64
+	GetMember(id <-chan string) <-chan model.DiscordMember
 }
 
 type discordService struct {
-	repo       repository.DiscordRepository
-	mojangRepo repository.MojangRepository
-	config     *conf.Config
+	service
+	repo        repository.DiscordRepository
+	mojangRepo  repository.MojangRepository
+	hypixelRepo repository.HypixelRepository
+	config      *conf.Config
 }
 
 func NewDiscordService(db *surrealdb.DB, config *conf.Config) DiscordService {
 	return &discordService{
-		repository.NewDiscordRepository(db),
-		repository.NewMojangRepository(db),
-		config,
+		hypixelRepo: repository.NewHypixelRepository(db),
+		repo:        repository.NewDiscordRepository(db),
+		mojangRepo:  repository.NewMojangRepository(db),
+		config:      config,
 	}
 }
 
-func (s *discordService) ParseVerify(c echo.Context, errCh chan<- error) <-chan model.DiscordVerifyInput {
+func (s *discordService) InjectErrorChan() <-chan error {
+	ch := make(chan error)
+	s.errCh = ch
+	return ch
+}
+
+func (s *discordService) ParseVerify(c echo.Context) <-chan model.DiscordVerifyInput {
 	inputCh := make(chan model.DiscordVerifyInput)
 
 	go func() {
@@ -56,7 +64,7 @@ func (s *discordService) ParseVerify(c echo.Context, errCh chan<- error) <-chan 
 		var input model.DiscordVerifyInput
 		err := c.Bind(&input)
 		if err != nil {
-			errCh <- errs.BadRequest("error parsing input")
+			s.errCh <- errs.BadRequest("error parsing input")
 			return
 		}
 
@@ -66,7 +74,7 @@ func (s *discordService) ParseVerify(c echo.Context, errCh chan<- error) <-chan 
 	return inputCh
 }
 
-func (s *discordService) ParseBotLogin(c echo.Context, errCh chan<- error) <-chan model.DiscordBotLoginInput {
+func (s *discordService) ParseBotLogin(c echo.Context) <-chan model.DiscordBotLoginInput {
 	inputCh := make(chan model.DiscordBotLoginInput)
 
 	go func() {
@@ -75,7 +83,7 @@ func (s *discordService) ParseBotLogin(c echo.Context, errCh chan<- error) <-cha
 		var input model.DiscordBotLoginInput
 		err := c.Bind(&input)
 		if err != nil {
-			errCh <- errs.BadRequest("error parsing input")
+			s.errCh <- errs.BadRequest("error parsing input")
 			return
 		}
 
@@ -85,7 +93,7 @@ func (s *discordService) ParseBotLogin(c echo.Context, errCh chan<- error) <-cha
 	return inputCh
 }
 
-func (s *discordService) ParseDaily(c echo.Context, errCh chan<- error) <-chan string {
+func (s *discordService) ParseDaily(c echo.Context) <-chan string {
 	idCh := make(chan string)
 
 	go func() {
@@ -93,7 +101,7 @@ func (s *discordService) ParseDaily(c echo.Context, errCh chan<- error) <-chan s
 
 		id := c.Param("id")
 		if id == "" {
-			errCh <- errs.BadRequest("error parsing input")
+			s.errCh <- errs.BadRequest("error parsing input")
 			return
 		}
 		idCh <- id
@@ -102,31 +110,7 @@ func (s *discordService) ParseDaily(c echo.Context, errCh chan<- error) <-chan s
 	return idCh
 }
 
-func (s *discordService) CreateMemberAndProfile(profileCh <-chan model.MojangProfile, memberCh <-chan model.DiscordMember, errCh chan<- error) <-chan struct{} {
-	done := make(chan struct{})
-
-	go func() {
-		defer close(done)
-
-		profile := <-profileCh
-		err := s.mojangRepo.Create(&profile)
-		if err != nil && !strings.Contains(err.Error(), "already exists") {
-			errCh <- err
-			return
-		}
-
-		member := <-memberCh
-		err = s.repo.Create(&member, &profile)
-		if err != nil {
-			errCh <- err
-			return
-		}
-	}()
-
-	return done
-}
-
-func (s *discordService) GetMember(id <-chan string, errCh chan<- error) <-chan model.DiscordMember {
+func (s *discordService) GetMember(id <-chan string) <-chan model.DiscordMember {
 	memberCh := make(chan model.DiscordMember)
 
 	go func() {
@@ -134,7 +118,7 @@ func (s *discordService) GetMember(id <-chan string, errCh chan<- error) <-chan 
 
 		member, err := s.repo.Get(<-id)
 		if err != nil {
-			errCh <- err
+			s.errCh <- err
 			return
 		}
 
@@ -144,7 +128,7 @@ func (s *discordService) GetMember(id <-chan string, errCh chan<- error) <-chan 
 	return memberCh
 }
 
-func (s *discordService) CheckDaily(memberCh <-chan model.DiscordMember, errCh chan<- error) <-chan float64 {
+func (s *discordService) CheckDaily(memberCh <-chan model.DiscordMember) <-chan float64 {
 	xpCh := make(chan float64)
 
 	go func() {
@@ -156,33 +140,33 @@ func (s *discordService) CheckDaily(memberCh <-chan model.DiscordMember, errCh c
 			m.LastDailyAt = time.Now().UnixMilli()
 			m.Streak++
 		} else {
-			errCh <- errs.TooManyRequests("user has already claimed their daily reward")
+			s.errCh <- errs.TooManyRequests("user has already claimed their daily reward")
 		}
 	}()
 
 	return xpCh
 }
 
-func (s *discordService) GiveXP(memberCh <-chan model.DiscordMember, xp <-chan float64, errCh chan<- error) <-chan model.DiscordMember {
+func (s *discordService) GiveXP(memberCh <-chan model.DiscordMember, xp <-chan float64) <-chan model.DiscordMember {
 	out := make(chan model.DiscordMember)
 
 	go func() {
 		defer close(out)
 
-		m := <-memberCh
-		m.AddXP(<-xp)
-		err := s.repo.Update(&m)
+		member := <-memberCh
+		member.AddXP(<-xp)
+		err := s.repo.Update(member.DiscordID, &member)
 		if err != nil {
-			errCh <- err
+			s.errCh <- err
 			return
 		}
-		out <- m
+		out <- member
 	}()
 
 	return memberCh
 }
 
-func (s *discordService) GetJWT(input <-chan model.DiscordBotLoginInput, errCh chan<- error) <-chan string {
+func (s *discordService) GetJWT(input <-chan model.DiscordBotLoginInput) <-chan string {
 	tokenCh := make(chan string)
 
 	go func() {
@@ -199,12 +183,12 @@ func (s *discordService) GetJWT(input <-chan model.DiscordBotLoginInput, errCh c
 			token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 			signedToken, err := token.SignedString([]byte(s.config.JWTSecret))
 			if err != nil {
-				errCh <- err
+				s.errCh <- err
 				return
 			}
 			tokenCh <- signedToken
 		} else {
-			errCh <- errs.Unauthorized("invalid password")
+			s.errCh <- errs.Unauthorized("invalid password")
 			return
 		}
 	}()
@@ -212,7 +196,7 @@ func (s *discordService) GetJWT(input <-chan model.DiscordBotLoginInput, errCh c
 	return tokenCh
 }
 
-func (s *discordService) FetchMojangProfile(inputCh <-chan model.DiscordVerifyInput, errCh chan<- error) (<-chan model.MojangProfile, <-chan model.DiscordMember) {
+func (s *discordService) FetchMojangProfile(inputCh <-chan model.DiscordVerifyInput) (<-chan model.MojangProfile, <-chan model.DiscordMember) {
 	profileCh := make(chan model.MojangProfile)
 	memberCh := make(chan model.DiscordMember)
 
@@ -223,70 +207,145 @@ func (s *discordService) FetchMojangProfile(inputCh <-chan model.DiscordVerifyIn
 		input := <-inputCh
 		resp, err := http.Get("https://api.mojang.com/users/profiles/minecraft/" + input.Nick)
 		if err != nil {
-			errCh <- err
+			s.errCh <- err
 			return
 		}
 
 		var profile model.MojangProfile
 		err = json.NewDecoder(resp.Body).Decode(&profile)
 		if err != nil {
-			errCh <- err
+			s.errCh <- err
 			return
 		}
 
 		profileCh <- profile
 		memberCh <- model.DiscordMember{
-			ID:   input.ID,
-			Nick: profile.Name,
+			DiscordID: input.ID,
+			Name:      input.Name,
+			Nick:      profile.Name,
 		}
 	}()
 
 	return profileCh, memberCh
 }
 
-func (s *discordService) FetchHypixelPlayer(inputCh <-chan model.MojangProfile, errCh chan<- error) (<-chan model.HypixelPlayer, <-chan model.DiscordMember) {
-	playerCh := make(chan model.HypixelPlayer)
-	memberCh := make(chan model.DiscordMember)
+func (s *discordService) FetchHypixelPlayer(inputCh <-chan model.MojangProfile) (<-chan model.HypixelPlayerResponse, <-chan model.MojangProfile) {
+	playerCh := make(chan model.HypixelPlayerResponse)
+	profileCh := make(chan model.MojangProfile)
 
 	go func() {
 		defer close(playerCh)
-		defer close(memberCh)
 
 		input := <-inputCh
-		resp, err := http.Get("https://api.hypixel.net/player?key=" + s.config.HypixelAPIKey + "&uuid=" + input.ID)
+		profileCh <- input
+		req, err := http.NewRequest(http.MethodGet, "https://api.hypixel.net/player?uuid="+input.UUID, nil)
 		if err != nil {
-			errCh <- err
+			s.errCh <- err
 			return
 		}
 
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		req.Header.Add("API-Key", s.config.HypixelAPIKey)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			errCh <- err
+			s.errCh <- err
 			return
 		}
 
-		base64Body := base64.StdEncoding.EncodeToString(body)
 		var player model.HypixelPlayerResponse
-		err = json.Unmarshal(body, &player)
+		err = json.NewDecoder(resp.Body).Decode(&player)
 		if err != nil {
-			errCh <- err
+			s.errCh <- err
 			return
 		}
 
-		var respBody interface{}
-		err = json.NewDecoder(resp.Body).Decode(&respBody)
-		if err != nil {
-			errCh <- err
-			return
-		}
+		playerCh <- player
+	}()
 
-		playerCh <- model.HypixelPlayer(base64Body)
-		memberCh <- model.DiscordMember{
-			ID:   input.ID,
-			Nick: player.Player.DisplayName,
+	return playerCh, profileCh
+}
+
+func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayerResponse) (<-chan model.DiscordMember, <-chan model.HypixelPlayer) {
+	outMemberCh := make(chan model.DiscordMember)
+	outPlayerCh := make(chan model.HypixelPlayer)
+
+	go func() {
+		defer close(outPlayerCh)
+		defer close(outMemberCh)
+
+		member := <-memberCh
+		player := <-playerCh
+
+		if player.Success {
+			if player.Player.SocialMedia.Links.Discord == member.Name {
+				outMemberCh <- member
+				outPlayerCh <- model.HypixelPlayer{
+					Date: time.Now().Format(time.RFC3339),
+					UUID: player.Player.UUID,
+				}
+			} else {
+				s.errCh <- errs.Forbidden("discord id does not match hypixel socials")
+				return
+			}
+		} else {
+			s.errCh <- errs.NotFound("hypixel: player not found")
+			return
 		}
 	}()
 
-	return playerCh, memberCh
+	return outMemberCh, outPlayerCh
+}
+
+func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) <-chan struct{} {
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+
+		var (
+			p model.MojangProfile
+			m model.DiscordMember
+			h model.HypixelPlayer
+		)
+		for i := 0; i < 3; i++ {
+			select {
+			case profile := <-profileCh:
+				err := s.mojangRepo.Create(&profile)
+				if err != nil {
+					s.errCh <- err
+					return
+				}
+				p = profile
+			case member := <-memberCh:
+				err := s.repo.Create(&member)
+				if err != nil {
+					s.errCh <- err
+					return
+				}
+				m = member
+			case player := <-playerCh:
+				err := s.hypixelRepo.Create(&player)
+				if err != nil {
+					s.errCh <- err
+					return
+				}
+				h = player
+			}
+		}
+
+		err := s.repo.RelatePlayedWith(&p, &h)
+		if err != nil {
+			s.errCh <- err
+			return
+		}
+
+		err = s.repo.RelateVerifiedWith(&m, &h)
+		if err != nil {
+			s.errCh <- err
+			return
+		}
+
+		done <- struct{}{}
+	}()
+
+	return done
 }

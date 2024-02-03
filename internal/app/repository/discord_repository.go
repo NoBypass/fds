@@ -3,12 +3,17 @@ package repository
 import (
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/surrealdb/surrealdb.go"
+	"strings"
 )
 
 type DiscordRepository interface {
-	Create(member *model.DiscordMember, profile *model.MojangProfile) error
+	Repository
+	Create(member *model.DiscordMember) error
 	Get(id string) (*model.DiscordMember, error)
-	Update(member *model.DiscordMember) error
+	Update(id string, member *model.DiscordMember) error
+
+	RelatePlayedWith(in *model.MojangProfile, out *model.HypixelPlayer) error
+	RelateVerifiedWith(in *model.DiscordMember, out *model.HypixelPlayer) error
 }
 
 type discordRepository struct {
@@ -21,15 +26,24 @@ func NewDiscordRepository(db *surrealdb.DB) DiscordRepository {
 	}
 }
 
-func (r *discordRepository) Create(member *model.DiscordMember, profile *model.MojangProfile) error {
-	member.ID = "discord_member:" + member.ID
-	_, err := surrealdb.SmartMarshal(r.DB.Create, member)
-	if err != nil {
-		return err
-	}
-	_, err = r.DB.Query("RELATE discord_member: $member, mojang_profile: $profile", map[string]string{
-		"profile": profile.ID,
-		"member":  member.ID,
+func (r *discordRepository) Create(member *model.DiscordMember) error {
+	query := strings.Replace(`CREATE discord_member:$discordID CONTENT {
+		"discordID": $discordID,
+		"name": $name,
+		"nick": $nick,
+		"xp": $xp,
+		"level": $level,
+		"streak": $streak,
+		"lastDailyAt": $lastDailyAt
+	};`, "\n", " ", -1)
+	_, err := r.DB.Query(query, map[string]interface{}{
+		"discordID":   member.DiscordID,
+		"name":        member.Name,
+		"nick":        member.Nick,
+		"xp":          member.XP,
+		"level":       member.Level,
+		"streak":      member.Streak,
+		"lastDailyAt": member.LastDailyAt,
 	})
 	return err
 }
@@ -39,7 +53,39 @@ func (r *discordRepository) Get(id string) (*model.DiscordMember, error) {
 	return &member, err
 }
 
-func (r *discordRepository) Update(member *model.DiscordMember) error {
-	_, err := surrealdb.SmartMarshal(r.DB.Update, member)
+func (r *discordRepository) Update(id string, member *model.DiscordMember) error {
+	query := strings.Replace(`UPDATE discord_member:$discordID SET {
+    	"name": $name,
+    	"nick": $nick,
+    	"xp": $xp,
+    	"level": $level,
+    	"streak": $streak,
+    	"lastDailyAt": $lastDailyAt
+    };`, "\n", " ", -1)
+	_, err := r.DB.Query(query, map[string]interface{}{
+		"discordID":   id,
+		"name":        member.Name,
+		"nick":        member.Nick,
+		"xp":          member.XP,
+		"level":       member.Level,
+		"streak":      member.Streak,
+		"lastDailyAt": member.LastDailyAt,
+	})
+	return err
+}
+
+func (r *discordRepository) RelatePlayedWith(in *model.MojangProfile, out *model.HypixelPlayer) error {
+	_, err := r.DB.Query("RELATE mojang_profile:$profileID->played_with->hypixel_player:$playerID;", map[string]interface{}{
+		"profileID": in.UUID,
+		"playerID":  out.UUID,
+	})
+	return err
+}
+
+func (r *discordRepository) RelateVerifiedWith(in *model.DiscordMember, out *model.HypixelPlayer) error {
+	_, err := r.DB.Query("RELATE discord_member:$memberID->verified_with->hypixel_player:$playerID;", map[string]interface{}{
+		"memberID": in.DiscordID,
+		"playerID": out.UUID,
+	})
 	return err
 }

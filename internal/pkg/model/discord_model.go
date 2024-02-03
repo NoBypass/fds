@@ -6,7 +6,8 @@ import (
 )
 
 type DiscordMember struct {
-	ID          string  `json:"id"`
+	DiscordID   string  `json:"discord_id"`
+	Name        string  `json:"name"`
 	Nick        string  `json:"nick"`
 	XP          float64 `json:"xp"`
 	LastDailyAt int64   `json:"last_daily_at"`
@@ -17,6 +18,7 @@ type DiscordMember struct {
 type DiscordVerifyInput struct {
 	ID   string `json:"id"`
 	Nick string `json:"nick"`
+	Name string `json:"name"`
 }
 
 type DiscordBotLoginInput struct {
