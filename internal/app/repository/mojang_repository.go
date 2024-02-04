@@ -2,8 +2,7 @@ package repository
 
 import (
 	"github.com/NoBypass/fds/internal/pkg/model"
-	"github.com/surrealdb/surrealdb.go"
-	"strings"
+	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
 	"time"
 )
 
@@ -13,26 +12,22 @@ type MojangRepository interface {
 }
 
 type mojangRepository struct {
-	*surrealdb.DB
+	repository
 }
 
-func NewMojangRepository(db *surrealdb.DB) MojangRepository {
+func NewMojangRepository(db *surreal_wrap.DB) MojangRepository {
 	return &mojangRepository{
-		db,
+		newRepository(db),
 	}
 }
 
 func (r *mojangRepository) Create(member *model.MojangProfile) error {
 	now := time.Now()
-	query := strings.Replace(`CREATE mojang_profile:[$name, $date] CONTENT {
-			"name": $name,
-			"date": $date,
-			"uuid": $uuid
-		};`, "\n", " ", -1)
-	_, err := r.DB.Query(query, map[string]interface{}{
-		"name": member.Name,
-		"date": time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Format(time.RFC3339),
-		"uuid": member.UUID,
-	})
+	date := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Format(time.RFC3339)
+	_, err := r.DB.Queryf(`CREATE mojang_profile:["%s", "%s"] CONTENT {
+			"name": "%s",
+			"date": "%s",
+			"uuid": "%s"
+		}`, member.Name, date, member.Name, date, member.UUID)
 	return err
 }

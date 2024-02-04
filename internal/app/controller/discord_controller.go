@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"github.com/NoBypass/fds/internal/app/errs"
 	"github.com/NoBypass/fds/internal/app/service"
 	"github.com/NoBypass/fds/internal/pkg/conf"
+	"github.com/NoBypass/fds/internal/pkg/model"
+	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
 	"github.com/labstack/echo/v4"
-	"github.com/surrealdb/surrealdb.go"
 	"net/http"
 )
 
@@ -18,23 +20,31 @@ type discordController struct {
 	service service.DiscordService
 }
 
-func NewDiscordController(db *surrealdb.DB, config *conf.Config) DiscordController {
+func NewDiscordController(db *surreal_wrap.DB, config *conf.Config) DiscordController {
 	return &discordController{
 		service.NewDiscordService(db, config),
 	}
 }
 
 func (c discordController) Verify(ctx echo.Context) error {
+	cancel := c.service.InjectContext(ctx.Request().Context())
 	errCh := c.service.InjectErrorChan()
 
-	inputCh := c.service.ParseVerify(ctx)
-	mojangProfileCh, memberCh := c.service.FetchMojangProfile(inputCh)
+	var input model.DiscordVerifyInput
+	err := ctx.Bind(&input)
+	if err != nil {
+		return errs.BadRequest("error parsing input")
+	}
+
+	verifiedCh := c.service.CheckIfAlreadyVerified(&input)
+	mojangProfileCh, memberCh := c.service.FetchMojangProfile(verifiedCh)
 	hypixelPlayerResCh, newMojangProfileCh := c.service.FetchHypixelPlayer(mojangProfileCh)
 	verifiedMemberCh, hypixelPlayerCh := c.service.VerifyHypixelSocials(memberCh, hypixelPlayerResCh)
 	done := c.service.Persist(newMojangProfileCh, verifiedMemberCh, hypixelPlayerCh)
 
 	select {
 	case err := <-errCh:
+		cancel()
 		return err
 	case <-done:
 		return ctx.JSON(http.StatusOK, map[string]bool{
