@@ -1,3 +1,7 @@
 package model
 
-type MojangResponse DiscordSignupInput
+type MojangProfile struct {
+	Date string
+	UUID string `json:"id"`
+	Name string `json:"name"`
+}

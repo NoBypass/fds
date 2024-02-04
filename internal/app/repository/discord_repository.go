@@ -1,68 +1,71 @@
 package repository
 
 import (
-	"github.com/NoBypass/fds/internal/app/custom_err"
 	"github.com/NoBypass/fds/internal/pkg/model"
+	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
 	"github.com/surrealdb/surrealdb.go"
-	"math"
-	"math/rand"
 	"time"
 )
 
 type DiscordRepository interface {
-	Create(input *model.MojangResponse) error
-	ClaimDaily(id string) (*model.DiscordDailyResponse, error)
+	Repository
+	Create(member *model.DiscordMember) error
+	Get(id string) (*model.DiscordMember, error)
+	Update(id string, member *model.DiscordMember) error
+
+	RelatePlayedWith(in *model.MojangProfile, out *model.HypixelPlayer) error
+	RelateVerifiedWith(in *model.DiscordMember, out *model.HypixelPlayer) error
 }
 
 type discordRepository struct {
-	*surrealdb.DB
+	repository
 }
 
-func NewDiscordRepository(db *surrealdb.DB) DiscordRepository {
+func NewDiscordRepository(db *surreal_wrap.DB) DiscordRepository {
 	return &discordRepository{
-		db,
+		newRepository(db),
 	}
 }
 
-func (r *discordRepository) Create(input *model.MojangResponse) error {
-	discordMember := model.DiscordMember{
-		Nick: input.Name,
+func (r *discordRepository) Create(member *model.DiscordMember) error {
+	if member.LastDailyAt == "" {
+		member.LastDailyAt = time.Now().Add(-24 * time.Hour).Format(time.RFC3339)
 	}
-	_, err := r.DB.Create("discord_member:"+input.ID, &discordMember)
-	if err != nil {
-		return err
-	}
-	return nil
+	_, err := r.DB.Queryf(`CREATE discord_member:%s CONTENT {
+		"discord_id": "%s",
+		"name": "%s",
+		"nick": "%s",
+		"xp": %f,
+		"level": %d,
+		"streak": %d,
+		"last_daily_at": "%s"
+	}`, member.DiscordID, member.DiscordID, member.Name, member.Nick, member.XP, member.Level, member.Streak, member.LastDailyAt)
+	return err
 }
 
-func (r *discordRepository) ClaimDaily(id string) (*model.DiscordDailyResponse, error) {
+func (r *discordRepository) Get(id string) (*model.DiscordMember, error) {
 	member, err := surrealdb.SmartUnmarshal[model.DiscordMember](r.DB.Select("discord_member:" + id))
-	if err != nil {
-		return nil, err
-	}
+	return &member, err
+}
 
-	oldLvl := member.Level
-	gain := math.Round(rand.Float64() * 500.0)
-	withBonus := gain * (1.0 + float64(member.Streak)*0.1)
-	if member.CanClaimDaily() {
-		member.AddXP(withBonus)
-		member.LastDailyClaim = time.Now().UnixMilli()
-		member.Streak++
-	} else {
-		return nil, custom_err.NewClaimedError()
-	}
+func (r *discordRepository) Update(id string, member *model.DiscordMember) error {
+	_, err := r.DB.Queryf(`UPDATE discord_member:%s SET {
+		"name": "%s",
+		"nick": "%s",
+		"xp": %f,
+		"level": %d,
+		"streak": %d,
+		"last_daily_at": "%s"
+	}`, id, member.Name, member.Nick, member.XP, member.Level, member.Streak, member.LastDailyAt)
+	return err
+}
 
-	_, err = r.DB.Update("discord_member:"+id, &member)
-	if err != nil {
-		return nil, err
-	}
-	return &model.DiscordDailyResponse{
-		XP:        member.XP,
-		Level:     member.Level,
-		Levelup:   oldLvl != member.Level,
-		Needed:    member.GetNeededXP(),
-		Streak:    member.Streak,
-		WithBonus: withBonus,
-		Gained:    gain,
-	}, nil
+func (r *discordRepository) RelatePlayedWith(in *model.MojangProfile, out *model.HypixelPlayer) error {
+	_, err := r.DB.Queryf(`RELATE mojang_profile:["%s", "%s"]->played_with->hypixel_player:["%s", "%s"]`, in.UUID, in.Date, out.UUID, out.Date)
+	return err
+}
+
+func (r *discordRepository) RelateVerifiedWith(in *model.DiscordMember, out *model.HypixelPlayer) error {
+	_, err := r.DB.Queryf(`RELATE discord_member:%s->verified_with->hypixel_player:["%s", "%s"]`, in.DiscordID, out.UUID, out.Date)
+	return err
 }

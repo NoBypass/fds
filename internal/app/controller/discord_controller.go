@@ -1,19 +1,12 @@
 package controller
 
 import (
-	"encoding/json"
-	"errors"
-	"github.com/NoBypass/fds/internal/app/custom_err"
-	"github.com/NoBypass/fds/internal/app/repository"
+	"github.com/NoBypass/fds/internal/app/service"
 	"github.com/NoBypass/fds/internal/pkg/conf"
-	"github.com/NoBypass/fds/internal/pkg/consts"
 	"github.com/NoBypass/fds/internal/pkg/model"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
 	"github.com/labstack/echo/v4"
-	"github.com/surrealdb/surrealdb.go"
-	"io/ioutil"
 	"net/http"
-	"time"
 )
 
 type DiscordController interface {
@@ -23,88 +16,76 @@ type DiscordController interface {
 }
 
 type discordController struct {
-	repository.DiscordRepository
+	service service.DiscordService
 }
 
-func NewDiscordController(db *surrealdb.DB) DiscordController {
+func NewDiscordController(db *surreal_wrap.DB, config *conf.Config) DiscordController {
 	return &discordController{
-		repository.NewDiscordRepository(db),
+		service.NewDiscordService(db, config),
 	}
 }
 
-func (r *discordController) Verify(c echo.Context) error {
-	var input model.DiscordSignupInput
-	err := c.Bind(&input)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "invalid request query")
-	}
+func (c discordController) Verify(ctx echo.Context) error {
+	cancel := c.service.InjectContext(ctx.Request().Context())
+	errCh := c.service.InjectErrorChan()
 
-	var mojangResponse model.MojangResponse
-	resp, err := http.Get("https://api.mojang.com/users/profiles/minecraft/" + input.Name)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	var input model.DiscordVerifyInput
+	err := ctx.Bind(&input)
 	if err != nil {
 		return err
 	}
 
-	err = json.Unmarshal(bodyBytes, &mojangResponse)
-	if err != nil {
-		return err
-	}
+	verifiedCh := c.service.CheckIfAlreadyVerified(&input)
+	mojangProfileCh, memberCh := c.service.FetchMojangProfile(verifiedCh)
+	hypixelPlayerResCh, newMojangProfileCh := c.service.FetchHypixelPlayer(mojangProfileCh)
+	verifiedMemberCh, hypixelPlayerCh := c.service.VerifyHypixelSocials(memberCh, hypixelPlayerResCh)
+	actual := c.service.Persist(newMojangProfileCh, verifiedMemberCh, hypixelPlayerCh)
 
-	err = r.Create(&mojangResponse)
-	if err != nil {
+	select {
+	case err := <-errCh:
+		cancel()
 		return err
+	case actualName := <-actual:
+		return ctx.JSON(http.StatusOK, map[string]string{
+			"actual": actualName,
+		})
 	}
-	return c.JSON(http.StatusOK, model.DiscordVerifyResponse{
-		Name: mojangResponse.Name,
-	})
 }
 
-func (r *discordController) Daily(c echo.Context) error {
-	id := c.Param("id")
+func (c discordController) Daily(ctx echo.Context) error {
+	errCh := c.service.InjectErrorChan()
 
-	member, err := r.ClaimDaily(id)
-	if err != nil {
-		var claimedErr *custom_err.ClaimedError
-		if errors.As(err, &claimedErr) {
-			return c.JSON(http.StatusForbidden, claimedErr)
-		} else {
-			return err
-		}
+	id := ctx.Param("id")
+
+	memberCh := c.service.GetMember(id)
+	xpCh := c.service.CheckDaily(memberCh)
+	updatedMemberCh := c.service.GiveXP(memberCh, xpCh)
+
+	select {
+	case err := <-errCh:
+		return err
+	case member := <-updatedMemberCh:
+		return ctx.JSON(http.StatusOK, member)
 	}
-
-	return c.JSON(http.StatusOK, *member)
 }
 
-func (r *discordController) BotLogin(c echo.Context) error {
-	input := model.DiscordBotLoginInput{}
-	err := c.Bind(&input)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "invalid request query")
-	}
+func (c discordController) BotLogin(ctx echo.Context) error {
+	errCh := c.service.InjectErrorChan()
 
-	if input.Pwd != c.Get("config").(*conf.Config).BotPwd {
-		return c.String(http.StatusForbidden, "invalid password")
-	}
-
-	claims := jwt.RegisteredClaims{
-		Issuer:   consts.JWTCore,
-		Subject:  consts.JWTBot,
-		Audience: []string{consts.JWTBot},
-		IssuedAt: jwt.NewNumericDate(time.Now()),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(c.Get("config").(*conf.Config).JWTSecret))
+	var input model.DiscordBotLoginInput
+	err := ctx.Bind(&input)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{
-		"token": signedToken,
-	})
+	tokenCh := c.service.GetJWT(&input)
+
+	select {
+	case err := <-errCh:
+		return err
+	case token := <-tokenCh:
+		return ctx.JSON(http.StatusOK, map[string]string{
+			"token": token,
+		})
+	}
 }

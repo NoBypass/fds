@@ -6,15 +6,16 @@ import (
 )
 
 type Config struct {
-	Port        int
-	DBHost      string
-	DBPort      int
-	DBUser      string
-	DBPwd       string
-	DBNamespace string
-	DBName      string
-	JWTSecret   string
-	BotPwd      string
+	HypixelAPIKey string
+	DBNamespace   string
+	JWTSecret     string
+	BotPwd        string
+	DBHost        string
+	DBUser        string
+	DBName        string
+	DBPort        int
+	DBPwd         string
+	Port          int
 }
 
 func ReadConfig() *Config {
@@ -27,14 +28,15 @@ func ReadConfig() *Config {
 		dbPort = 8000
 	}
 	return &Config{
-		Port:        port,
-		DBHost:      os.Getenv("db_host"),
-		DBPort:      dbPort,
-		DBUser:      os.Getenv("db_user"),
-		DBPwd:       os.Getenv("db_pwd"),
-		DBNamespace: os.Getenv("db_namespace"),
-		DBName:      os.Getenv("db_name"),
-		JWTSecret:   os.Getenv("jwt_secret"),
-		BotPwd:      os.Getenv("bot_pwd"),
+		HypixelAPIKey: os.Getenv("hypixel_api_key"),
+		DBNamespace:   os.Getenv("db_namespace"),
+		JWTSecret:     os.Getenv("jwt_secret"),
+		DBHost:        os.Getenv("db_host"),
+		DBUser:        os.Getenv("db_user"),
+		DBName:        os.Getenv("db_name"),
+		BotPwd:        os.Getenv("bot_pwd"),
+		DBPwd:         os.Getenv("db_pwd"),
+		Port:          port,
+		DBPort:        dbPort,
 	}
 }

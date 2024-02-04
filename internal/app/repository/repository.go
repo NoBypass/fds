@@ -1,14 +1,20 @@
 package repository
 
-import "github.com/surrealdb/surrealdb.go"
+import (
+	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
+	"golang.org/x/net/context"
+)
 
-type Repository struct {
-	*surrealdb.DB
+type Repository interface {
+	InjectContext(ctx context.Context)
 }
 
-// New creates a new repository
-func New(db *surrealdb.DB) *Repository {
-	return &Repository{
-		db,
+type repository struct {
+	*surreal_wrap.DB
+}
+
+func newRepository(db *surreal_wrap.DB) repository {
+	return repository{
+		DB: db,
 	}
 }
