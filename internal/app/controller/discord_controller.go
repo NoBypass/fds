@@ -56,8 +56,12 @@ func (c discordController) Verify(ctx echo.Context) error {
 func (c discordController) Daily(ctx echo.Context) error {
 	errCh := c.service.InjectErrorChan()
 
-	inputCh := c.service.ParseDaily(ctx)
-	memberCh := c.service.GetMember(inputCh) // TODO: use surql
+	id := ctx.Param("id")
+	if id == "" {
+		return errs.BadRequest("error parsing input")
+	}
+
+	memberCh := c.service.GetMember(id)
 	xpCh := c.service.CheckDaily(memberCh)
 	updatedMemberCh := c.service.GiveXP(memberCh, xpCh)
 
@@ -72,8 +76,13 @@ func (c discordController) Daily(ctx echo.Context) error {
 func (c discordController) BotLogin(ctx echo.Context) error {
 	errCh := c.service.InjectErrorChan()
 
-	inputCh := c.service.ParseBotLogin(ctx)
-	tokenCh := c.service.GetJWT(inputCh)
+	var input model.DiscordBotLoginInput
+	err := ctx.Bind(&input)
+	if err != nil {
+		return errs.BadRequest("error parsing input")
+	}
+
+	tokenCh := c.service.GetJWT(&input)
 
 	select {
 	case err := <-errCh:

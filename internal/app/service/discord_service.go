@@ -9,7 +9,6 @@ import (
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
 	"math"
 	"math/rand"
 	"net/http"
@@ -18,9 +17,6 @@ import (
 
 type DiscordService interface {
 	Service
-	ParseBotLogin(c echo.Context) <-chan model.DiscordBotLoginInput // TODO remove
-	ParseDaily(c echo.Context) <-chan string                        // TODO remove
-
 	Persist(profileCh <-chan model.MojangProfile, memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) <-chan struct{}
 
 	CheckIfAlreadyVerified(input *model.DiscordVerifyInput) <-chan *model.DiscordVerifyInput
@@ -28,9 +24,9 @@ type DiscordService interface {
 	FetchHypixelPlayer(inputCh <-chan model.MojangProfile) (<-chan model.HypixelPlayerResponse, <-chan model.MojangProfile)
 	FetchMojangProfile(inputCh <-chan *model.DiscordVerifyInput) (<-chan model.MojangProfile, <-chan model.DiscordMember)
 	GiveXP(member <-chan model.DiscordMember, xp <-chan float64) <-chan model.DiscordMember
-	GetJWT(input <-chan model.DiscordBotLoginInput) <-chan string
+	GetJWT(input *model.DiscordBotLoginInput) <-chan string
 	CheckDaily(member <-chan model.DiscordMember) <-chan float64
-	GetMember(id <-chan string) <-chan model.DiscordMember
+	GetMember(id string) <-chan model.DiscordMember
 }
 
 type discordService struct {
@@ -50,49 +46,13 @@ func NewDiscordService(db *surreal_wrap.DB, config *conf.Config) DiscordService 
 	}
 }
 
-func (s *discordService) ParseBotLogin(c echo.Context) <-chan model.DiscordBotLoginInput {
-	inputCh := make(chan model.DiscordBotLoginInput)
-
-	s.Pipeline(func() {
-		defer close(inputCh)
-
-		var input model.DiscordBotLoginInput
-		err := c.Bind(&input)
-		if err != nil {
-			s.errCh <- errs.BadRequest("error parsing input")
-			return
-		}
-
-		inputCh <- input
-	})
-
-	return inputCh
-}
-
-func (s *discordService) ParseDaily(c echo.Context) <-chan string {
-	idCh := make(chan string)
-
-	s.Pipeline(func() {
-		defer close(idCh)
-
-		id := c.Param("id")
-		if id == "" {
-			s.errCh <- errs.BadRequest("error parsing input")
-			return
-		}
-		idCh <- id
-	})
-
-	return idCh
-}
-
-func (s *discordService) GetMember(id <-chan string) <-chan model.DiscordMember {
+func (s *discordService) GetMember(id string) <-chan model.DiscordMember {
 	memberCh := make(chan model.DiscordMember)
 
 	s.Pipeline(func() {
 		defer close(memberCh)
 
-		member, err := s.repo.Get(<-id)
+		member, err := s.repo.Get(id)
 		if err != nil {
 			s.errCh <- err
 			return
@@ -142,13 +102,12 @@ func (s *discordService) GiveXP(memberCh <-chan model.DiscordMember, xp <-chan f
 	return memberCh
 }
 
-func (s *discordService) GetJWT(input <-chan model.DiscordBotLoginInput) <-chan string {
+func (s *discordService) GetJWT(input *model.DiscordBotLoginInput) <-chan string {
 	tokenCh := make(chan string)
 
 	s.Pipeline(func() {
 		defer close(tokenCh)
 
-		input := <-input
 		if input.Pwd == s.config.BotPwd {
 			claims := jwt.RegisteredClaims{
 				Issuer:   "fds",
