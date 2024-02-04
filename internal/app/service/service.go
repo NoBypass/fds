@@ -29,8 +29,15 @@ func (s *service) InjectContext(ctx context.Context) context.CancelFunc {
 }
 
 func (s *service) Pipeline(run func(), repos ...repository.Repository) {
-	for _, repo := range repos {
-		repo.InjectContext(s.ctx)
+	if repos != nil {
+		for _, repo := range repos {
+			repo.InjectContext(s.ctx)
+		}
+	}
+
+	if s.ctx == nil {
+		go run()
+		return
 	}
 
 	select {
