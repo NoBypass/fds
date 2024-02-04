@@ -40,15 +40,15 @@ func (c discordController) Verify(ctx echo.Context) error {
 	mojangProfileCh, memberCh := c.service.FetchMojangProfile(verifiedCh)
 	hypixelPlayerResCh, newMojangProfileCh := c.service.FetchHypixelPlayer(mojangProfileCh)
 	verifiedMemberCh, hypixelPlayerCh := c.service.VerifyHypixelSocials(memberCh, hypixelPlayerResCh)
-	done := c.service.Persist(newMojangProfileCh, verifiedMemberCh, hypixelPlayerCh)
+	actual := c.service.Persist(newMojangProfileCh, verifiedMemberCh, hypixelPlayerCh)
 
 	select {
 	case err := <-errCh:
 		cancel()
 		return err
-	case <-done:
-		return ctx.JSON(http.StatusOK, map[string]bool{
-			"success": true,
+	case actualName := <-actual:
+		return ctx.JSON(http.StatusOK, map[string]string{
+			"actual": actualName,
 		})
 	}
 }

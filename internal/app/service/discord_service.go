@@ -17,7 +17,7 @@ import (
 
 type DiscordService interface {
 	Service
-	Persist(profileCh <-chan model.MojangProfile, memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) <-chan struct{}
+	Persist(profileCh <-chan model.MojangProfile, memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) <-chan string
 
 	CheckIfAlreadyVerified(input *model.DiscordVerifyInput) <-chan *model.DiscordVerifyInput
 	VerifyHypixelSocials(member <-chan model.DiscordMember, player <-chan model.HypixelPlayerResponse) (<-chan model.DiscordMember, <-chan model.HypixelPlayer)
@@ -241,11 +241,11 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 	return outMemberCh, outPlayerCh
 }
 
-func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) <-chan struct{} {
-	done := make(chan struct{})
+func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) <-chan string {
+	actual := make(chan string)
 
 	s.Pipeline(func() {
-		defer close(done)
+		defer close(actual)
 
 		var (
 			p model.MojangProfile
@@ -299,10 +299,10 @@ func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh 
 			return
 		}
 
-		done <- struct{}{}
+		actual <- p.Name
 	}, s.repo, s.mojangRepo, s.hypixelRepo)
 
-	return done
+	return actual
 }
 
 func (s *discordService) CheckIfAlreadyVerified(input *model.DiscordVerifyInput) <-chan *model.DiscordVerifyInput {
