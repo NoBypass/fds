@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/NoBypass/fds/internal/app/errs"
 	"github.com/NoBypass/fds/internal/app/service"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/model"
@@ -33,7 +32,7 @@ func (c discordController) Verify(ctx echo.Context) error {
 	var input model.DiscordVerifyInput
 	err := ctx.Bind(&input)
 	if err != nil {
-		return errs.BadRequest("error parsing input")
+		return err
 	}
 
 	verifiedCh := c.service.CheckIfAlreadyVerified(&input)
@@ -57,9 +56,6 @@ func (c discordController) Daily(ctx echo.Context) error {
 	errCh := c.service.InjectErrorChan()
 
 	id := ctx.Param("id")
-	if id == "" {
-		return errs.BadRequest("error parsing input")
-	}
 
 	memberCh := c.service.GetMember(id)
 	xpCh := c.service.CheckDaily(memberCh)
@@ -79,7 +75,7 @@ func (c discordController) BotLogin(ctx echo.Context) error {
 	var input model.DiscordBotLoginInput
 	err := ctx.Bind(&input)
 	if err != nil {
-		return errs.BadRequest("error parsing input")
+		return err
 	}
 
 	tokenCh := c.service.GetJWT(&input)

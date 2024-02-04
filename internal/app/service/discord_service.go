@@ -2,13 +2,15 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/NoBypass/fds/internal/app/errs"
 	"github.com/NoBypass/fds/internal/app/repository"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
+	"github.com/surrealdb/surrealdb.go"
 	"math"
 	"math/rand"
 	"net/http"
@@ -76,7 +78,7 @@ func (s *discordService) CheckDaily(memberCh <-chan model.DiscordMember) <-chan 
 			m.LastDailyAt = time.Now().Format(time.RFC3339)
 			m.Streak++
 		} else {
-			s.errCh <- errs.TooManyRequests("user has already claimed their daily reward")
+			s.errCh <- echo.NewHTTPError(http.StatusForbidden, "user has already claimed their daily reward")
 		}
 	})
 
@@ -123,7 +125,7 @@ func (s *discordService) GetJWT(input *model.DiscordBotLoginInput) <-chan string
 			}
 			tokenCh <- signedToken
 		} else {
-			s.errCh <- errs.Unauthorized("invalid password")
+			s.errCh <- echo.NewHTTPError(http.StatusUnauthorized, "invalid password")
 			return
 		}
 	})
@@ -229,11 +231,11 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 					UUID: player.Player.UUID,
 				}
 			} else {
-				s.errCh <- errs.Forbidden("discord id does not match hypixel socials")
+				s.errCh <- echo.NewHTTPError(http.StatusForbidden, "discord id does not match hypixel socials")
 				return
 			}
 		} else {
-			s.errCh <- errs.NotFound("hypixel: player not found")
+			s.errCh <- echo.NewHTTPError(http.StatusNotFound, "hypixel: player not found")
 			return
 		}
 	})
@@ -311,11 +313,13 @@ func (s *discordService) CheckIfAlreadyVerified(input *model.DiscordVerifyInput)
 	s.Pipeline(func() {
 		defer close(verifiedCh)
 
-		member, _ := s.repo.Get(input.ID)
-		if member == nil {
+		_, err := s.repo.Get(input.ID)
+		if err == nil {
+			s.errCh <- echo.NewHTTPError(http.StatusForbidden, "user is already verified")
+		} else if errors.As(err, &surrealdb.ErrNoRow) {
 			verifiedCh <- input
 		} else {
-			s.errCh <- errs.Forbidden("user is already verified")
+			s.errCh <- err
 		}
 	}, s.repo)
 

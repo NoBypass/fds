@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/NoBypass/fds/internal/app/auth"
 	"github.com/NoBypass/fds/internal/app/controller"
-	"github.com/NoBypass/fds/internal/app/errs"
 	"github.com/NoBypass/fds/internal/app/middleware"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/consts"
@@ -31,8 +30,6 @@ ________________________________________________
 
 	authService := auth.NewService(config.JWTSecret)
 	discordController := controller.NewDiscordController(db, config)
-
-	e.HTTPErrorHandler = errs.Handler
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Timeout())
