@@ -3,8 +3,8 @@ package controller
 import (
 	"github.com/NoBypass/fds/internal/app/service"
 	"github.com/NoBypass/fds/internal/pkg/conf"
-	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
+	"github.com/NoBypass/fds/pkg/api"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -29,7 +29,7 @@ func (c discordController) Verify(ctx echo.Context) error {
 	cancel := c.service.InjectContext(ctx.Request().Context())
 	errCh := c.service.InjectErrorChan()
 
-	var input model.DiscordVerifyInput
+	var input api.DiscordVerifyRequest
 	err := ctx.Bind(&input)
 	if err != nil {
 		return err
@@ -46,8 +46,8 @@ func (c discordController) Verify(ctx echo.Context) error {
 		cancel()
 		return err
 	case actualName := <-actual:
-		return ctx.JSON(http.StatusOK, map[string]string{
-			"actual": actualName,
+		return ctx.JSON(http.StatusOK, api.DiscordVerifyResponse{
+			Actual: actualName,
 		})
 	}
 }
@@ -72,7 +72,7 @@ func (c discordController) Daily(ctx echo.Context) error {
 func (c discordController) BotLogin(ctx echo.Context) error {
 	errCh := c.service.InjectErrorChan()
 
-	var input model.DiscordBotLoginInput
+	var input api.DiscordBotLoginRequest
 	err := ctx.Bind(&input)
 	if err != nil {
 		return err
@@ -84,8 +84,8 @@ func (c discordController) BotLogin(ctx echo.Context) error {
 	case err := <-errCh:
 		return err
 	case token := <-tokenCh:
-		return ctx.JSON(http.StatusOK, map[string]string{
-			"token": token,
+		return ctx.JSON(http.StatusOK, api.DiscordBotLoginResponse{
+			Token: token,
 		})
 	}
 }

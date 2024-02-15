@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const VERSION = "v0.2.0"
+const VERSION = "v0.3.0"
 
 func main() {
 	e := echo.New()
@@ -38,7 +38,7 @@ ________________________________________________
 	discord := e.Group("/discord")
 	discord.Use(authService.DiscordAuthMiddleware())
 	discord.POST("/verify", discordController.Verify)
-	discord.PATCH("/:id/daily", discordController.Daily)
+	discord.PATCH("/daily/:id", discordController.Daily)
 	discord.POST("/bot-login", discordController.BotLogin)
 
 	e.Logger.Fatal(e.Start(":8080"))

@@ -1,0 +1,38 @@
+package api
+
+import "net/http"
+
+// Verify is used to link a Discord account to a Hypixel account.
+// The backend will store a snapshot of the player's Hypixel stats
+// and Mojang profile as well as store the Discord user.
+func (c *Client) Verify(input *DiscordVerifyRequest) (*DiscordVerifyResponse, error) {
+	req, err := c.newJsonRequest(http.MethodPost, "/discord/verify", input)
+	if err != nil {
+		return nil, err
+	}
+
+	return do[DiscordVerifyResponse](req)
+}
+
+// Daily is used to claim the daily reward for a Discord user.
+// The backend will return the user's updated stats.
+// TODO: Add error docs
+func (c *Client) Daily(id string) (*DiscordMemberResponse, error) {
+	req, err := c.newJsonRequest(http.MethodPost, "/discord/daily/"+id, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return do[DiscordMemberResponse](req)
+}
+
+// BotLogin is used to login the bot to the Discord API.
+// No token is required for this endpoint.
+func (c *Client) BotLogin(input *DiscordBotLoginRequest) (*DiscordBotLoginResponse, error) {
+	req, err := c.newJsonRequest(http.MethodPost, "/discord/bot-login", input)
+	if err != nil {
+		return nil, err
+	}
+
+	return do[DiscordBotLoginResponse](req)
+}

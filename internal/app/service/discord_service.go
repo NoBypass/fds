@@ -8,6 +8,7 @@ import (
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
+	"github.com/NoBypass/fds/pkg/api"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
@@ -21,12 +22,12 @@ type DiscordService interface {
 	Service
 	Persist(profileCh <-chan model.MojangProfile, memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) <-chan string
 
-	CheckIfAlreadyVerified(input *model.DiscordVerifyInput) <-chan *model.DiscordVerifyInput
+	CheckIfAlreadyVerified(input *api.DiscordVerifyRequest) <-chan *api.DiscordVerifyRequest
 	VerifyHypixelSocials(member <-chan model.DiscordMember, player <-chan model.HypixelPlayerResponse) (<-chan model.DiscordMember, <-chan model.HypixelPlayer)
 	FetchHypixelPlayer(inputCh <-chan model.MojangProfile) (<-chan model.HypixelPlayerResponse, <-chan model.MojangProfile)
-	FetchMojangProfile(inputCh <-chan *model.DiscordVerifyInput) (<-chan model.MojangProfile, <-chan model.DiscordMember)
+	FetchMojangProfile(inputCh <-chan *api.DiscordVerifyRequest) (<-chan model.MojangProfile, <-chan model.DiscordMember)
 	GiveXP(member <-chan model.DiscordMember, xp <-chan float64) <-chan model.DiscordMember
-	GetJWT(input *model.DiscordBotLoginInput) <-chan string
+	GetJWT(input *api.DiscordBotLoginRequest) <-chan string
 	CheckDaily(member <-chan model.DiscordMember) <-chan float64
 	GetMember(id string) <-chan model.DiscordMember
 }
@@ -104,7 +105,7 @@ func (s *discordService) GiveXP(memberCh <-chan model.DiscordMember, xp <-chan f
 	return memberCh
 }
 
-func (s *discordService) GetJWT(input *model.DiscordBotLoginInput) <-chan string {
+func (s *discordService) GetJWT(input *api.DiscordBotLoginRequest) <-chan string {
 	tokenCh := make(chan string)
 
 	s.Pipeline(func() {
@@ -133,7 +134,7 @@ func (s *discordService) GetJWT(input *model.DiscordBotLoginInput) <-chan string
 	return tokenCh
 }
 
-func (s *discordService) FetchMojangProfile(inputCh <-chan *model.DiscordVerifyInput) (<-chan model.MojangProfile, <-chan model.DiscordMember) {
+func (s *discordService) FetchMojangProfile(inputCh <-chan *api.DiscordVerifyRequest) (<-chan model.MojangProfile, <-chan model.DiscordMember) {
 	profileCh := make(chan model.MojangProfile)
 	memberCh := make(chan model.DiscordMember)
 
@@ -307,8 +308,8 @@ func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh 
 	return actual
 }
 
-func (s *discordService) CheckIfAlreadyVerified(input *model.DiscordVerifyInput) <-chan *model.DiscordVerifyInput {
-	verifiedCh := make(chan *model.DiscordVerifyInput)
+func (s *discordService) CheckIfAlreadyVerified(input *api.DiscordVerifyRequest) <-chan *api.DiscordVerifyRequest {
+	verifiedCh := make(chan *api.DiscordVerifyRequest)
 
 	s.Pipeline(func() {
 		defer close(verifiedCh)
