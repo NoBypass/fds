@@ -98,7 +98,7 @@ Discord API. No token is required for this endpoint.
   ```
 
 ##### Method (on Client)
-`Leaderboard(page string) (*DiscordLeaderboardResponse, error)` Leaderboard is used to get the leaderboard for all verified 
+`Leaderboard(page int) (*DiscordLeaderboardResponse, error)` Leaderboard is used to get the leaderboard for all verified 
 Discord users. NOTE: The pagination uses zero-based indexing.
 ---
 </details>

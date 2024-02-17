@@ -39,8 +39,9 @@ func (c *Client) BotLogin(input *DiscordBotLoginRequest) (*DiscordBotLoginRespon
 
 // Leaderboard is used to get the leaderboard for all verified Discord users.
 // NOTE: The pagination uses zero-based indexing.
-func (c *Client) Leaderboard(page string) (*DiscordLeaderboardResponse, error) {
-	req, err := c.newJsonRequest(http.MethodGet, "/discord/leaderboard/"+page, nil)
+func (c *Client) Leaderboard(page int) (*DiscordLeaderboardResponse, error) {
+	pageStr := string(rune(page))
+	req, err := c.newJsonRequest(http.MethodGet, "/discord/leaderboard/"+pageStr, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const VERSION = "v0.3.0"
+const VERSION = "v0.4.1"
 
 func main() {
 	e := echo.New()
