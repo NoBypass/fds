@@ -37,7 +37,7 @@ well as store the Discord user.
 ---
 </details>
 <details>
- <summary><code>POST</code> <code><b>/:id/daily</b></code> <code>Claim a daily reward for a Discord user by id</code></summary>
+ <summary><code>POST</code> <code><b>/daily/:id</b></code> <code>Claim a daily reward for a Discord user by id</code></summary>
 
 ##### Request Parameters
 
@@ -100,6 +100,31 @@ Discord API. No token is required for this endpoint.
 ##### Method (on Client)
 `Leaderboard(page string) (*DiscordLeaderboardResponse, error)` Leaderboard is used to get the leaderboard for all verified 
 Discord users. NOTE: The pagination uses zero-based indexing.
+---
+</details>
+<details>
+ <summary><code>GET</code> <code><b>/member/:id</b></code> <code>Get the stats of a Discord member</code></summary>
+
+##### Request Parameters
+
+- `id` the Discord id of the user whose stats should be retrieved
+
+##### Response Body (JSON)
+
+  ``` go
+  type DiscordMemberResponse struct {
+	DiscordID   string  `json:"discord_id"`
+	Name        string  `json:"name"`
+	Nick        string  `json:"nick"`
+	XP          float64 `json:"xp"`
+	LastDailyAt string  `json:"last_daily_at"`
+	Level       int     `json:"level"`
+	Streak      int     `json:"streak"`
+  }
+  ```
+
+##### Method (on Client)
+`Member(id string) (*DiscordMemberResponse, error)` Member is used to get the stats for a specific Discord user.
 ---
 </details>
 

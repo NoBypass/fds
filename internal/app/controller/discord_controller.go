@@ -12,6 +12,7 @@ import (
 type DiscordController interface {
 	Verify(c echo.Context) error
 	Daily(c echo.Context) error
+	Member(c echo.Context) error
 	BotLogin(c echo.Context) error
 	Leaderboard(c echo.Context) error
 }
@@ -23,6 +24,21 @@ type discordController struct {
 func NewDiscordController(db *surreal_wrap.DB, config *conf.Config) DiscordController {
 	return &discordController{
 		service.NewDiscordService(db, config),
+	}
+}
+
+func (c discordController) Member(ctx echo.Context) error {
+	errCh := c.service.InjectErrorChan()
+
+	id := ctx.Param("id")
+
+	memberCh := c.service.GetMember(id)
+
+	select {
+	case err := <-errCh:
+		return err
+	case member := <-memberCh:
+		return ctx.JSON(http.StatusOK, member)
 	}
 }
 

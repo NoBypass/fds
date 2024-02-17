@@ -47,3 +47,13 @@ func (c *Client) Leaderboard(page string) (*DiscordLeaderboardResponse, error) {
 
 	return do[DiscordLeaderboardResponse](req)
 }
+
+// Member is used to get the stats for a specific Discord user.
+func (c *Client) Member(id string) (*DiscordMemberResponse, error) {
+	req, err := c.newJsonRequest(http.MethodGet, "/discord/member/"+id, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return do[DiscordMemberResponse](req)
+}

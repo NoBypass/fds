@@ -25,3 +25,9 @@ Content-Type: application/json
 GET http://localhost:8080/discord/leaderboard/0
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjb3JlIiwic3ViIjoiYm90IiwiYXVkIjpbImJvdCJdLCJpYXQiOjE3MDQxNTgyOTd9.1p1Y1tAky8QOQhKe4GmLtwj0imWyS5qNM5D-fX-dGAk
+
+### Test getting user info
+GET http://localhost:8080/discord/member/672835870080106509
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjb3JlIiwic3ViIjoiYm90IiwiYXVkIjpbImJvdCJdLCJpYXQiOjE3MDQxNTgyOTd9.1p1Y1tAky8QOQhKe4GmLtwj0imWyS5qNM5D-fX-dGAk
+

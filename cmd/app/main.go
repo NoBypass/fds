@@ -39,6 +39,7 @@ ________________________________________________
 	discord.Use(authService.DiscordAuthMiddleware())
 	discord.POST("/verify", discordController.Verify)
 	discord.PATCH("/daily/:id", discordController.Daily)
+	discord.GET("/member/:id", discordController.Member)
 	discord.GET("/leaderboard/:page", discordController.Leaderboard)
 	discord.POST("/bot-login", discordController.BotLogin)
 
