@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
+	"github.com/NoBypass/fds/pkg/api"
 	"github.com/surrealdb/surrealdb.go"
 	"time"
 )
@@ -13,6 +14,7 @@ type DiscordRepository interface {
 	Get(id string) (*model.DiscordMember, error)
 	Update(id string, member *model.DiscordMember) error
 
+	GetLeaderboard(page int) (api.DiscordLeaderboardResponse, error)
 	RelatePlayedWith(in *model.MojangProfile, out *model.HypixelPlayer) error
 	RelateVerifiedWith(in *model.DiscordMember, out *model.HypixelPlayer) error
 }
@@ -58,6 +60,11 @@ func (r *discordRepository) Update(id string, member *model.DiscordMember) error
 		"last_daily_at": "%s"
 	}`, id, member.Name, member.Nick, member.XP, member.Level, member.Streak, member.LastDailyAt)
 	return err
+}
+
+func (r *discordRepository) GetLeaderboard(page int) (api.DiscordLeaderboardResponse, error) {
+	members, err := r.DB.Queryf(`SELECT discord_id, level, xp FROM discord_member ORDER BY level ASC, xp ASC LIMIT 10 START %d`, page*10)
+	return surrealdb.SmartUnmarshal[api.DiscordLeaderboardResponse](members, err)
 }
 
 func (r *discordRepository) RelatePlayedWith(in *model.MojangProfile, out *model.HypixelPlayer) error {

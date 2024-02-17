@@ -13,14 +13,10 @@
 ### `/discord`
 <details>
  <summary><code>POST</code> <code><b>/signup</b></code> <code>Meant for linking Discord to Minecraft accounts</code></summary>
-  <summary><code>POST</code> <code><b>/verify</b></code> <code>Meant for linking Discord to Minecraft accounts</code></summary>
 
 ##### Request Body (JSON)
 
   ``` go
-  type DiscordSignupInput struct {
-    ID   string `json:"id"`
-    Nick string `json:"nick"`
   type DiscordVerifyRequest struct {
 	ID   string `json:"id"`
 	Nick string `json:"nick"`
@@ -40,11 +36,10 @@
 `Verify(input *DiscordVerifyRequest) (*DiscordVerifyResponse, error)` Verify is used to link a Discord
 account to a Hypixel account. The backend will store a snapshot of the player's Hypixel stats and Mojang profile as
 well as store the Discord user.
-  ---
+---
 </details>
 <details>
  <summary><code>POST</code> <code><b>/:id/daily</b></code> <code>Claim a daily reward for a Discord user by id</code></summary>
-  <summary><code>PATCH</code> <code><b>/:id/daily</b></code> <code>Claim a daily reward for a Discord user by id</code></summary>
 
 ##### Request Parameters
 
@@ -61,7 +56,7 @@ well as store the Discord user.
 ##### Method (on Client)
 `ClaimDaily(id string) (*DiscordDailyResponse, error)` Daily is used to claim the daily reward for a Discord user.
 The backend will return the user's updated stats.
-  ---
+---
 </details>
 <details>
   <summary><code>POST</code> <code><b>/bot-login</b></code> <code>Log in port for a Discord bot instance</code> <code>no auth</code></summary>
@@ -85,7 +80,29 @@ The backend will return the user's updated stats.
 ##### Method (on Client)
 `BotLogin(input *DiscordBotLoginRequest) (*DiscordBotLoginResponse, error)` BotLogin is used to login the bot to the
 Discord API. No token is required for this endpoint.
-  ---
+---
+</details>
+<details>
+ <summary><code>GET</code> <code><b>/leaderboard/:page</b></code> <code>Get the leaderboard by page</code></summary>
+
+##### Request Parameters
+
+- `page` the page of the leaderboard to get (zero-based indexing)
+
+##### Response Body (JSON)
+
+  ``` go
+  type DiscordLeaderboardResponse []struct{
+	DiscordID string  `json:"discord_id"`
+	Level     int     `json:"level"`
+	XP        float64 `json:"xp"`
+  }
+  ```
+
+##### Method (on Client)
+`Leaderboard(page string) (*DiscordLeaderboardResponse, error)` Leaderboard is used to get the leaderboard for all verified 
+Discord users. NOTE: The pagination uses zero-based indexing.
+---
 </details>
 
 ## Environment Variables

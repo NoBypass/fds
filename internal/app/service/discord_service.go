@@ -15,6 +15,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -30,6 +31,8 @@ type DiscordService interface {
 	GetJWT(input *api.DiscordBotLoginRequest) <-chan string
 	CheckDaily(member <-chan model.DiscordMember) <-chan float64
 	GetMember(id string) <-chan model.DiscordMember
+	StrToInt(input string) <-chan int
+	GetLeaderboard(page <-chan int) <-chan api.DiscordLeaderboardResponse
 }
 
 type discordService struct {
@@ -325,4 +328,39 @@ func (s *discordService) CheckIfAlreadyVerified(input *api.DiscordVerifyRequest)
 	}, s.repo)
 
 	return verifiedCh
+}
+
+func (s *discordService) StrToInt(input string) <-chan int {
+	out := make(chan int)
+
+	s.Pipeline(func() {
+		defer close(out)
+
+		i, err := strconv.Atoi(input)
+		if err != nil {
+			s.errCh <- echo.NewHTTPError(http.StatusBadRequest, "invalid page number")
+			return
+		}
+		out <- i
+	})
+
+	return out
+}
+
+func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeaderboardResponse {
+	leaderboardCh := make(chan api.DiscordLeaderboardResponse)
+
+	s.Pipeline(func() {
+		defer close(leaderboardCh)
+
+		members, err := s.repo.GetLeaderboard(<-page)
+		if err != nil {
+			s.errCh <- err
+			return
+		}
+
+		leaderboardCh <- members
+	})
+
+	return leaderboardCh
 }

@@ -13,6 +13,7 @@ type DiscordController interface {
 	Verify(c echo.Context) error
 	Daily(c echo.Context) error
 	BotLogin(c echo.Context) error
+	Leaderboard(c echo.Context) error
 }
 
 type discordController struct {
@@ -66,6 +67,22 @@ func (c discordController) Daily(ctx echo.Context) error {
 		return err
 	case member := <-updatedMemberCh:
 		return ctx.JSON(http.StatusOK, member)
+	}
+}
+
+func (c discordController) Leaderboard(ctx echo.Context) error {
+	errCh := c.service.InjectErrorChan()
+
+	page := ctx.Param("page")
+
+	pageInt := c.service.StrToInt(page)
+	leaderboardCh := c.service.GetLeaderboard(pageInt)
+
+	select {
+	case err := <-errCh:
+		return err
+	case leaderboard := <-leaderboardCh:
+		return ctx.JSON(http.StatusOK, leaderboard)
 	}
 }
 
