@@ -1,6 +1,9 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+	"strconv"
+)
 
 // Verify is used to link a Discord account to a Hypixel account.
 // The backend will store a snapshot of the player's Hypixel stats
@@ -40,8 +43,7 @@ func (c *Client) BotLogin(input *DiscordBotLoginRequest) (*DiscordBotLoginRespon
 // Leaderboard is used to get the leaderboard for all verified Discord users.
 // NOTE: The pagination uses zero-based indexing.
 func (c *Client) Leaderboard(page int) (*DiscordLeaderboardResponse, error) {
-	pageStr := string(rune(page))
-	req, err := c.newJsonRequest(http.MethodGet, "/discord/leaderboard/"+pageStr, nil)
+	req, err := c.newJsonRequest(http.MethodGet, "/discord/leaderboard/"+strconv.Itoa(page), nil)
 	if err != nil {
 		return nil, err
 	}
