@@ -1,7 +1,5 @@
 # FDS Core
 
-# FDS Core
-
 ## API
 ### `/`
 ##### Methods
