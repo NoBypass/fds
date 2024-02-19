@@ -27,14 +27,15 @@ func (c *Client) SetToken(token string) {
 }
 
 func (c *Client) newJsonRequest(method, path string, body interface{}) (*http.Request, error) {
-	var reader *bytes.Reader = nil
+	var data []byte
 	if body != nil {
-		data, err := json.Marshal(body)
+		d, err := json.Marshal(body)
 		if err != nil {
 			return nil, err
 		}
-		reader = bytes.NewReader(data)
+		data = d
 	}
+	reader := bytes.NewReader(data)
 	req, err := http.NewRequest(method, c.url+path, reader)
 	if err != nil {
 		return nil, err
