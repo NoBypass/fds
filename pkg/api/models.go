@@ -1,5 +1,9 @@
 package api
 
+import (
+	"github.com/NoBypass/fds/internal/pkg/model"
+)
+
 type DiscordVerifyRequest struct {
 	ID   string `json:"id"`
 	Nick string `json:"nick"`
@@ -11,13 +15,7 @@ type DiscordVerifyResponse struct {
 }
 
 type DiscordMemberResponse struct {
-	DiscordID   string  `json:"discord_id"`
-	Name        string  `json:"name"`
-	Nick        string  `json:"nick"`
-	XP          float64 `json:"xp"`
-	LastDailyAt string  `json:"last_daily_at"`
-	Level       int     `json:"level"`
-	Streak      int     `json:"streak"`
+	model.DiscordMember
 }
 
 type DiscordBotLoginRequest struct {
