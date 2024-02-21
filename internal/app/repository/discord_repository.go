@@ -13,6 +13,7 @@ type DiscordRepository interface {
 	Create(member *model.DiscordMember) error
 	Get(id string) (*model.DiscordMember, error)
 	Update(id string, member *model.DiscordMember) error
+	Delete(id string) (*model.DiscordMember, error)
 
 	GetLeaderboard(page int) (api.DiscordLeaderboardResponse, error)
 	RelatePlayedWith(in *model.MojangProfile, out *model.HypixelPlayer) error
@@ -27,6 +28,12 @@ func NewDiscordRepository(db *surreal_wrap.DB) DiscordRepository {
 	return &discordRepository{
 		newRepository(db),
 	}
+}
+
+func (r *discordRepository) Delete(id string) (*model.DiscordMember, error) {
+	resp, err := r.DB.Queryf(`DELETE discord_member:%s RETURN BEFORE`, id)
+	member, err := surrealdb.SmartUnmarshal[model.DiscordMember](resp, err)
+	return &member, err
 }
 
 func (r *discordRepository) Create(member *model.DiscordMember) error {

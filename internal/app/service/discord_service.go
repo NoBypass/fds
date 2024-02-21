@@ -33,6 +33,7 @@ type DiscordService interface {
 	GetMember(id string) <-chan model.DiscordMember
 	StrToInt(input string) <-chan int
 	GetLeaderboard(page <-chan int) <-chan api.DiscordLeaderboardResponse
+	Revoke(id string) <-chan *api.DiscordMemberResponse
 }
 
 type discordService struct {
@@ -363,4 +364,23 @@ func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeade
 	})
 
 	return leaderboardCh
+}
+
+func (s *discordService) Revoke(id string) <-chan *api.DiscordMemberResponse {
+	out := make(chan *api.DiscordMemberResponse)
+
+	s.Pipeline(func() {
+		defer close(out)
+
+		member, err := s.repo.Delete(id)
+		if err != nil {
+			s.errCh <- err
+			return
+		}
+		out <- &api.DiscordMemberResponse{
+			DiscordMember: *member,
+		}
+	})
+
+	return out
 }

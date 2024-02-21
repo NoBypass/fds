@@ -13,6 +13,7 @@ type DiscordController interface {
 	Verify(c echo.Context) error
 	Daily(c echo.Context) error
 	Member(c echo.Context) error
+	Revoke(c echo.Context) error
 	BotLogin(c echo.Context) error
 	Leaderboard(c echo.Context) error
 }
@@ -66,6 +67,21 @@ func (c discordController) Verify(ctx echo.Context) error {
 		return ctx.JSON(http.StatusOK, api.DiscordVerifyResponse{
 			Actual: actualName,
 		})
+	}
+}
+
+func (c discordController) Revoke(ctx echo.Context) error {
+	errCh := c.service.InjectErrorChan()
+
+	id := ctx.Param("id")
+
+	revokeCh := c.service.Revoke(id)
+
+	select {
+	case err := <-errCh:
+		return err
+	case revokedMember := <-revokeCh:
+		return ctx.JSON(http.StatusOK, revokedMember)
 	}
 }
 

@@ -10,7 +10,7 @@
 
 ### `/discord`
 <details>
- <summary><code>POST</code> <code><b>/signup</b></code> <code>Meant for linking Discord to Minecraft accounts</code></summary>
+ <summary><code>POST</code> <code><b>/verify</b></code> <code>Meant for linking Discord to Minecraft accounts</code></summary>
 
 ##### Request Body (JSON)
 

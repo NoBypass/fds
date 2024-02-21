@@ -60,3 +60,14 @@ func (c *Client) Member(id string) (*DiscordMemberResponse, error) {
 
 	return do[DiscordMemberResponse](req)
 }
+
+// Revoke is used to unlink a Discord account from a Hypixel account.
+func (c *Client) Revoke(id string) error {
+	req, err := c.newJsonRequest(http.MethodDelete, "/discord/revoke/"+id, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = do[DiscordMemberResponse](req)
+	return err
+}

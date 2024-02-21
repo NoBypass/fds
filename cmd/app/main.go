@@ -42,6 +42,7 @@ ________________________________________________
 	discord.GET("/member/:id", discordController.Member)
 	discord.GET("/leaderboard/:page", discordController.Leaderboard)
 	discord.POST("/bot-login", discordController.BotLogin)
+	discord.DELETE("/revoke/:id", discordController.Revoke)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
