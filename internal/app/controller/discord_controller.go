@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"github.com/NoBypass/fds/internal/app/service"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
@@ -28,8 +29,14 @@ func NewDiscordController(db *surreal_wrap.DB, config *conf.Config) DiscordContr
 	}
 }
 
+func (c discordController) init(ctx echo.Context) (cancel context.CancelFunc, errCh <-chan error) {
+	cancel = c.service.InjectContext(ctx.Request().Context())
+	errCh = c.service.InjectErrorChan()
+	return
+}
+
 func (c discordController) Member(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	cancel, errCh := c.init(ctx)
 
 	id := ctx.Param("id")
 
@@ -37,6 +44,7 @@ func (c discordController) Member(ctx echo.Context) error {
 
 	select {
 	case err := <-errCh:
+		cancel()
 		return err
 	case member := <-memberCh:
 		return ctx.JSON(http.StatusOK, member)
@@ -44,8 +52,7 @@ func (c discordController) Member(ctx echo.Context) error {
 }
 
 func (c discordController) Verify(ctx echo.Context) error {
-	cancel := c.service.InjectContext(ctx.Request().Context())
-	errCh := c.service.InjectErrorChan()
+	cancel, errCh := c.init(ctx)
 
 	var input api.DiscordVerifyRequest
 	err := ctx.Bind(&input)
@@ -71,7 +78,7 @@ func (c discordController) Verify(ctx echo.Context) error {
 }
 
 func (c discordController) Revoke(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	cancel, errCh := c.init(ctx)
 
 	id := ctx.Param("id")
 
@@ -79,6 +86,7 @@ func (c discordController) Revoke(ctx echo.Context) error {
 
 	select {
 	case err := <-errCh:
+		cancel()
 		return err
 	case revokedMember := <-revokeCh:
 		return ctx.JSON(http.StatusOK, revokedMember)
@@ -86,7 +94,7 @@ func (c discordController) Revoke(ctx echo.Context) error {
 }
 
 func (c discordController) Daily(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	cancel, errCh := c.init(ctx)
 
 	id := ctx.Param("id")
 
@@ -96,6 +104,7 @@ func (c discordController) Daily(ctx echo.Context) error {
 
 	select {
 	case err := <-errCh:
+		cancel()
 		return err
 	case member := <-updatedMemberCh:
 		return ctx.JSON(http.StatusOK, member)
@@ -103,7 +112,7 @@ func (c discordController) Daily(ctx echo.Context) error {
 }
 
 func (c discordController) Leaderboard(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	cancel, errCh := c.init(ctx)
 
 	page := ctx.Param("page")
 
@@ -112,6 +121,7 @@ func (c discordController) Leaderboard(ctx echo.Context) error {
 
 	select {
 	case err := <-errCh:
+		cancel()
 		return err
 	case leaderboard := <-leaderboardCh:
 		return ctx.JSON(http.StatusOK, leaderboard)
@@ -119,7 +129,7 @@ func (c discordController) Leaderboard(ctx echo.Context) error {
 }
 
 func (c discordController) BotLogin(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	cancel, errCh := c.init(ctx)
 
 	var input api.DiscordBotLoginRequest
 	err := ctx.Bind(&input)
@@ -131,6 +141,7 @@ func (c discordController) BotLogin(ctx echo.Context) error {
 
 	select {
 	case err := <-errCh:
+		cancel()
 		return err
 	case token := <-tokenCh:
 		return ctx.JSON(http.StatusOK, api.DiscordBotLoginResponse{

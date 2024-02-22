@@ -38,11 +38,11 @@ ________________________________________________
 	discord := e.Group("/discord")
 	discord.Use(authService.DiscordAuthMiddleware())
 	discord.POST("/verify", discordController.Verify)
-	discord.PATCH("/daily/:id", discordController.Daily)
 	discord.GET("/member/:id", discordController.Member)
-	discord.GET("/leaderboard/:page", discordController.Leaderboard)
+	discord.PATCH("/daily/:id", discordController.Daily)
 	discord.POST("/bot-login", discordController.BotLogin)
 	discord.DELETE("/revoke/:id", discordController.Revoke)
+	discord.GET("/leaderboard/:page", discordController.Leaderboard)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
 	"github.com/NoBypass/fds/pkg/api"
@@ -32,6 +33,7 @@ func NewDiscordRepository(db *surreal_wrap.DB) DiscordRepository {
 
 func (r *discordRepository) Delete(id string) (*model.DiscordMember, error) {
 	resp, err := r.DB.Queryf(`DELETE discord_member:%s RETURN BEFORE`, id)
+	fmt.Printf("resp: %+v\n", resp)
 	member, err := surrealdb.SmartUnmarshal[model.DiscordMember](resp, err)
 	return &member, err
 }
