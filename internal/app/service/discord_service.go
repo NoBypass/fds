@@ -56,7 +56,7 @@ func NewDiscordService(db *surreal_wrap.DB, config *conf.Config) DiscordService 
 func (s *discordService) GetMember(id string) <-chan model.DiscordMember {
 	memberCh := make(chan model.DiscordMember)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(memberCh)
 
 		member, err := s.repo.Get(id)
@@ -66,7 +66,7 @@ func (s *discordService) GetMember(id string) <-chan model.DiscordMember {
 		}
 
 		memberCh <- *member
-	})
+	}()
 
 	return memberCh
 }
@@ -74,7 +74,7 @@ func (s *discordService) GetMember(id string) <-chan model.DiscordMember {
 func (s *discordService) CheckDaily(memberCh <-chan model.DiscordMember) <-chan float64 {
 	xpCh := make(chan float64)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(xpCh)
 
 		m := <-memberCh
@@ -85,7 +85,7 @@ func (s *discordService) CheckDaily(memberCh <-chan model.DiscordMember) <-chan 
 		} else {
 			s.errCh <- echo.NewHTTPError(http.StatusForbidden, "user has already claimed their daily reward")
 		}
-	})
+	}()
 
 	return xpCh
 }
@@ -93,7 +93,7 @@ func (s *discordService) CheckDaily(memberCh <-chan model.DiscordMember) <-chan 
 func (s *discordService) GiveXP(memberCh <-chan model.DiscordMember, xp <-chan float64) <-chan model.DiscordMember {
 	out := make(chan model.DiscordMember)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(out)
 
 		member := <-memberCh
@@ -104,7 +104,7 @@ func (s *discordService) GiveXP(memberCh <-chan model.DiscordMember, xp <-chan f
 			return
 		}
 		out <- member
-	})
+	}()
 
 	return memberCh
 }
@@ -112,7 +112,7 @@ func (s *discordService) GiveXP(memberCh <-chan model.DiscordMember, xp <-chan f
 func (s *discordService) GetJWT(input *api.DiscordBotLoginRequest) <-chan string {
 	tokenCh := make(chan string)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(tokenCh)
 
 		if input.Pwd == s.config.BotPwd {
@@ -133,7 +133,7 @@ func (s *discordService) GetJWT(input *api.DiscordBotLoginRequest) <-chan string
 			s.errCh <- echo.NewHTTPError(http.StatusUnauthorized, "invalid password")
 			return
 		}
-	})
+	}()
 
 	return tokenCh
 }
@@ -142,7 +142,7 @@ func (s *discordService) FetchMojangProfile(inputCh <-chan *api.DiscordVerifyReq
 	profileCh := make(chan model.MojangProfile)
 	memberCh := make(chan model.DiscordMember)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(profileCh)
 		defer close(memberCh)
 
@@ -169,7 +169,7 @@ func (s *discordService) FetchMojangProfile(inputCh <-chan *api.DiscordVerifyReq
 			Name:      input.Name,
 			Nick:      profile.Name,
 		}
-	})
+	}()
 
 	return profileCh, memberCh
 }
@@ -178,7 +178,7 @@ func (s *discordService) FetchHypixelPlayer(inputCh <-chan model.MojangProfile) 
 	playerCh := make(chan model.HypixelPlayerResponse)
 	profileCh := make(chan model.MojangProfile)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(playerCh)
 
 		input, ok := <-inputCh
@@ -207,7 +207,7 @@ func (s *discordService) FetchHypixelPlayer(inputCh <-chan model.MojangProfile) 
 		}
 
 		playerCh <- player
-	})
+	}()
 
 	return playerCh, profileCh
 }
@@ -216,7 +216,7 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 	outMemberCh := make(chan model.DiscordMember)
 	outPlayerCh := make(chan model.HypixelPlayer)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(outPlayerCh)
 		defer close(outMemberCh)
 
@@ -243,7 +243,7 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 			s.errCh <- echo.NewHTTPError(http.StatusNotFound, "hypixel: player not found")
 			return
 		}
-	})
+	}()
 
 	return outMemberCh, outPlayerCh
 }
@@ -251,7 +251,7 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) <-chan string {
 	actual := make(chan string)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(actual)
 
 		var (
@@ -307,7 +307,7 @@ func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh 
 		}
 
 		actual <- p.Name
-	}, s.repo, s.mojangRepo, s.hypixelRepo)
+	}()
 
 	return actual
 }
@@ -315,7 +315,7 @@ func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh 
 func (s *discordService) CheckIfAlreadyVerified(input *api.DiscordVerifyRequest) <-chan *api.DiscordVerifyRequest {
 	verifiedCh := make(chan *api.DiscordVerifyRequest)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(verifiedCh)
 
 		_, err := s.repo.Get(input.ID)
@@ -326,7 +326,7 @@ func (s *discordService) CheckIfAlreadyVerified(input *api.DiscordVerifyRequest)
 		} else {
 			s.errCh <- err
 		}
-	}, s.repo)
+	}()
 
 	return verifiedCh
 }
@@ -334,7 +334,7 @@ func (s *discordService) CheckIfAlreadyVerified(input *api.DiscordVerifyRequest)
 func (s *discordService) StrToInt(input string) <-chan int {
 	out := make(chan int)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(out)
 
 		i, err := strconv.Atoi(input)
@@ -343,7 +343,7 @@ func (s *discordService) StrToInt(input string) <-chan int {
 			return
 		}
 		out <- i
-	})
+	}()
 
 	return out
 }
@@ -351,7 +351,7 @@ func (s *discordService) StrToInt(input string) <-chan int {
 func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeaderboardResponse {
 	leaderboardCh := make(chan api.DiscordLeaderboardResponse)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(leaderboardCh)
 
 		members, err := s.repo.GetLeaderboard(<-page)
@@ -361,7 +361,7 @@ func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeade
 		}
 
 		leaderboardCh <- members
-	})
+	}()
 
 	return leaderboardCh
 }
@@ -369,7 +369,7 @@ func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeade
 func (s *discordService) Revoke(id string) <-chan *api.DiscordMemberResponse {
 	out := make(chan *api.DiscordMemberResponse)
 
-	s.Pipeline(func() {
+	go func() {
 		defer close(out)
 
 		member, err := s.repo.Delete(id)
@@ -380,7 +380,7 @@ func (s *discordService) Revoke(id string) <-chan *api.DiscordMemberResponse {
 		out <- &api.DiscordMemberResponse{
 			DiscordMember: *member,
 		}
-	})
+	}()
 
 	return out
 }
