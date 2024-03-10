@@ -1,0 +1,296 @@
+openapi: 3.0.3
+info:
+  title: FDS Web API
+  description: The web API documentation used by all FDS apps.
+  version: v0.1.0
+servers:
+  - url: 'http://localhost:8080'
+    description: 'Local server'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /discord/daily/{id}:
+    patch:
+      security:
+        - bearerAuth: []
+      description: Claim daily XP
+      responses:
+        200:
+          description: Successfully claimed daily XP
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  xp:
+                    type: integer
+                    description: The user's new XP
+                  streak:
+                    type: integer
+                    description: The user's new daily XP streak
+        403:
+          description: The user has already claimed their daily XP
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The error message
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The error message
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The Discord ID of the user
+          schema:
+            type: string
+  /discord/bot-login:
+    post:
+      description: Log in the bot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pwd:
+                  type: string
+                  description: The bot's password
+      responses:
+        200:
+          description: Successfully logged in the bot
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The message
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The error message
+  /discord/revoke/{id}:
+    delete:
+      security:
+        - bearerAuth: [ ]
+      description: Revoke the user's Discord account
+      responses:
+        200:
+          description: Successfully revoked the user's Discord account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The message
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The error message
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The Discord ID of the user
+          schema:
+            type: string
+  /discord/leaderboard/{page}:
+    get:
+      security:
+        - bearerAuth: [ ]
+      description: Get the Discord leaderboard
+      responses:
+        200:
+          description: Successfully retrieved the leaderboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  leaderboard:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        discord_id:
+                          type: string
+                          description: The Discord ID of the user
+                        xp:
+                          type: integer
+                          description: The user's XP
+                        level:
+                          type: integer
+                          description: The user's level
+        400:
+          description: Invalid page number
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The error message
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The error message
+      parameters:
+        - name: page
+          in: path
+          required: true
+          description: The page number
+          schema:
+            type: integer
+  /discord/member/{id}:
+    get:
+      security:
+        - bearerAuth: [ ]
+      description: Get a Discord member's information
+      responses:
+        200:
+          description: Successfully retrieved the member's information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  discord_id:
+                    type: string
+                    description: The Discord ID of the user
+                  name:
+                    type: string
+                    description: The Discord username of the user
+                  nick:
+                    type: string
+                    description: The Discord nickname of the user
+                  xp:
+                    type: integer
+                    description: The user's XP
+                  level:
+                    type: integer
+                    description: The user's level
+                  last_daily_at:
+                    type: string
+                    format: date-time
+                    description: The last time the user claimed their daily XP
+                  streak:
+                    type: integer
+                    description: The user's daily XP streak
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The error message
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The Discord ID of the user
+          schema:
+            type: string
+  /discord/verify:
+    post:
+      security:
+        - bearerAuth: [ ]
+      description: Meant for linking Discord to Minecraft accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: The Discord ID of the user
+                nick:
+                  type: string
+                  description: The Minecraft username of the user
+                name:
+                  type: string
+                  description: The Discord username of the user
+      responses:
+        200:
+          description: Successfully linked the user's Discord, Mojang and Minecraft accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actual:
+                    type: string
+                    description: The actual Minecraft username of the user (case-corrected)
+        404:
+          description: The user's Minecraft account was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The error message
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The error message
+        403:
+          description: Not allowed to link the user's Discord, Mojang and Minecraft accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The reason why the user is not allowed to link their accounts
