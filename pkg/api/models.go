@@ -26,7 +26,9 @@ type DiscordBotLoginResponse struct {
 	Token string `json:"token"`
 }
 
-type DiscordLeaderboardResponse []struct {
+type DiscordLeaderboardResponse []DiscordLeaderboardEntry
+
+type DiscordLeaderboardEntry struct {
 	DiscordID string  `json:"discord_id"`
 	Level     int     `json:"level"`
 	XP        float64 `json:"xp"`

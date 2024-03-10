@@ -9,6 +9,7 @@ import (
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
 	"github.com/NoBypass/fds/pkg/api"
+	"github.com/NoBypass/surgo"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
@@ -38,18 +39,12 @@ type DiscordService interface {
 
 type discordService struct {
 	service
-	repo        repository.DiscordRepository
-	mojangRepo  repository.MojangRepository
-	hypixelRepo repository.HypixelRepository
-	config      *conf.Config
+	config *conf.Config
 }
 
 func NewDiscordService(db *surreal_wrap.DB, config *conf.Config) DiscordService {
 	return &discordService{
-		hypixelRepo: repository.NewHypixelRepository(db),
-		repo:        repository.NewDiscordRepository(db),
-		mojangRepo:  repository.NewMojangRepository(db),
-		config:      config,
+		config: config,
 	}
 }
 
@@ -59,7 +54,8 @@ func (s *discordService) GetMember(id string) <-chan model.DiscordMember {
 	go func() {
 		defer close(memberCh)
 
-		member, err := s.repo.Get(id)
+		member := new(model.DiscordMember)
+		err := repository.Discord.FindOne(member, surgo.ID(id))
 		if err != nil {
 			s.errCh <- err
 			return
@@ -98,7 +94,7 @@ func (s *discordService) GiveXP(memberCh <-chan model.DiscordMember, xp <-chan f
 
 		member := <-memberCh
 		member.AddXP(<-xp)
-		err := s.repo.Update(member.DiscordID, &member)
+		err := repository.Discord.Update(&member, surgo.ID(member.DiscordID))
 		if err != nil {
 			s.errCh <- err
 			return
@@ -265,7 +261,7 @@ func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh 
 				if !ok {
 					return
 				}
-				err := s.mojangRepo.Create(&profile)
+				err := repository.Mojang.Create(&profile)
 				if err != nil {
 					s.errCh <- err
 					return
@@ -275,7 +271,7 @@ func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh 
 				if !ok {
 					return
 				}
-				err := s.repo.Create(&member)
+				err := repository.Discord.Create(&member)
 				if err != nil {
 					s.errCh <- err
 					return
@@ -285,7 +281,7 @@ func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh 
 				if !ok {
 					return
 				}
-				err := s.hypixelRepo.Create(&player)
+				err := repository.Hypixel.Create(&player)
 				if err != nil {
 					s.errCh <- err
 					return
@@ -294,13 +290,21 @@ func (s *discordService) Persist(profileCh <-chan model.MojangProfile, memberCh 
 			}
 		}
 
-		err := s.repo.RelatePlayedWith(&p, &h)
+		err := repository.PlayedWith.Create(
+			new(model.PlayedWith),
+			surgo.ID(m.DiscordID),
+			surgo.ID(h.UUID),
+		)
 		if err != nil {
 			s.errCh <- err
 			return
 		}
 
-		err = s.repo.RelateVerifiedWith(&m, &h)
+		err = repository.VerifiedWith.Create(
+			new(model.VerifiedWith),
+			surgo.ID(m.DiscordID),
+			surgo.ID(p.UUID),
+		)
 		if err != nil {
 			s.errCh <- err
 			return
@@ -318,7 +322,7 @@ func (s *discordService) CheckIfAlreadyVerified(input *api.DiscordVerifyRequest)
 	go func() {
 		defer close(verifiedCh)
 
-		_, err := s.repo.Get(input.ID)
+		err := repository.Discord.FindOne(new(model.DiscordMember), surgo.ID(input.ID), surgo.Fields("->verified_with"))
 		if err == nil {
 			s.errCh <- echo.NewHTTPError(http.StatusForbidden, "user is already verified")
 		} else if errors.As(err, &surrealdb.ErrNoRow) {
@@ -354,13 +358,23 @@ func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeade
 	go func() {
 		defer close(leaderboardCh)
 
-		members, err := s.repo.GetLeaderboard(<-page)
+		members := make([]model.DiscordMember, 10)
+		err := repository.Discord.Find(&members, surgo.Limit(10), surgo.Start(10*<-page))
 		if err != nil {
 			s.errCh <- err
 			return
 		}
 
-		leaderboardCh <- members
+		var res api.DiscordLeaderboardResponse
+		for _, m := range members {
+			res = append(res, api.DiscordLeaderboardEntry{
+				DiscordID: m.DiscordID,
+				Level:     m.Level,
+				XP:        m.XP,
+			})
+		}
+
+		leaderboardCh <- res
 	}()
 
 	return leaderboardCh
@@ -372,7 +386,7 @@ func (s *discordService) Revoke(id string) <-chan *api.DiscordMemberResponse {
 	go func() {
 		defer close(out)
 
-		member, err := s.repo.Delete(id)
+		member, err := repository.Discord.Delete(surgo.ID(id), surgo.Return(surgo.ReturnBefore))
 		if err != nil {
 			s.errCh <- err
 			return
