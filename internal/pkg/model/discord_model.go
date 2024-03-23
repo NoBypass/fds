@@ -6,11 +6,11 @@ import (
 )
 
 type DiscordMember struct {
-	DiscordID   string  `json:"discord_id"`
+	DiscordID   string  `json:"discord_id" db:"discord_id"`
 	Name        string  `json:"name"`
 	Nick        string  `json:"nick"`
 	XP          float64 `json:"xp"`
-	LastDailyAt string  `json:"last_daily_at"`
+	LastDailyAt string  `json:"last_daily_at" db:"last_daily_at"`
 	Level       int     `json:"level"`
 	Streak      int     `json:"streak"`
 }
@@ -37,6 +37,11 @@ type DiscordDailyResponse struct {
 	Gained    float64 `json:"gained"`
 	Streak    int     `json:"streak"`
 	WithBonus float64 `json:"with_bonus"`
+}
+
+type DiscordID struct {
+	ID   string `json:"id"`
+	Date string `json:"date"`
 }
 
 func (d *DiscordMember) AddXP(xp float64) {

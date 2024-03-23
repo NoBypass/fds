@@ -3,6 +3,7 @@ package auth
 import (
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
+	"net/http"
 )
 
 func (s *Service) DiscordAuthMiddleware() echo.MiddlewareFunc {
@@ -15,6 +16,9 @@ func (s *Service) DiscordAuthMiddleware() echo.MiddlewareFunc {
 			}
 
 			return false
+		},
+		ErrorHandler: func(c echo.Context, err error) error {
+			return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 		},
 	})
 }

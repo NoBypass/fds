@@ -1,9 +1,8 @@
 package controller
 
 import (
-	"github.com/NoBypass/fds/internal/app/service"
+	"github.com/NoBypass/fds/internal/backend/service"
 	"github.com/NoBypass/fds/internal/pkg/conf"
-	"github.com/NoBypass/fds/internal/pkg/surreal_wrap"
 	"github.com/NoBypass/fds/pkg/api"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -22,9 +21,9 @@ type discordController struct {
 	service service.DiscordService
 }
 
-func NewDiscordController(db *surreal_wrap.DB, config *conf.Config) DiscordController {
+func NewDiscordController(config *conf.Config) DiscordController {
 	return &discordController{
-		service.NewDiscordService(db, config),
+		service.NewDiscordService(config),
 	}
 }
 
@@ -56,7 +55,7 @@ func (c discordController) Verify(ctx echo.Context) error {
 	mojangProfileCh, memberCh := c.service.FetchMojangProfile(verifiedCh)
 	hypixelPlayerResCh, newMojangProfileCh := c.service.FetchHypixelPlayer(mojangProfileCh)
 	verifiedMemberCh, hypixelPlayerCh := c.service.VerifyHypixelSocials(memberCh, hypixelPlayerResCh)
-	actual := c.service.Persist(newMojangProfileCh, verifiedMemberCh, hypixelPlayerCh)
+	actual := c.service.PersistVerify(newMojangProfileCh, verifiedMemberCh, hypixelPlayerCh)
 
 	select {
 	case err := <-errCh:
@@ -89,8 +88,7 @@ func (c discordController) Daily(ctx echo.Context) error {
 	id := ctx.Param("id")
 
 	memberCh := c.service.GetMember(id)
-	xpCh := c.service.CheckDaily(memberCh)
-	updatedMemberCh := c.service.GiveXP(memberCh, xpCh)
+	updatedMemberCh := c.service.GiveDaily(memberCh)
 
 	select {
 	case err := <-errCh:

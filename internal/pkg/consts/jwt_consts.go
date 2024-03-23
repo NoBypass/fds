@@ -3,6 +3,6 @@ package consts
 const (
 	JWTWeb  = "web"
 	JWTBot  = "bot"
-	JWTApp  = "app"
-	JWTCore = "app"
+	JWTApp  = "backend"
+	JWTCore = "backend"
 )

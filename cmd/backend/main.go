@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/NoBypass/fds/internal/app/auth"
-	"github.com/NoBypass/fds/internal/app/controller"
-	"github.com/NoBypass/fds/internal/app/middleware"
+	"github.com/NoBypass/fds/internal/backend/auth"
+	"github.com/NoBypass/fds/internal/backend/controller"
+	"github.com/NoBypass/fds/internal/backend/middleware"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/consts"
 	"github.com/labstack/echo/v4"
 )
 
-const VERSION = "v0.4.2"
+const VERSION = "v0.4.3"
 
 func main() {
 	e := echo.New()
@@ -26,10 +26,9 @@ ________________________________________________
 	e.HideBanner = true
 
 	config := conf.ReadConfig()
-	db := config.ConnectDB()
 
 	authService := auth.NewService(config.JWTSecret)
-	discordController := controller.NewDiscordController(db, config)
+	discordController := controller.NewDiscordController(config)
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Timeout())
