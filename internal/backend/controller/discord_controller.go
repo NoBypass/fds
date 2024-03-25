@@ -28,7 +28,7 @@ func NewDiscordController(config *conf.Config) DiscordController {
 }
 
 func (c discordController) Member(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	errCh := c.service.Request(ctx)
 
 	id := ctx.Param("id")
 
@@ -43,7 +43,7 @@ func (c discordController) Member(ctx echo.Context) error {
 }
 
 func (c discordController) Verify(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	errCh := c.service.Request(ctx)
 
 	var input api.DiscordVerifyRequest
 	err := ctx.Bind(&input)
@@ -51,11 +51,18 @@ func (c discordController) Verify(ctx echo.Context) error {
 		return err
 	}
 
-	verifiedCh := c.service.CheckIfAlreadyVerified(&input)
-	mojangProfileCh, memberCh := c.service.FetchMojangProfile(verifiedCh)
-	hypixelPlayerResCh, newMojangProfileCh := c.service.FetchHypixelPlayer(mojangProfileCh)
-	verifiedMemberCh, hypixelPlayerCh := c.service.VerifyHypixelSocials(memberCh, hypixelPlayerResCh)
-	actual := c.service.PersistVerify(newMojangProfileCh, verifiedMemberCh, hypixelPlayerCh)
+	var (
+		verifiedCh          = c.service.CheckIfAlreadyVerified(&input)
+		profileBr, memberBc = c.service.FetchMojangProfile(verifiedCh)
+		hypixelPlayerResCh  = c.service.FetchHypixelPlayer(profileBr.Attach())
+		playerCh            = c.service.VerifyHypixelSocials(memberBc.Attach(), hypixelPlayerResCh)
+		actual              = c.service.PersistProfile(profileBr.Attach())
+	)
+
+	c.service.PersistPlayer(playerCh.Attach())
+	c.service.PersistMember(memberBc.Attach())
+	c.service.RelateMemberToPlayer(memberBc.Attach(), playerCh.Attach())
+	c.service.RelateProfileToPlayer(profileBr.Attach(), playerCh.Attach())
 
 	select {
 	case err := <-errCh:
@@ -68,7 +75,7 @@ func (c discordController) Verify(ctx echo.Context) error {
 }
 
 func (c discordController) Revoke(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	errCh := c.service.Request(ctx)
 
 	id := ctx.Param("id")
 
@@ -83,7 +90,7 @@ func (c discordController) Revoke(ctx echo.Context) error {
 }
 
 func (c discordController) Daily(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	errCh := c.service.Request(ctx)
 
 	id := ctx.Param("id")
 
@@ -99,7 +106,7 @@ func (c discordController) Daily(ctx echo.Context) error {
 }
 
 func (c discordController) Leaderboard(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	errCh := c.service.Request(ctx)
 
 	page := ctx.Param("page")
 
@@ -115,7 +122,7 @@ func (c discordController) Leaderboard(ctx echo.Context) error {
 }
 
 func (c discordController) BotLogin(ctx echo.Context) error {
-	errCh := c.service.InjectErrorChan()
+	errCh := c.service.Request(ctx)
 
 	var input api.DiscordBotLoginRequest
 	err := ctx.Bind(&input)

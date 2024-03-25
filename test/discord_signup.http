@@ -10,7 +10,7 @@ Content-Type: application/json
 }
 
 ### Test daily claiming
-PATCH http://localhost:8080/discord/672835870080106509/daily
+PATCH http://localhost:8080/discord/daily/672835870080106509
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmZHMiLCJzdWIiOiJib3QiLCJhdWQiOlsiYm90Il0sImlhdCI6MTcxMDEwMjU3MX0.Y-Uwgv1pyfx8LdAOxBaZuhHYFAg2HcpwmX1xvvtNbUo
 
 ### Test logging in as discord bot
