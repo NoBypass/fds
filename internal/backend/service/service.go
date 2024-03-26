@@ -21,27 +21,36 @@ type service struct {
 
 func (s *service) Request(c echo.Context) <-chan error {
 	s.c = c
-	ch := make(chan error, 1)
+	ch := make(chan error, 64)
 	s.errCh = ch
 	return ch
 }
 
-func (s *service) Pipeline(fn func(startTrace func(), span opentracing.Span) error, this any) {
+func (s *service) Pipeline(fn func(startTrace func() opentracing.Span) error, this any) {
 	name := runtime.FuncForPC(reflect.ValueOf(this).Pointer()).Name()
 	name = name[strings.LastIndex(name, ".")+1:]
 	name = name[:len(name)-3]
 
 	var sp opentracing.Span
-	startTrace := func() {
+	sp = jaegertracing.CreateChildSpan(s.c, name)
+	startTrace := func() opentracing.Span {
 		sp = jaegertracing.CreateChildSpan(s.c, name)
+		return sp
 	}
 
 	go func() {
-		err := fn(startTrace, sp)
+		defer func() {
+			if r := recover(); r != nil {
+				s.errCh <- r.(error)
+				ext.LogError(sp, r.(error))
+			}
+		}()
+
+		err := fn(startTrace)
+		defer sp.Finish()
 		if err != nil {
 			s.errCh <- err
 			ext.LogError(sp, err)
 		}
-		sp.Finish()
 	}()
 }

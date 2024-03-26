@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.1
 
 require (
-	github.com/NoBypass/surgo v1.1.1
+	github.com/NoBypass/surgo v1.2.3
 	github.com/fatih/color v1.16.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/labstack/echo-contrib v0.16.0

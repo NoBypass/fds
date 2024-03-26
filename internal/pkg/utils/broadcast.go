@@ -1,4 +1,4 @@
-package pipeline
+package utils
 
 type Broadcaster[T any] struct {
 	receivers []chan<- T

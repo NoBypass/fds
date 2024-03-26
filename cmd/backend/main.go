@@ -7,14 +7,13 @@ import (
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/consts"
 	"github.com/labstack/echo/v4"
-	middleware2 "github.com/labstack/echo/v4/middleware"
 )
 
-const VERSION = "v0.4.3"
+const VERSION = "v0.5.1"
 
 func main() {
 	e := echo.New()
-	tracer, closer := middleware.StartTracer(VERSION)
+	closer := middleware.StartTracer(VERSION)
 	defer closer.Close()
 
 	println(`
@@ -34,9 +33,10 @@ ________________________________________________
 	discordController := controller.NewDiscordController(config)
 
 	e.Use(middleware.Timeout())
-	e.Use(middleware2.Logger())
-	e.Use(middleware.Trace(tracer))
+	e.Use(middleware.Trace())
+	e.Use(middleware.Logger())
 	e.Use(middleware.Prepare(config))
+	e.Use(middleware.Recover())
 
 	discord := e.Group("/discord")
 	discord.Use(authService.DiscordAuthMiddleware())

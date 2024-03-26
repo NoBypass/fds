@@ -52,24 +52,21 @@ func (c discordController) Verify(ctx echo.Context) error {
 	}
 
 	var (
-		verifiedCh          = c.service.CheckIfAlreadyVerified(&input)
-		profileBr, memberBc = c.service.FetchMojangProfile(verifiedCh)
-		hypixelPlayerResCh  = c.service.FetchHypixelPlayer(profileBr.Attach())
-		playerCh            = c.service.VerifyHypixelSocials(memberBc.Attach(), hypixelPlayerResCh)
-		actual              = c.service.PersistProfile(profileBr.Attach())
+		verifiedCh            = c.service.CheckIfAlreadyVerified(&input)
+		playerResBc, memberBc = c.service.FetchHypixelPlayer(verifiedCh)
+		playerBc              = c.service.VerifyHypixelSocials(memberBc.Attach(), playerResBc.Attach())
 	)
 
-	c.service.PersistPlayer(playerCh.Attach())
+	c.service.PersistPlayer(playerBc.Attach())
 	c.service.PersistMember(memberBc.Attach())
-	c.service.RelateMemberToPlayer(memberBc.Attach(), playerCh.Attach())
-	c.service.RelateProfileToPlayer(profileBr.Attach(), playerCh.Attach())
+	c.service.RelateMemberToPlayer(memberBc.Attach(), playerBc.Attach())
 
 	select {
 	case err := <-errCh:
 		return err
-	case actualName := <-actual:
+	case actual := <-playerResBc.Attach():
 		return ctx.JSON(http.StatusOK, api.DiscordVerifyResponse{
-			Actual: actualName,
+			Actual: actual.Player.DisplayName,
 		})
 	}
 }

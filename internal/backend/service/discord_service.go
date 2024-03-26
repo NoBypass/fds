@@ -2,18 +2,16 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/NoBypass/fds/internal/backend/repository"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/model"
-	"github.com/NoBypass/fds/internal/pkg/pipeline"
+	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/fds/pkg/api"
 	"github.com/NoBypass/surgo"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
-	"github.com/surrealdb/surrealdb.go"
 	"math"
 	"math/rand"
 	"net/http"
@@ -27,12 +25,10 @@ type DiscordService interface {
 	PersistMember(<-chan model.DiscordMember)
 	PersistPlayer(<-chan model.HypixelPlayer)
 	RelateMemberToPlayer(<-chan model.DiscordMember, <-chan model.HypixelPlayer)
-	RelateProfileToPlayer(<-chan model.MojangProfile, <-chan model.HypixelPlayer)
 
 	CheckIfAlreadyVerified(*api.DiscordVerifyRequest) <-chan *api.DiscordVerifyRequest
-	VerifyHypixelSocials(<-chan model.DiscordMember, <-chan model.HypixelPlayerResponse) *pipeline.Broadcaster[model.HypixelPlayer]
-	FetchHypixelPlayer(<-chan model.MojangProfile) <-chan model.HypixelPlayerResponse
-	FetchMojangProfile(<-chan *api.DiscordVerifyRequest) (*pipeline.Broadcaster[model.MojangProfile], *pipeline.Broadcaster[model.DiscordMember])
+	VerifyHypixelSocials(<-chan model.DiscordMember, <-chan model.HypixelPlayerResponse) *utils.Broadcaster[model.HypixelPlayer]
+	FetchHypixelPlayer(<-chan *api.DiscordVerifyRequest) (*utils.Broadcaster[model.HypixelPlayerResponse], *utils.Broadcaster[model.DiscordMember])
 	GiveDaily(<-chan model.DiscordMember) <-chan model.DiscordMember
 	GetJWT(*api.DiscordBotLoginRequest) <-chan string
 	GetMember(id string) <-chan model.DiscordMember
@@ -55,12 +51,12 @@ func NewDiscordService(config *conf.Config) DiscordService {
 func (s *discordService) GetMember(id string) <-chan model.DiscordMember {
 	memberCh := make(chan model.DiscordMember)
 
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(memberCh)
-		start()
+		sp := start()
 
 		member := new(model.DiscordMember)
-		err := repository.DB.Scan(member, "SELECT * FROM ONLY discord_member:$", surgo.ID{id})
+		err := repository.DB(sp).Scan(member, "SELECT * FROM ONLY discord_member:$", surgo.ID{id})
 		if err != nil {
 			return err
 		}
@@ -76,18 +72,18 @@ func (s *discordService) GetMember(id string) <-chan model.DiscordMember {
 func (s *discordService) GiveDaily(memberCh <-chan model.DiscordMember) <-chan model.DiscordMember {
 	out := make(chan model.DiscordMember)
 
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(out)
 
 		member := <-memberCh
-		start()
+		sp := start()
 
 		member.AddXP(math.Round(rand.Float64() * 500.0 * (1.0 + float64(member.Streak)*0.1)))
 		member.LastDailyAt = time.Now().Add(-time.Hour * 24).Format(time.RFC3339)
 		member.Streak++
 
 		var newMember model.DiscordMember
-		err := repository.DB.Scan(&newMember, "UPDATE discord_member:$ MERGE {"+
+		err := repository.DB(sp).Scan(&newMember, "UPDATE discord_member:$ MERGE {"+
 			"last_daily_at: $last_daily_at,"+
 			"xp: $xp,"+
 			"streak: $streak"+
@@ -106,7 +102,7 @@ func (s *discordService) GiveDaily(memberCh <-chan model.DiscordMember) <-chan m
 func (s *discordService) GetJWT(input *api.DiscordBotLoginRequest) <-chan string {
 	tokenCh := make(chan string)
 
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(tokenCh)
 		start()
 
@@ -133,52 +129,18 @@ func (s *discordService) GetJWT(input *api.DiscordBotLoginRequest) <-chan string
 	return tokenCh
 }
 
-func (s *discordService) FetchMojangProfile(inputCh <-chan *api.DiscordVerifyRequest) (*pipeline.Broadcaster[model.MojangProfile], *pipeline.Broadcaster[model.DiscordMember]) {
-	profileCh := make(chan model.MojangProfile)
-	memberCh := make(chan model.DiscordMember)
-	profileBc := pipeline.NewBroadcaster(profileCh)
-	memberBc := pipeline.NewBroadcaster(memberCh)
-
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
-		defer close(profileCh)
-		defer close(memberCh)
-
-		input := <-inputCh
-		start()
-		resp, err := http.Get("https://api.mojang.com/users/profiles/minecraft/" + input.Nick)
-		if err != nil {
-			return err
-		}
-
-		var profile model.MojangProfile
-		err = json.NewDecoder(resp.Body).Decode(&profile)
-		if err != nil {
-			return fmt.Errorf("mojang: %s", err)
-		}
-
-		profile.Date = time.Now().Format(time.RFC3339)
-		profileCh <- profile
-		memberCh <- model.DiscordMember{
-			DiscordID: input.ID,
-			Name:      input.Name,
-			Nick:      profile.Name,
-		}
-
-		return nil
-	}, s.FetchMojangProfile)
-
-	return profileBc, memberBc
-}
-
-func (s *discordService) FetchHypixelPlayer(inputCh <-chan model.MojangProfile) <-chan model.HypixelPlayerResponse {
+func (s *discordService) FetchHypixelPlayer(inputCh <-chan *api.DiscordVerifyRequest) (*utils.Broadcaster[model.HypixelPlayerResponse], *utils.Broadcaster[model.DiscordMember]) {
 	playerCh := make(chan model.HypixelPlayerResponse)
+	memberCh := make(chan model.DiscordMember)
+	playerBr := utils.NewBroadcaster(playerCh)
+	memberBr := utils.NewBroadcaster(memberCh)
 
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(playerCh)
 
 		input := <-inputCh
 		start()
-		req, err := http.NewRequest(http.MethodGet, "https://api.hypixel.net/player?uuid="+input.UUID, nil)
+		req, err := http.NewRequest(http.MethodGet, "https://api.hypixel.net/player?name="+input.Nick, nil)
 		if err != nil {
 			return err
 		}
@@ -196,17 +158,23 @@ func (s *discordService) FetchHypixelPlayer(inputCh <-chan model.MojangProfile) 
 		}
 
 		playerCh <- player
+		memberCh <- model.DiscordMember{
+			DiscordID:   input.ID,
+			Name:        input.Name,
+			Nick:        player.Player.DisplayName,
+			LastDailyAt: time.Now().Add(-time.Hour * 24).Format(time.RFC3339),
+		}
 		return nil
 	}, s.FetchHypixelPlayer)
 
-	return playerCh
+	return playerBr, memberBr
 }
 
-func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayerResponse) *pipeline.Broadcaster[model.HypixelPlayer] {
+func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayerResponse) *utils.Broadcaster[model.HypixelPlayer] {
 	outPlayerCh := make(chan model.HypixelPlayer)
-	playerBr := pipeline.NewBroadcaster(outPlayerCh)
+	playerBr := utils.NewBroadcaster(outPlayerCh)
 
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(outPlayerCh)
 
 		member := <-memberCh
@@ -218,6 +186,7 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 				outPlayerCh <- model.HypixelPlayer{
 					UUID: player.Player.UUID,
 					Date: time.Now().Format(time.RFC3339),
+					Name: player.Player.DisplayName,
 				}
 			} else {
 				return echo.NewHTTPError(http.StatusForbidden, "discord id does not match hypixel socials")
@@ -235,16 +204,19 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 func (s *discordService) PersistProfile(profileCh <-chan model.MojangProfile) <-chan string {
 	actual := make(chan string)
 
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		profile := <-profileCh
-		start()
+		sp := start()
 
-		_, err := repository.DB.Exec("CREATE mojang_profile:$ CONTENT {"+
+		res, err := repository.DB(sp).Exec("CREATE mojang_profile:$ CONTENT {"+
 			"date: $date,"+
 			"uuid: $uuid,"+
 			"name: $name"+
 			"}", profile, surgo.ID{profile.UUID, profile.Date})
 		if err != nil {
+			return err
+		}
+		if err := utils.Error(res); err != nil {
 			return err
 		}
 
@@ -256,11 +228,11 @@ func (s *discordService) PersistProfile(profileCh <-chan model.MojangProfile) <-
 }
 
 func (s *discordService) PersistMember(memberCh <-chan model.DiscordMember) {
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		member := <-memberCh
-		start()
+		sp := start()
 
-		_, err := repository.DB.Exec("CREATE discord_member:$ CONTENT {"+
+		res, err := repository.DB(sp).Exec("CREATE discord_member:$ CONTENT {"+
 			"discord_id: $discord_id,"+
 			"name: $name,"+
 			"nick: $nick,"+
@@ -268,8 +240,11 @@ func (s *discordService) PersistMember(memberCh <-chan model.DiscordMember) {
 			"last_daily_at: $last_daily_at,"+
 			"level: 0,"+
 			"streak: 0"+
-			"}", member, surgo.ID{member.DiscordID, time.Now().Format(time.RFC3339)})
+			"}", member, surgo.ID{member.DiscordID})
 		if err != nil {
+			return err
+		}
+		if err := utils.Error(res); err != nil {
 			return err
 		}
 
@@ -278,15 +253,19 @@ func (s *discordService) PersistMember(memberCh <-chan model.DiscordMember) {
 }
 
 func (s *discordService) PersistPlayer(playerCh <-chan model.HypixelPlayer) {
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		player := <-playerCh
-		start()
+		sp := start()
 
-		_, err := repository.DB.Exec("CREATE hypixel_player:$ CONTENT {"+
+		res, err := repository.DB(sp).Exec("CREATE hypixel_player:$ CONTENT {"+
 			"uuid: $uuid,"+
-			"date: $date"+
+			"date: $date,"+
+			"name: $name"+
 			"}", player, surgo.ID{player.UUID, player.Date})
 		if err != nil {
+			return err
+		}
+		if err := utils.Error(res); err != nil {
 			return err
 		}
 
@@ -295,13 +274,16 @@ func (s *discordService) PersistPlayer(playerCh <-chan model.HypixelPlayer) {
 }
 
 func (s *discordService) RelateMemberToPlayer(memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) {
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		member := <-memberCh
 		player := <-playerCh
-		start()
+		sp := start()
 
-		_, err := repository.DB.Exec("RELATE discord_member:$->verified_with->hypixel_player:$", surgo.ID{member.DiscordID}, surgo.ID{player.UUID})
+		res, err := repository.DB(sp).Exec("RELATE discord_member:$->verified_with->hypixel_player:$", surgo.ID{member.DiscordID}, surgo.ID{player.UUID})
 		if err != nil {
+			return err
+		}
+		if err := utils.Error(res); err != nil {
 			return err
 		}
 
@@ -309,37 +291,21 @@ func (s *discordService) RelateMemberToPlayer(memberCh <-chan model.DiscordMembe
 	}, s.RelateMemberToPlayer)
 }
 
-func (s *discordService) RelateProfileToPlayer(profileCh <-chan model.MojangProfile, playerCh <-chan model.HypixelPlayer) {
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
-		profile := <-profileCh
-		player := <-playerCh
-		start()
-
-		_, err := repository.DB.Exec("RELATE mojang_profile:$->played_with->hypixel_player:$", surgo.ID{profile.UUID}, surgo.ID{player.UUID})
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}, s.RelateProfileToPlayer)
-}
-
 func (s *discordService) CheckIfAlreadyVerified(input *api.DiscordVerifyRequest) <-chan *api.DiscordVerifyRequest {
 	verifiedCh := make(chan *api.DiscordVerifyRequest)
 
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(verifiedCh)
-		start()
+		sp := start()
 
-		res, err := repository.DB.Exec("SELECT ->verified_with FROM ONLY discord_member:$", surgo.ID{input.ID})
+		res, err := repository.DB(sp).Exec("SELECT ->verified_with FROM discord_member:$", surgo.ID{input.ID})
 		if err != nil {
 			return err
 		}
-
-		if errors.As(res[0].Error, &surrealdb.ErrNoRow) {
+		if len(res[0].Data.([]any)) == 0 {
 			verifiedCh <- input
 		} else {
-			return echo.NewHTTPError(http.StatusForbidden, "user is already verified")
+			return echo.NewHTTPError(http.StatusConflict, "already verified")
 		}
 
 		return nil
@@ -351,7 +317,7 @@ func (s *discordService) CheckIfAlreadyVerified(input *api.DiscordVerifyRequest)
 func (s *discordService) StrToInt(input string) <-chan int {
 	out := make(chan int)
 
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(out)
 		start()
 
@@ -370,12 +336,12 @@ func (s *discordService) StrToInt(input string) <-chan int {
 func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeaderboardResponse {
 	leaderboardCh := make(chan api.DiscordLeaderboardResponse)
 
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(leaderboardCh)
-		start()
+		sp := start()
 
 		members := make([]model.DiscordMember, 10)
-		err := repository.DB.Scan(&members, "SELECT * FROM ONLY discord_member ORDER BY xp DESC LIMIT 10 OFFSET $1", 10*<-page)
+		err := repository.DB(sp).Scan(&members, "SELECT * FROM ONLY discord_member ORDER BY xp DESC LIMIT 10 OFFSET $1", 10*<-page)
 		if err != nil {
 			return err
 		}
@@ -399,12 +365,12 @@ func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeade
 func (s *discordService) Revoke(id string) <-chan *api.DiscordMemberResponse {
 	out := make(chan *api.DiscordMemberResponse)
 
-	s.Pipeline(func(start func(), _ opentracing.Span) error {
+	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(out)
-		start()
+		sp := start()
 
 		var member model.DiscordMember
-		err := repository.DB.Scan(&member, "DELETE ONLY discord_member:$ RETURN BEFORE", surgo.ID{id})
+		err := repository.DB(sp).Scan(&member, "DELETE ONLY discord_member:$ RETURN BEFORE", surgo.ID{id})
 		if err != nil {
 			return err
 		}

@@ -16,6 +16,7 @@ type HypixelPlayerResponse struct {
 type HypixelPlayer struct {
 	Date string `json:"date"`
 	UUID string `json:"uuid"`
+	Name string `json:"name"`
 }
 
 type Unused struct {
