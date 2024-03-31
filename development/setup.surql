@@ -1,0 +1,29 @@
+DEFINE NAMESPACE fds;
+USE NS fds;
+DEFINE DATABASE main;
+USE DB main;
+
+
+DEFINE USER root ON NAMESPACE PASSWORD 'root' ROLES OWNER;
+
+
+DEFINE TABLE discord_member SCHEMAFULL PERMISSIONS NONE;
+
+DEFINE FIELD discord_id ON discord_member TYPE string PERMISSIONS FULL;
+DEFINE FIELD last_daily_at ON discord_member TYPE datetime PERMISSIONS FULL;
+DEFINE FIELD level ON discord_member TYPE int PERMISSIONS FULL;
+DEFINE FIELD streak ON discord_member TYPE int PERMISSIONS FULL;
+DEFINE FIELD xp ON discord_member TYPE float PERMISSIONS FULL;
+
+
+DEFINE TABLE hypixel_player SCHEMAFULL PERMISSIONS NONE;
+
+DEFINE FIELD date ON hypixel_player TYPE datetime PERMISSIONS FULL;
+DEFINE FIELD dump ON hypixel_player TYPE record<unused> PERMISSIONS FULL;
+DEFINE FIELD uuid ON hypixel_player TYPE string PERMISSIONS FULL;
+
+
+DEFINE TABLE verified_with SCHEMALESS PERMISSIONS NONE;
+
+DEFINE FIELD in ON verified_with TYPE record<discord_member> PERMISSIONS FULL;
+DEFINE FIELD out ON verified_with TYPE record<hypixel_player> PERMISSIONS FULL;
