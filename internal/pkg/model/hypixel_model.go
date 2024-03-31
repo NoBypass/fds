@@ -1,7 +1,8 @@
 package model
 
 type HypixelPlayerResponse struct {
-	Success bool `json:"success"`
+	Success bool   `json:"success"`
+	Cause   string `json:"cause"`
 	Player  struct {
 		UUID        string `json:"uuid"`
 		DisplayName string `json:"displayname"`

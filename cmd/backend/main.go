@@ -4,6 +4,7 @@ import (
 	"github.com/NoBypass/fds/internal/backend/auth"
 	"github.com/NoBypass/fds/internal/backend/controller"
 	"github.com/NoBypass/fds/internal/backend/middleware"
+	"github.com/NoBypass/fds/internal/hypixel"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/consts"
 	"github.com/labstack/echo/v4"
@@ -30,7 +31,8 @@ ________________________________________________
 	config := conf.ReadConfig()
 
 	authService := auth.NewService(config.JWTSecret)
-	discordController := controller.NewDiscordController(config)
+	hypixelClient := hypixel.NewAPIClient()
+	discordController := controller.NewDiscordController(config, hypixelClient)
 
 	e.Use(middleware.Timeout())
 	e.Use(middleware.Trace())

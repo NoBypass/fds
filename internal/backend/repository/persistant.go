@@ -47,6 +47,7 @@ func (qa *Agent) Query(sql string, vars any) (any, error) {
 			sp.LogKV("response", string(j))
 		}
 	}
+
 	return resp, err
 }
 
@@ -85,6 +86,8 @@ func init() {
 			tracer: tracer,
 		},
 	}
+
+	println("✓ Connected to SurrealDB")
 }
 
 func DB(sp opentracing.Span) *surgo.DB {

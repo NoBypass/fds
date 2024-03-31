@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/NoBypass/fds/internal/backend/service"
+	"github.com/NoBypass/fds/internal/hypixel"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/pkg/api"
 	"github.com/labstack/echo/v4"
@@ -21,9 +22,9 @@ type discordController struct {
 	service service.DiscordService
 }
 
-func NewDiscordController(config *conf.Config) DiscordController {
+func NewDiscordController(config *conf.Config, hypixelClient *hypixel.APIClient) DiscordController {
 	return &discordController{
-		service.NewDiscordService(config),
+		service.NewDiscordService(config, hypixelClient),
 	}
 }
 
@@ -51,22 +52,19 @@ func (c discordController) Verify(ctx echo.Context) error {
 		return err
 	}
 
-	var (
-		verifiedCh            = c.service.CheckIfAlreadyVerified(&input)
-		playerResBc, memberBc = c.service.FetchHypixelPlayer(verifiedCh)
-		playerBc              = c.service.VerifyHypixelSocials(memberBc.Attach(), playerResBc.Attach())
-	)
+	playerResCh, memberBc := c.service.FetchHypixelPlayer(&input)
+	playerBc, awaitVerify := c.service.VerifyHypixelSocials(memberBc.Attach(), playerResCh)
 
 	c.service.PersistPlayer(playerBc.Attach())
-	c.service.PersistMember(memberBc.Attach())
+	c.service.PersistMember(memberBc.Attach(), awaitVerify)
 	c.service.RelateMemberToPlayer(memberBc.Attach(), playerBc.Attach())
 
 	select {
 	case err := <-errCh:
 		return err
-	case actual := <-playerResBc.Attach():
+	case actual := <-playerBc.Attach():
 		return ctx.JSON(http.StatusOK, api.DiscordVerifyResponse{
-			Actual: actual.Player.DisplayName,
+			Actual: actual.Name,
 		})
 	}
 }

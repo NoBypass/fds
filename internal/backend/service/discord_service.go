@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/NoBypass/fds/internal/backend/repository"
+	"github.com/NoBypass/fds/internal/hypixel"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/utils"
@@ -12,6 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"math"
 	"math/rand"
 	"net/http"
@@ -22,13 +24,13 @@ import (
 type DiscordService interface {
 	Service
 	PersistProfile(<-chan model.MojangProfile) <-chan string
-	PersistMember(<-chan model.DiscordMember)
+	PersistMember(<-chan model.DiscordMember, <-chan struct{})
 	PersistPlayer(<-chan model.HypixelPlayer)
 	RelateMemberToPlayer(<-chan model.DiscordMember, <-chan model.HypixelPlayer)
 
 	CheckIfAlreadyVerified(*api.DiscordVerifyRequest) <-chan *api.DiscordVerifyRequest
-	VerifyHypixelSocials(<-chan model.DiscordMember, <-chan model.HypixelPlayerResponse) *utils.Broadcaster[model.HypixelPlayer]
-	FetchHypixelPlayer(<-chan *api.DiscordVerifyRequest) (*utils.Broadcaster[model.HypixelPlayerResponse], *utils.Broadcaster[model.DiscordMember])
+	VerifyHypixelSocials(<-chan model.DiscordMember, <-chan model.HypixelPlayerResponse) (*utils.Broadcaster[model.HypixelPlayer], <-chan struct{})
+	FetchHypixelPlayer(*api.DiscordVerifyRequest) (<-chan model.HypixelPlayerResponse, *utils.Broadcaster[model.DiscordMember])
 	GiveDaily(<-chan model.DiscordMember) <-chan model.DiscordMember
 	GetJWT(*api.DiscordBotLoginRequest) <-chan string
 	GetMember(id string) <-chan model.DiscordMember
@@ -39,12 +41,14 @@ type DiscordService interface {
 
 type discordService struct {
 	service
-	config *conf.Config
+	config        *conf.Config
+	hypixelClient *hypixel.APIClient
 }
 
-func NewDiscordService(config *conf.Config) DiscordService {
+func NewDiscordService(config *conf.Config, hypixelClient *hypixel.APIClient) DiscordService {
 	return &discordService{
-		config: config,
+		hypixelClient: hypixelClient,
+		config:        config,
 	}
 }
 
@@ -129,32 +133,29 @@ func (s *discordService) GetJWT(input *api.DiscordBotLoginRequest) <-chan string
 	return tokenCh
 }
 
-func (s *discordService) FetchHypixelPlayer(inputCh <-chan *api.DiscordVerifyRequest) (*utils.Broadcaster[model.HypixelPlayerResponse], *utils.Broadcaster[model.DiscordMember]) {
+func (s *discordService) FetchHypixelPlayer(input *api.DiscordVerifyRequest) (<-chan model.HypixelPlayerResponse, *utils.Broadcaster[model.DiscordMember]) {
 	playerCh := make(chan model.HypixelPlayerResponse)
 	memberCh := make(chan model.DiscordMember)
-	playerBr := utils.NewBroadcaster(playerCh)
 	memberBr := utils.NewBroadcaster(memberCh)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(playerCh)
 
-		input := <-inputCh
-		start()
-		req, err := http.NewRequest(http.MethodGet, "https://api.hypixel.net/player?name="+input.Nick, nil)
+		sp := start()
+		body, err := s.hypixelClient.Request("/player?name="+input.Nick, sp)
 		if err != nil {
 			return err
-		}
-
-		req.Header.Add("API-Key", s.config.HypixelAPIKey)
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return fmt.Errorf("hypixel: %s", err)
 		}
 
 		var player model.HypixelPlayerResponse
-		err = json.NewDecoder(resp.Body).Decode(&player)
+		err = json.NewDecoder(body).Decode(&player)
 		if err != nil {
 			return err
+		}
+
+		if !player.Success {
+			ext.LogError(sp, fmt.Errorf("%+v", player))
+			return echo.NewHTTPError(http.StatusNotFound, "hypixel: player not found")
 		}
 
 		playerCh <- player
@@ -164,41 +165,64 @@ func (s *discordService) FetchHypixelPlayer(inputCh <-chan *api.DiscordVerifyReq
 			Nick:        player.Player.DisplayName,
 			LastDailyAt: time.Now().Add(-time.Hour * 24).Format(time.RFC3339),
 		}
+
 		return nil
 	}, s.FetchHypixelPlayer)
 
-	return playerBr, memberBr
+	return playerCh, memberBr
 }
 
-func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayerResponse) *utils.Broadcaster[model.HypixelPlayer] {
+func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayerResponse) (*utils.Broadcaster[model.HypixelPlayer], <-chan struct{}) {
 	outPlayerCh := make(chan model.HypixelPlayer)
+	awaitVerify := make(chan struct{})
 	playerBr := utils.NewBroadcaster(outPlayerCh)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(outPlayerCh)
+		defer close(awaitVerify)
 
-		member := <-memberCh
-		player := <-playerCh
-		start()
+		member, ok := <-memberCh
+		player, ok2 := <-playerCh
+		if !ok || !ok2 {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+		}
+		sp := start()
 
-		if player.Success {
-			if player.Player.SocialMedia.Links.Discord == member.Name {
+		if player.Player.SocialMedia.Links.Discord == member.Name {
+			var exists bool
+			err := repository.DB(sp).Scan(&exists, `
+			RETURN (
+				SELECT * FROM (
+					SELECT <-verified_with<-discord_member AS member FROM (
+						SELECT * FROM hypixel_player 
+						WHERE string::lowercase($1)=string::lowercase(name) 
+						ORDER BY date DESC 
+						LIMIT 1
+					) FETCH member
+				).member[0]
+			)[0].discord_id=$2;`, player.Player.DisplayName, member.DiscordID)
+			if err != nil {
+				return err
+			}
+
+			if !exists {
+				awaitVerify <- struct{}{}
 				outPlayerCh <- model.HypixelPlayer{
 					UUID: player.Player.UUID,
 					Date: time.Now().Format(time.RFC3339),
 					Name: player.Player.DisplayName,
 				}
 			} else {
-				return echo.NewHTTPError(http.StatusForbidden, "discord id does not match hypixel socials")
+				return echo.NewHTTPError(http.StatusConflict, "already verified")
 			}
 		} else {
-			return echo.NewHTTPError(http.StatusNotFound, "hypixel: player not found")
+			return echo.NewHTTPError(http.StatusForbidden, "discord id does not match hypixel socials")
 		}
 
 		return nil
 	}, s.VerifyHypixelSocials)
 
-	return playerBr
+	return playerBr, awaitVerify
 }
 
 func (s *discordService) PersistProfile(profileCh <-chan model.MojangProfile) <-chan string {
@@ -227,9 +251,13 @@ func (s *discordService) PersistProfile(profileCh <-chan model.MojangProfile) <-
 	return actual
 }
 
-func (s *discordService) PersistMember(memberCh <-chan model.DiscordMember) {
+func (s *discordService) PersistMember(memberCh <-chan model.DiscordMember, awaitVerify <-chan struct{}) {
 	s.Pipeline(func(start func() opentracing.Span) error {
-		member := <-memberCh
+		member, ok := <-memberCh
+		_, ok2 := <-awaitVerify
+		if !ok || !ok2 {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+		}
 		sp := start()
 
 		res, err := repository.DB(sp).Exec("CREATE discord_member:$ CONTENT {"+
@@ -254,14 +282,17 @@ func (s *discordService) PersistMember(memberCh <-chan model.DiscordMember) {
 
 func (s *discordService) PersistPlayer(playerCh <-chan model.HypixelPlayer) {
 	s.Pipeline(func(start func() opentracing.Span) error {
-		player := <-playerCh
+		player, ok := <-playerCh
+		if !ok {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+		}
 		sp := start()
 
 		res, err := repository.DB(sp).Exec("CREATE hypixel_player:$ CONTENT {"+
 			"uuid: $uuid,"+
 			"date: $date,"+
 			"name: $name"+
-			"}", player, surgo.ID{player.UUID, player.Date})
+			"}", player, surgo.ID{player.Name, player.Date})
 		if err != nil {
 			return err
 		}
@@ -275,11 +306,14 @@ func (s *discordService) PersistPlayer(playerCh <-chan model.HypixelPlayer) {
 
 func (s *discordService) RelateMemberToPlayer(memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) {
 	s.Pipeline(func(start func() opentracing.Span) error {
-		member := <-memberCh
-		player := <-playerCh
+		member, ok := <-memberCh
+		player, ok2 := <-playerCh
+		if !ok || !ok2 {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+		}
 		sp := start()
 
-		res, err := repository.DB(sp).Exec("RELATE discord_member:$->verified_with->hypixel_player:$", surgo.ID{member.DiscordID}, surgo.ID{player.UUID})
+		res, err := repository.DB(sp).Exec("RELATE discord_member:$->verified_with->hypixel_player:$", surgo.ID{member.DiscordID}, surgo.ID{player.Name, player.Date})
 		if err != nil {
 			return err
 		}
