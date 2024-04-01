@@ -4,7 +4,7 @@ import (
 	"github.com/NoBypass/fds/internal/backend/service"
 	"github.com/NoBypass/fds/internal/hypixel"
 	"github.com/NoBypass/fds/internal/pkg/conf"
-	"github.com/NoBypass/fds/pkg/api"
+	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -46,7 +46,7 @@ func (c discordController) Member(ctx echo.Context) error {
 func (c discordController) Verify(ctx echo.Context) error {
 	errCh := c.service.Request(ctx)
 
-	var input api.DiscordVerifyRequest
+	var input model.DiscordVerifyRequest
 	err := ctx.Bind(&input)
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func (c discordController) Verify(ctx echo.Context) error {
 	case err := <-errCh:
 		return err
 	case actual := <-playerBc.Attach():
-		return ctx.JSON(http.StatusOK, api.DiscordVerifyResponse{
+		return ctx.JSON(http.StatusOK, model.DiscordVerifyResponse{
 			Actual: actual.Name,
 		})
 	}
@@ -119,7 +119,7 @@ func (c discordController) Leaderboard(ctx echo.Context) error {
 func (c discordController) BotLogin(ctx echo.Context) error {
 	errCh := c.service.Request(ctx)
 
-	var input api.DiscordBotLoginRequest
+	var input model.DiscordBotLoginRequest
 	err := ctx.Bind(&input)
 	if err != nil {
 		return err
@@ -131,7 +131,7 @@ func (c discordController) BotLogin(ctx echo.Context) error {
 	case err := <-errCh:
 		return err
 	case token := <-tokenCh:
-		return ctx.JSON(http.StatusOK, api.DiscordBotLoginResponse{
+		return ctx.JSON(http.StatusOK, model.DiscordBotLoginResponse{
 			Token: token,
 		})
 	}

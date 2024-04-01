@@ -7,7 +7,6 @@ import (
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/utils"
-	"github.com/NoBypass/fds/pkg/api"
 	"github.com/NoBypass/surgo"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -27,15 +26,15 @@ type DiscordService interface {
 	PersistPlayer(<-chan model.HypixelPlayer)
 	RelateMemberToPlayer(<-chan model.DiscordMember, <-chan model.HypixelPlayer)
 
-	CheckIfAlreadyVerified(*api.DiscordVerifyRequest) <-chan *api.DiscordVerifyRequest
+	CheckIfAlreadyVerified(*model.DiscordVerifyRequest) <-chan *model.DiscordVerifyRequest
 	VerifyHypixelSocials(<-chan model.DiscordMember, <-chan model.HypixelPlayerResponse) (*utils.Broadcaster[model.HypixelPlayer], <-chan struct{})
-	FetchHypixelPlayer(*api.DiscordVerifyRequest) (<-chan model.HypixelPlayerResponse, *utils.Broadcaster[model.DiscordMember])
+	FetchHypixelPlayer(*model.DiscordVerifyRequest) (<-chan model.HypixelPlayerResponse, *utils.Broadcaster[model.DiscordMember])
 	GiveDaily(<-chan model.DiscordMember) <-chan model.DiscordMember
-	GetJWT(*api.DiscordBotLoginRequest) <-chan string
+	GetJWT(*model.DiscordBotLoginRequest) <-chan string
 	GetMember(id string) <-chan model.DiscordMember
 	StrToInt(string) <-chan int
-	GetLeaderboard(page <-chan int) <-chan api.DiscordLeaderboardResponse
-	Revoke(id string) <-chan *api.DiscordMemberResponse
+	GetLeaderboard(page <-chan int) <-chan model.DiscordLeaderboardResponse
+	Revoke(id string) <-chan *model.DiscordMember
 }
 
 type discordService struct {
@@ -102,7 +101,7 @@ func (s *discordService) GiveDaily(memberCh <-chan model.DiscordMember) <-chan m
 	return memberCh
 }
 
-func (s *discordService) GetJWT(input *api.DiscordBotLoginRequest) <-chan string {
+func (s *discordService) GetJWT(input *model.DiscordBotLoginRequest) <-chan string {
 	tokenCh := make(chan string)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
@@ -132,7 +131,7 @@ func (s *discordService) GetJWT(input *api.DiscordBotLoginRequest) <-chan string
 	return tokenCh
 }
 
-func (s *discordService) FetchHypixelPlayer(input *api.DiscordVerifyRequest) (<-chan model.HypixelPlayerResponse, *utils.Broadcaster[model.DiscordMember]) {
+func (s *discordService) FetchHypixelPlayer(input *model.DiscordVerifyRequest) (<-chan model.HypixelPlayerResponse, *utils.Broadcaster[model.DiscordMember]) {
 	playerCh := make(chan model.HypixelPlayerResponse)
 	memberCh := make(chan model.DiscordMember)
 	memberBr := utils.NewBroadcaster(memberCh)
@@ -321,8 +320,8 @@ func (s *discordService) RelateMemberToPlayer(memberCh <-chan model.DiscordMembe
 	}, s.RelateMemberToPlayer)
 }
 
-func (s *discordService) CheckIfAlreadyVerified(input *api.DiscordVerifyRequest) <-chan *api.DiscordVerifyRequest {
-	verifiedCh := make(chan *api.DiscordVerifyRequest)
+func (s *discordService) CheckIfAlreadyVerified(input *model.DiscordVerifyRequest) <-chan *model.DiscordVerifyRequest {
+	verifiedCh := make(chan *model.DiscordVerifyRequest)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(verifiedCh)
@@ -363,8 +362,8 @@ func (s *discordService) StrToInt(input string) <-chan int {
 	return out
 }
 
-func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeaderboardResponse {
-	leaderboardCh := make(chan api.DiscordLeaderboardResponse)
+func (s *discordService) GetLeaderboard(page <-chan int) <-chan model.DiscordLeaderboardResponse {
+	leaderboardCh := make(chan model.DiscordLeaderboardResponse)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(leaderboardCh)
@@ -376,9 +375,9 @@ func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeade
 			return err
 		}
 
-		var res api.DiscordLeaderboardResponse
+		var res model.DiscordLeaderboardResponse
 		for _, m := range members {
-			res = append(res, api.DiscordLeaderboardEntry{
+			res = append(res, model.DiscordLeaderboardEntry{
 				DiscordID: m.DiscordID,
 				Level:     m.Level,
 				XP:        m.XP,
@@ -392,8 +391,8 @@ func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeade
 	return leaderboardCh
 }
 
-func (s *discordService) Revoke(id string) <-chan *api.DiscordMemberResponse {
-	out := make(chan *api.DiscordMemberResponse)
+func (s *discordService) Revoke(id string) <-chan *model.DiscordMember {
+	out := make(chan *model.DiscordMember)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(out)
@@ -404,9 +403,7 @@ func (s *discordService) Revoke(id string) <-chan *api.DiscordMemberResponse {
 		if err != nil {
 			return err
 		}
-		out <- &api.DiscordMemberResponse{
-			DiscordMember: member,
-		}
+		out <- &member
 
 		return nil
 	}, s.Revoke)
