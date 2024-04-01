@@ -1,3 +1,4 @@
+REMOVE NAMESPACE IF EXISTS fds;
 DEFINE NAMESPACE fds;
 USE NS fds;
 DEFINE DATABASE main;
@@ -19,7 +20,7 @@ DEFINE FIELD xp ON discord_member TYPE float PERMISSIONS FULL;
 DEFINE TABLE hypixel_player SCHEMAFULL PERMISSIONS NONE;
 
 DEFINE FIELD date ON hypixel_player TYPE datetime PERMISSIONS FULL;
-DEFINE FIELD dump ON hypixel_player TYPE record<unused> PERMISSIONS FULL;
+DEFINE FIELD name ON hypixel_player TYPE string PERMISSIONS FULL;
 DEFINE FIELD uuid ON hypixel_player TYPE string PERMISSIONS FULL;
 
 

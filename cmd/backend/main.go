@@ -34,11 +34,11 @@ ________________________________________________
 	hypixelClient := hypixel.NewAPIClient()
 	discordController := controller.NewDiscordController(config, hypixelClient)
 
+	e.Use(middleware.Recover())
 	e.Use(middleware.Timeout())
 	e.Use(middleware.Trace())
 	e.Use(middleware.Logger())
 	e.Use(middleware.Prepare(config))
-	e.Use(middleware.Recover())
 
 	discord := e.Group("/discord")
 	discord.Use(authService.DiscordAuthMiddleware())

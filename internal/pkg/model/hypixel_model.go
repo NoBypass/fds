@@ -23,3 +23,7 @@ type HypixelPlayer struct {
 type Unused struct {
 	Data string `json:"data"`
 }
+
+type HypixelError struct {
+	Cause string `json:"cause"`
+}

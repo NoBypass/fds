@@ -1,7 +1,9 @@
 package hypixel
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/opentracing/opentracing-go"
 	"io"
 	"net/http"
@@ -70,7 +72,12 @@ func (c *APIClient) Request(url string, sp opentracing.Span) (io.ReadCloser, err
 	c.parseRateLimit(resp.Header)
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("hypixel: %s", resp.Status)
+		var e model.HypixelError
+		err = json.NewDecoder(resp.Body).Decode(&e)
+		if err != nil {
+			return nil, fmt.Errorf("hypixel: %s", resp.Status)
+		}
+		return nil, fmt.Errorf("hypixel: %s", e.Cause)
 	}
 
 	return resp.Body, nil

@@ -10,5 +10,5 @@ COPY setup.surql .
 EXPOSE 8000
 
 CMD ["sh", "-c", "surreal start file:///var/lib/surrealdb/data"]
-# also run the following command:
+# also run the following command in the container:
 # surreal import --namespace fds --database main --endpoint http://localhost:8000 /scripts/setup.surql

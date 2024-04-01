@@ -1,9 +1,8 @@
 package service
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/NoBypass/fds/internal/backend/repository"
+	"github.com/NoBypass/fds/internal/backend/store"
 	"github.com/NoBypass/fds/internal/hypixel"
 	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/model"
@@ -60,7 +59,7 @@ func (s *discordService) GetMember(id string) <-chan model.DiscordMember {
 		sp := start()
 
 		member := new(model.DiscordMember)
-		err := repository.DB(sp).Scan(member, "SELECT * FROM ONLY discord_member:$", surgo.ID{id})
+		err := store.DB(sp).Scan(member, "SELECT * FROM ONLY discord_member:$", surgo.ID{id})
 		if err != nil {
 			return err
 		}
@@ -87,7 +86,7 @@ func (s *discordService) GiveDaily(memberCh <-chan model.DiscordMember) <-chan m
 		member.Streak++
 
 		var newMember model.DiscordMember
-		err := repository.DB(sp).Scan(&newMember, "UPDATE discord_member:$ MERGE {"+
+		err := store.DB(sp).Scan(&newMember, "UPDATE discord_member:$ MERGE {"+
 			"last_daily_at: $last_daily_at,"+
 			"xp: $xp,"+
 			"streak: $streak"+
@@ -142,13 +141,7 @@ func (s *discordService) FetchHypixelPlayer(input *api.DiscordVerifyRequest) (<-
 		defer close(playerCh)
 
 		sp := start()
-		body, err := s.hypixelClient.Request("/player?name="+input.Nick, sp)
-		if err != nil {
-			return err
-		}
-
-		var player model.HypixelPlayerResponse
-		err = json.NewDecoder(body).Decode(&player)
+		player, err := s.hypixelClient.Player(input.Nick, sp)
 		if err != nil {
 			return err
 		}
@@ -158,7 +151,7 @@ func (s *discordService) FetchHypixelPlayer(input *api.DiscordVerifyRequest) (<-
 			return echo.NewHTTPError(http.StatusNotFound, "hypixel: player not found")
 		}
 
-		playerCh <- player
+		playerCh <- *player
 		memberCh <- model.DiscordMember{
 			DiscordID:   input.ID,
 			Name:        input.Name,
@@ -181,16 +174,16 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 		defer close(outPlayerCh)
 		defer close(awaitVerify)
 
-		member, ok := <-memberCh
-		player, ok2 := <-playerCh
+		player, ok := <-playerCh
+		member, ok2 := <-memberCh
 		if !ok || !ok2 {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+			return utils.ChannelNotOkError()
 		}
 		sp := start()
 
 		if player.Player.SocialMedia.Links.Discord == member.Name {
 			var exists bool
-			err := repository.DB(sp).Scan(&exists, `
+			err := store.DB(sp).Scan(&exists, `
 			RETURN (
 				SELECT * FROM (
 					SELECT <-verified_with<-discord_member AS member FROM (
@@ -216,7 +209,7 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 				return echo.NewHTTPError(http.StatusConflict, "already verified")
 			}
 		} else {
-			return echo.NewHTTPError(http.StatusForbidden, "discord id does not match hypixel socials")
+			return echo.NewHTTPError(http.StatusForbidden, "discord tag does not match hypixel socials")
 		}
 
 		return nil
@@ -229,10 +222,13 @@ func (s *discordService) PersistProfile(profileCh <-chan model.MojangProfile) <-
 	actual := make(chan string)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		profile := <-profileCh
+		profile, ok := <-profileCh
+		if !ok {
+			return utils.ChannelNotOkError()
+		}
 		sp := start()
 
-		res, err := repository.DB(sp).Exec("CREATE mojang_profile:$ CONTENT {"+
+		res, err := store.DB(sp).Exec("CREATE mojang_profile:$ CONTENT {"+
 			"date: $date,"+
 			"uuid: $uuid,"+
 			"name: $name"+
@@ -256,11 +252,11 @@ func (s *discordService) PersistMember(memberCh <-chan model.DiscordMember, awai
 		member, ok := <-memberCh
 		_, ok2 := <-awaitVerify
 		if !ok || !ok2 {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+			return utils.ChannelNotOkError()
 		}
 		sp := start()
 
-		res, err := repository.DB(sp).Exec("CREATE discord_member:$ CONTENT {"+
+		res, err := store.DB(sp).Exec("CREATE discord_member:$ CONTENT {"+
 			"discord_id: $discord_id,"+
 			"name: $name,"+
 			"nick: $nick,"+
@@ -284,11 +280,11 @@ func (s *discordService) PersistPlayer(playerCh <-chan model.HypixelPlayer) {
 	s.Pipeline(func(start func() opentracing.Span) error {
 		player, ok := <-playerCh
 		if !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+			return utils.ChannelNotOkError()
 		}
 		sp := start()
 
-		res, err := repository.DB(sp).Exec("CREATE hypixel_player:$ CONTENT {"+
+		res, err := store.DB(sp).Exec("CREATE hypixel_player:$ CONTENT {"+
 			"uuid: $uuid,"+
 			"date: $date,"+
 			"name: $name"+
@@ -309,11 +305,11 @@ func (s *discordService) RelateMemberToPlayer(memberCh <-chan model.DiscordMembe
 		member, ok := <-memberCh
 		player, ok2 := <-playerCh
 		if !ok || !ok2 {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
+			return utils.ChannelNotOkError()
 		}
 		sp := start()
 
-		res, err := repository.DB(sp).Exec("RELATE discord_member:$->verified_with->hypixel_player:$", surgo.ID{member.DiscordID}, surgo.ID{player.Name, player.Date})
+		res, err := store.DB(sp).Exec("RELATE discord_member:$->verified_with->hypixel_player:$", surgo.ID{member.DiscordID}, surgo.ID{player.Name, player.Date})
 		if err != nil {
 			return err
 		}
@@ -332,7 +328,7 @@ func (s *discordService) CheckIfAlreadyVerified(input *api.DiscordVerifyRequest)
 		defer close(verifiedCh)
 		sp := start()
 
-		res, err := repository.DB(sp).Exec("SELECT ->verified_with FROM discord_member:$", surgo.ID{input.ID})
+		res, err := store.DB(sp).Exec("SELECT ->verified_with FROM discord_member:$", surgo.ID{input.ID})
 		if err != nil {
 			return err
 		}
@@ -375,7 +371,7 @@ func (s *discordService) GetLeaderboard(page <-chan int) <-chan api.DiscordLeade
 		sp := start()
 
 		members := make([]model.DiscordMember, 10)
-		err := repository.DB(sp).Scan(&members, "SELECT * FROM ONLY discord_member ORDER BY xp DESC LIMIT 10 OFFSET $1", 10*<-page)
+		err := store.DB(sp).Scan(&members, "SELECT * FROM ONLY discord_member ORDER BY xp DESC LIMIT 10 OFFSET $1", 10*<-page)
 		if err != nil {
 			return err
 		}
@@ -404,7 +400,7 @@ func (s *discordService) Revoke(id string) <-chan *api.DiscordMemberResponse {
 		sp := start()
 
 		var member model.DiscordMember
-		err := repository.DB(sp).Scan(&member, "DELETE ONLY discord_member:$ RETURN BEFORE", surgo.ID{id})
+		err := store.DB(sp).Scan(&member, "DELETE ONLY discord_member:$ RETURN BEFORE", surgo.ID{id})
 		if err != nil {
 			return err
 		}

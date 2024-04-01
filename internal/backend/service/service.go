@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/labstack/echo-contrib/jaegertracing"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
@@ -41,7 +42,19 @@ func (s *service) Pipeline(fn func(startTrace func() opentracing.Span) error, th
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				s.errCh <- r.(error)
+				err, ok := r.(error)
+				if !ok {
+					err = fmt.Errorf("%v", r)
+				}
+
+				stack := make([]byte, 1<<10)
+				length := runtime.Stack(stack, false)
+				stack = stack[:length]
+
+				msg := fmt.Sprintf("[PANIC RECOVER] %v %s\n", err, stack[:length])
+				s.c.Logger().Error(msg)
+
+				s.errCh <- echo.ErrInternalServerError
 				ext.LogError(sp, r.(error))
 			}
 		}()
