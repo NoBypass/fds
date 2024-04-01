@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/NoBypass/fds/internal/backend/store"
 	"github.com/NoBypass/fds/internal/hypixel"
-	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/surgo"
@@ -39,11 +38,11 @@ type DiscordService interface {
 
 type discordService struct {
 	service
-	config        *conf.Config
+	config        *utils.Config
 	hypixelClient *hypixel.APIClient
 }
 
-func NewDiscordService(config *conf.Config, hypixelClient *hypixel.APIClient) DiscordService {
+func NewDiscordService(config *utils.Config, hypixelClient *hypixel.APIClient) DiscordService {
 	return &discordService{
 		hypixelClient: hypixelClient,
 		config:        config,

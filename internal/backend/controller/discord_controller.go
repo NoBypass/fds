@@ -3,8 +3,8 @@ package controller
 import (
 	"github.com/NoBypass/fds/internal/backend/service"
 	"github.com/NoBypass/fds/internal/hypixel"
-	"github.com/NoBypass/fds/internal/pkg/conf"
 	"github.com/NoBypass/fds/internal/pkg/model"
+	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -22,7 +22,7 @@ type discordController struct {
 	service service.DiscordService
 }
 
-func NewDiscordController(config *conf.Config, hypixelClient *hypixel.APIClient) DiscordController {
+func NewDiscordController(config *utils.Config, hypixelClient *hypixel.APIClient) DiscordController {
 	return &discordController{
 		service.NewDiscordService(config, hypixelClient),
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/NoBypass/fds/internal/pkg/model"
+	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
 	"io"
 	"net/http"
@@ -21,7 +22,7 @@ type APIClient struct {
 	resetAt   time.Time
 }
 
-func NewAPIClient() *APIClient {
+func NewAPIClient(e *echo.Echo) *APIClient {
 	key := os.Getenv("HYPIXEL_API_KEY")
 	if key == "" {
 		panic("hypixel: missing api key")
@@ -36,7 +37,7 @@ func NewAPIClient() *APIClient {
 		panic(fmt.Errorf("unable to initialize hypixel client: %s", err))
 	}
 
-	println("✓ Connected to Hypixel API")
+	e.Logger.Info("✓ Connected to Hypixel API")
 	return client
 }
 
