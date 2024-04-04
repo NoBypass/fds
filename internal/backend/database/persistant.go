@@ -36,7 +36,7 @@ func (qa *Agent) Query(sql string, vars any) (any, error) {
 	if err != nil && sp != nil {
 		ext.LogError(sp, err)
 	} else if sp != nil {
-		j, err := json.Marshal(vars)
+		j, err := json.Marshal(resp)
 		if err != nil {
 			ext.LogError(sp, err)
 		} else {

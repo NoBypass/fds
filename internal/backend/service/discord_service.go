@@ -58,17 +58,16 @@ func (s *discordService) GetMember(id string) <-chan model.DiscordMember {
 	memberCh := make(chan model.DiscordMember)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		defer close(memberCh)
 		sp := start()
 
-		member := new(model.DiscordMember)
-		err := s.DB(sp).Scan(member, "SELECT * FROM ONLY discord_member:$", surgo.ID{id})
+		var member model.DiscordMember
+		err := s.DB(sp).Scan(&member, "SELECT * FROM ONLY discord_member:$", surgo.ID{id})
 		if err != nil {
 			return err
 		}
 
-		memberCh <- *member
-
+		memberCh <- member
+		close(memberCh)
 		return nil
 	}, s.GetMember)
 
@@ -79,37 +78,43 @@ func (s *discordService) GiveDaily(memberCh <-chan model.DiscordMember) <-chan m
 	out := make(chan model.DiscordMember)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		defer close(out)
-
 		member := <-memberCh
 		sp := start()
 
+		lastDaily, err := time.Parse(time.RFC3339, member.LastDailyAt)
+		if err != nil {
+			return err
+		} else if time.Since(lastDaily) < time.Hour*24 {
+			return echo.NewHTTPError(http.StatusConflict, "already claimed daily today")
+		}
+
 		member.AddXP(math.Round(rand.Float64() * 500.0 * (1.0 + float64(member.Streak)*0.1)))
-		member.LastDailyAt = time.Now().Add(-time.Hour * 24).Format(time.RFC3339)
+		member.LastDailyAt = time.Now().Format(time.RFC3339)
 		member.Streak++
 
 		var newMember model.DiscordMember
-		err := s.DB(sp).Scan(&newMember, "UPDATE discord_member:$ MERGE {"+
+		err = s.DB(sp).Scan(&newMember, "UPDATE ONLY discord_member:$ MERGE {"+
 			"last_daily_at: $last_daily_at,"+
 			"xp: $xp,"+
-			"streak: $streak"+
-			"}", member, surgo.ID{member.DiscordID})
+			"streak: $streak,"+
+			"level: $level"+
+			"} RETURN AFTER", surgo.ID{member.DiscordID}, member)
 		if err != nil {
 			return err
 		}
-		out <- newMember
 
+		out <- newMember
+		close(out)
 		return nil
 	}, s.GiveDaily)
 
-	return memberCh
+	return out
 }
 
 func (s *discordService) GetJWT(input *model.DiscordBotLoginRequest) <-chan string {
 	tokenCh := make(chan string)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		defer close(tokenCh)
 		start()
 
 		if input.Pwd == s.config.BotPwd {
@@ -129,6 +134,7 @@ func (s *discordService) GetJWT(input *model.DiscordBotLoginRequest) <-chan stri
 			return echo.NewHTTPError(http.StatusUnauthorized, "invalid password")
 		}
 
+		close(tokenCh)
 		return nil
 	}, s.GetJWT)
 
@@ -141,8 +147,6 @@ func (s *discordService) FetchHypixelPlayer(input *model.DiscordVerifyRequest) (
 	memberBr := utils.NewBroadcaster(memberCh)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		defer close(playerCh)
-
 		sp := start()
 		player, err := s.hypixelClient.Player(input.Nick, sp)
 		if err != nil {
@@ -162,6 +166,7 @@ func (s *discordService) FetchHypixelPlayer(input *model.DiscordVerifyRequest) (
 			LastDailyAt: time.Now().Add(-time.Hour * 24).Format(time.RFC3339),
 		}
 
+		close(playerCh)
 		return nil
 	}, s.FetchHypixelPlayer)
 
@@ -174,14 +179,8 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 	playerBr := utils.NewBroadcaster(outPlayerCh)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		defer close(outPlayerCh)
-		defer close(awaitVerify)
-
-		player, ok := <-playerCh
-		member, ok2 := <-memberCh
-		if !ok || !ok2 {
-			return utils.ChannelNotOkError()
-		}
+		player := <-playerCh
+		member := <-memberCh
 		sp := start()
 
 		if player.Player.SocialMedia.Links.Discord == member.Name {
@@ -215,6 +214,8 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 			return echo.NewHTTPError(http.StatusForbidden, "discord tag does not match hypixel socials")
 		}
 
+		close(outPlayerCh)
+		close(awaitVerify)
 		return nil
 	}, s.VerifyHypixelSocials)
 
@@ -225,10 +226,7 @@ func (s *discordService) PersistProfile(profileCh <-chan model.MojangProfile) <-
 	actual := make(chan string)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		profile, ok := <-profileCh
-		if !ok {
-			return utils.ChannelNotOkError()
-		}
+		profile := <-profileCh
 		sp := start()
 
 		res, err := s.DB(sp).Exec("CREATE mojang_profile:$ CONTENT {"+
@@ -244,6 +242,7 @@ func (s *discordService) PersistProfile(profileCh <-chan model.MojangProfile) <-
 		}
 
 		actual <- profile.Name
+		close(actual)
 		return nil
 	}, s.PersistProfile)
 
@@ -252,11 +251,8 @@ func (s *discordService) PersistProfile(profileCh <-chan model.MojangProfile) <-
 
 func (s *discordService) PersistMember(memberCh <-chan model.DiscordMember, awaitVerify <-chan struct{}) {
 	s.Pipeline(func(start func() opentracing.Span) error {
-		member, ok := <-memberCh
-		_, ok2 := <-awaitVerify
-		if !ok || !ok2 {
-			return utils.ChannelNotOkError()
-		}
+		member := <-memberCh
+		<-awaitVerify
 		sp := start()
 
 		res, err := s.DB(sp).Exec("CREATE discord_member:$ CONTENT {"+
@@ -281,10 +277,7 @@ func (s *discordService) PersistMember(memberCh <-chan model.DiscordMember, awai
 
 func (s *discordService) PersistPlayer(playerCh <-chan model.HypixelPlayer) {
 	s.Pipeline(func(start func() opentracing.Span) error {
-		player, ok := <-playerCh
-		if !ok {
-			return utils.ChannelNotOkError()
-		}
+		player := <-playerCh
 		sp := start()
 
 		res, err := s.DB(sp).Exec("CREATE hypixel_player:$ CONTENT {"+
@@ -305,11 +298,8 @@ func (s *discordService) PersistPlayer(playerCh <-chan model.HypixelPlayer) {
 
 func (s *discordService) RelateMemberToPlayer(memberCh <-chan model.DiscordMember, playerCh <-chan model.HypixelPlayer) {
 	s.Pipeline(func(start func() opentracing.Span) error {
-		member, ok := <-memberCh
-		player, ok2 := <-playerCh
-		if !ok || !ok2 {
-			return utils.ChannelNotOkError()
-		}
+		member := <-memberCh
+		player := <-playerCh
 		sp := start()
 
 		res, err := s.DB(sp).Exec("RELATE discord_member:$->verified_with->hypixel_player:$", surgo.ID{member.DiscordID}, surgo.ID{player.Name, player.Date})
@@ -328,7 +318,6 @@ func (s *discordService) CheckIfAlreadyVerified(input *model.DiscordVerifyReques
 	verifiedCh := make(chan *model.DiscordVerifyRequest)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		defer close(verifiedCh)
 		sp := start()
 
 		res, err := s.DB(sp).Exec("SELECT ->verified_with FROM discord_member:$", surgo.ID{input.ID})
@@ -341,6 +330,7 @@ func (s *discordService) CheckIfAlreadyVerified(input *model.DiscordVerifyReques
 			return echo.NewHTTPError(http.StatusConflict, "already verified")
 		}
 
+		close(verifiedCh)
 		return nil
 	}, s.CheckIfAlreadyVerified)
 
@@ -351,7 +341,6 @@ func (s *discordService) StrToInt(input string) <-chan int {
 	out := make(chan int)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		defer close(out)
 		start()
 
 		i, err := strconv.Atoi(input)
@@ -360,6 +349,7 @@ func (s *discordService) StrToInt(input string) <-chan int {
 		}
 		out <- i
 
+		close(out)
 		return nil
 	}, s.StrToInt)
 
@@ -370,7 +360,6 @@ func (s *discordService) GetLeaderboard(page <-chan int) <-chan []model.DiscordL
 	leaderboardCh := make(chan []model.DiscordLeaderboardEntry)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		defer close(leaderboardCh)
 		sp := start()
 
 		members := make([]model.DiscordLeaderboardEntry, 10)
@@ -380,6 +369,7 @@ func (s *discordService) GetLeaderboard(page <-chan int) <-chan []model.DiscordL
 		}
 
 		leaderboardCh <- members
+		close(leaderboardCh)
 		return nil
 	}, s.GetLeaderboard)
 
@@ -390,7 +380,6 @@ func (s *discordService) Revoke(id string) <-chan *model.DiscordMember {
 	out := make(chan *model.DiscordMember)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
-		defer close(out)
 		sp := start()
 
 		var member model.DiscordMember
@@ -404,6 +393,7 @@ func (s *discordService) Revoke(id string) <-chan *model.DiscordMember {
 		}
 		out <- &member
 
+		close(out)
 		return nil
 	}, s.Revoke)
 
