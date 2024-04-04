@@ -9,4 +9,4 @@ RUN go mod download
 
 RUN go build -o backend ./cmd/backend/main.go
 
-ENTRYPOINT ["./app"]
+ENTRYPOINT ["/app/backend"]
