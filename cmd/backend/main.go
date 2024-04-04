@@ -3,18 +3,22 @@ package main
 import (
 	"github.com/NoBypass/fds/internal/backend/auth"
 	"github.com/NoBypass/fds/internal/backend/controller"
+	"github.com/NoBypass/fds/internal/backend/database"
 	"github.com/NoBypass/fds/internal/backend/middleware"
+	"github.com/NoBypass/fds/internal/backend/service"
 	"github.com/NoBypass/fds/internal/hypixel"
 	"github.com/NoBypass/fds/internal/pkg/consts"
 	"github.com/NoBypass/fds/internal/pkg/utils"
+	"github.com/NoBypass/mincache"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "v0.5.1"
+const VERSION = "v0.5.2"
 
 func main() {
 	e := echo.New()
+	e.HideBanner = true
 	e.Logger.SetLevel(log.INFO)
 	closer := middleware.StartTracer(VERSION)
 	defer closer.Close()
@@ -28,14 +32,16 @@ Backend API for all FDS services written in ` + consts.WhiteOnCyan.Sprint(" GO "
 ________________________________________________
 `)
 
-	e.HideBanner = true
-
 	config := utils.ReadConfig()
 
-	hypixelClient := hypixel.NewAPIClient(e)
+	db := database.Connect()
+	cache := mincache.New()
+	hypixelClient := hypixel.NewAPIClient(e, cache)
 
 	authService := auth.NewService(config.JWTSecret)
-	discordController := controller.NewDiscordController(config, hypixelClient)
+	discordSvc := service.NewDiscordService(config, hypixelClient, db)
+
+	discordController := controller.NewDiscordController(discordSvc)
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.Timeout())

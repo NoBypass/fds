@@ -2,10 +2,11 @@ package service
 
 import (
 	"fmt"
-	"github.com/NoBypass/fds/internal/backend/store"
+	"github.com/NoBypass/fds/internal/backend/database"
 	"github.com/NoBypass/fds/internal/hypixel"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/utils"
+	"github.com/NoBypass/mincache"
 	"github.com/NoBypass/surgo"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -32,7 +33,7 @@ type DiscordService interface {
 	GetJWT(*model.DiscordBotLoginRequest) <-chan string
 	GetMember(id string) <-chan model.DiscordMember
 	StrToInt(string) <-chan int
-	GetLeaderboard(page <-chan int) <-chan model.DiscordLeaderboardResponse
+	GetLeaderboard(page <-chan int) <-chan []model.DiscordLeaderboardEntry
 	Revoke(id string) <-chan *model.DiscordMember
 }
 
@@ -40,12 +41,16 @@ type discordService struct {
 	service
 	config        *utils.Config
 	hypixelClient *hypixel.APIClient
+	cache         *mincache.Cache
+	db            *surgo.DB
+	database.Client
 }
 
-func NewDiscordService(config *utils.Config, hypixelClient *hypixel.APIClient) DiscordService {
+func NewDiscordService(config *utils.Config, hypixelClient *hypixel.APIClient, db database.Client) DiscordService {
 	return &discordService{
 		hypixelClient: hypixelClient,
 		config:        config,
+		Client:        db,
 	}
 }
 
@@ -57,7 +62,7 @@ func (s *discordService) GetMember(id string) <-chan model.DiscordMember {
 		sp := start()
 
 		member := new(model.DiscordMember)
-		err := store.DB(sp).Scan(member, "SELECT * FROM ONLY discord_member:$", surgo.ID{id})
+		err := s.DB(sp).Scan(member, "SELECT * FROM ONLY discord_member:$", surgo.ID{id})
 		if err != nil {
 			return err
 		}
@@ -84,7 +89,7 @@ func (s *discordService) GiveDaily(memberCh <-chan model.DiscordMember) <-chan m
 		member.Streak++
 
 		var newMember model.DiscordMember
-		err := store.DB(sp).Scan(&newMember, "UPDATE discord_member:$ MERGE {"+
+		err := s.DB(sp).Scan(&newMember, "UPDATE discord_member:$ MERGE {"+
 			"last_daily_at: $last_daily_at,"+
 			"xp: $xp,"+
 			"streak: $streak"+
@@ -181,7 +186,7 @@ func (s *discordService) VerifyHypixelSocials(memberCh <-chan model.DiscordMembe
 
 		if player.Player.SocialMedia.Links.Discord == member.Name {
 			var exists bool
-			err := store.DB(sp).Scan(&exists, `
+			err := s.DB(sp).Scan(&exists, `
 			RETURN (
 				SELECT * FROM (
 					SELECT <-verified_with<-discord_member AS member FROM (
@@ -226,7 +231,7 @@ func (s *discordService) PersistProfile(profileCh <-chan model.MojangProfile) <-
 		}
 		sp := start()
 
-		res, err := store.DB(sp).Exec("CREATE mojang_profile:$ CONTENT {"+
+		res, err := s.DB(sp).Exec("CREATE mojang_profile:$ CONTENT {"+
 			"date: $date,"+
 			"uuid: $uuid,"+
 			"name: $name"+
@@ -254,7 +259,7 @@ func (s *discordService) PersistMember(memberCh <-chan model.DiscordMember, awai
 		}
 		sp := start()
 
-		res, err := store.DB(sp).Exec("CREATE discord_member:$ CONTENT {"+
+		res, err := s.DB(sp).Exec("CREATE discord_member:$ CONTENT {"+
 			"discord_id: $discord_id,"+
 			"name: $name,"+
 			"nick: $nick,"+
@@ -282,7 +287,7 @@ func (s *discordService) PersistPlayer(playerCh <-chan model.HypixelPlayer) {
 		}
 		sp := start()
 
-		res, err := store.DB(sp).Exec("CREATE hypixel_player:$ CONTENT {"+
+		res, err := s.DB(sp).Exec("CREATE hypixel_player:$ CONTENT {"+
 			"uuid: $uuid,"+
 			"date: $date,"+
 			"name: $name"+
@@ -307,7 +312,7 @@ func (s *discordService) RelateMemberToPlayer(memberCh <-chan model.DiscordMembe
 		}
 		sp := start()
 
-		res, err := store.DB(sp).Exec("RELATE discord_member:$->verified_with->hypixel_player:$", surgo.ID{member.DiscordID}, surgo.ID{player.Name, player.Date})
+		res, err := s.DB(sp).Exec("RELATE discord_member:$->verified_with->hypixel_player:$", surgo.ID{member.DiscordID}, surgo.ID{player.Name, player.Date})
 		if err != nil {
 			return err
 		}
@@ -326,7 +331,7 @@ func (s *discordService) CheckIfAlreadyVerified(input *model.DiscordVerifyReques
 		defer close(verifiedCh)
 		sp := start()
 
-		res, err := store.DB(sp).Exec("SELECT ->verified_with FROM discord_member:$", surgo.ID{input.ID})
+		res, err := s.DB(sp).Exec("SELECT ->verified_with FROM discord_member:$", surgo.ID{input.ID})
 		if err != nil {
 			return err
 		}
@@ -361,29 +366,20 @@ func (s *discordService) StrToInt(input string) <-chan int {
 	return out
 }
 
-func (s *discordService) GetLeaderboard(page <-chan int) <-chan model.DiscordLeaderboardResponse {
-	leaderboardCh := make(chan model.DiscordLeaderboardResponse)
+func (s *discordService) GetLeaderboard(page <-chan int) <-chan []model.DiscordLeaderboardEntry {
+	leaderboardCh := make(chan []model.DiscordLeaderboardEntry)
 
 	s.Pipeline(func(start func() opentracing.Span) error {
 		defer close(leaderboardCh)
 		sp := start()
 
-		members := make([]model.DiscordMember, 10)
-		err := store.DB(sp).Scan(&members, "SELECT * FROM ONLY discord_member ORDER BY xp DESC LIMIT 10 OFFSET $1", 10*<-page)
+		members := make([]model.DiscordLeaderboardEntry, 10)
+		err := s.DB(sp).Scan(&members, "SELECT * FROM discord_member ORDER BY xp DESC LIMIT 10 START $1", 10*<-page)
 		if err != nil {
 			return err
 		}
 
-		var res model.DiscordLeaderboardResponse
-		for _, m := range members {
-			res = append(res, model.DiscordLeaderboardEntry{
-				DiscordID: m.DiscordID,
-				Level:     m.Level,
-				XP:        m.XP,
-			})
-		}
-
-		leaderboardCh <- res
+		leaderboardCh <- members
 		return nil
 	}, s.GetLeaderboard)
 
@@ -398,7 +394,11 @@ func (s *discordService) Revoke(id string) <-chan *model.DiscordMember {
 		sp := start()
 
 		var member model.DiscordMember
-		err := store.DB(sp).Scan(&member, "DELETE ONLY discord_member:$ RETURN BEFORE", surgo.ID{id})
+		_, err := s.DB(sp).Exec("DELETE person:tobie->verified_with", surgo.ID{id})
+		if err != nil {
+			return err
+		}
+		err = s.DB(sp).Scan(&member, "DELETE ONLY discord_member:$ RETURN BEFORE", surgo.ID{id})
 		if err != nil {
 			return err
 		}

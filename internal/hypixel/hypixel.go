@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/NoBypass/fds/internal/pkg/model"
+	"github.com/NoBypass/mincache"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
 	"io"
@@ -16,19 +17,21 @@ import (
 
 type APIClient struct {
 	sync.Mutex
+	cache     *mincache.Cache
 	apiKey    string
 	rateLimit int
 	remaining int
 	resetAt   time.Time
 }
 
-func NewAPIClient(e *echo.Echo) *APIClient {
+func NewAPIClient(e *echo.Echo, cache *mincache.Cache) *APIClient {
 	key := os.Getenv("HYPIXEL_API_KEY")
 	if key == "" {
 		panic("hypixel: missing api key")
 	}
 
 	client := &APIClient{
+		cache:  cache,
 		apiKey: os.Getenv("HYPIXEL_API_KEY"),
 	}
 

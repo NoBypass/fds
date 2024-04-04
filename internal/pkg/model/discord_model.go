@@ -41,9 +41,8 @@ type (
 		Date string `json:"date"`
 	}
 
-	DiscordLeaderboardResponse []DiscordLeaderboardEntry
-	DiscordLeaderboardEntry    struct {
-		DiscordID string  `json:"discord_id"`
+	DiscordLeaderboardEntry struct {
+		DiscordID string  `json:"discord_id" db:"discord_id"`
 		Level     int     `json:"level"`
 		XP        float64 `json:"xp"`
 	}

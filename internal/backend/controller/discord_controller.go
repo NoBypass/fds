@@ -2,9 +2,7 @@ package controller
 
 import (
 	"github.com/NoBypass/fds/internal/backend/service"
-	"github.com/NoBypass/fds/internal/hypixel"
 	"github.com/NoBypass/fds/internal/pkg/model"
-	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -22,9 +20,9 @@ type discordController struct {
 	service service.DiscordService
 }
 
-func NewDiscordController(config *utils.Config, hypixelClient *hypixel.APIClient) DiscordController {
+func NewDiscordController(svc service.DiscordService) DiscordController {
 	return &discordController{
-		service.NewDiscordService(config, hypixelClient),
+		svc,
 	}
 }
 
@@ -54,7 +52,6 @@ func (c discordController) Verify(ctx echo.Context) error {
 
 	playerResCh, memberBc := c.service.FetchHypixelPlayer(&input)
 	playerBc, awaitVerify := c.service.VerifyHypixelSocials(memberBc.Attach(), playerResCh)
-
 	c.service.PersistPlayer(playerBc.Attach())
 	c.service.PersistMember(memberBc.Attach(), awaitVerify)
 	c.service.RelateMemberToPlayer(memberBc.Attach(), playerBc.Attach())

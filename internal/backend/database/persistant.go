@@ -1,4 +1,4 @@
-package store
+package database
 
 import (
 	"encoding/json"
@@ -9,10 +9,6 @@ import (
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
 	"os"
-)
-
-var (
-	db *surgo.DB
 )
 
 type Agent struct {
@@ -51,12 +47,8 @@ func (qa *Agent) Query(sql string, vars any) (any, error) {
 	return resp, err
 }
 
-func (qa *Agent) Close() {
-	qa.DB.Close()
-}
-
-func init() {
-	db = surgo.MustConnect(
+func Connect() Client {
+	db := surgo.MustConnect(
 		os.Getenv("db_host"),
 		surgo.Password(os.Getenv("db_pwd")),
 		surgo.User(os.Getenv("db_user")),
@@ -88,13 +80,18 @@ func init() {
 	}
 
 	println("✓ Connected to SurrealDB")
+	return Client{db}
 }
 
-func DB(sp opentracing.Span) *surgo.DB {
+type Client struct {
+	db *surgo.DB
+}
+
+func (c Client) DB(sp opentracing.Span) *surgo.DB {
 	return &surgo.DB{
 		DB: &Agent{
-			DB:     db.DB.(*Agent).DB,
-			tracer: db.DB.(*Agent).tracer,
+			DB:     c.db.DB.(*Agent).DB,
+			tracer: c.db.DB.(*Agent).tracer,
 			sp:     sp,
 		},
 	}
