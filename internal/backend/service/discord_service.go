@@ -84,7 +84,7 @@ func (s *discordService) GiveDaily(memberCh <-chan model.DiscordMember) <-chan m
 		lastDaily, err := time.Parse(time.RFC3339, member.LastDailyAt)
 		if err != nil {
 			return err
-		} else if time.Since(lastDaily) < time.Hour*24 {
+		} else if lastDaily.After(time.Now().Truncate(time.Hour * 24)) {
 			return echo.NewHTTPError(http.StatusConflict, "already claimed daily today")
 		}
 
