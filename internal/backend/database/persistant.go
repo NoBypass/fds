@@ -2,13 +2,13 @@ package database
 
 import (
 	"encoding/json"
+	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/surgo"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
-	"os"
 )
 
 type Agent struct {
@@ -47,13 +47,13 @@ func (qa *Agent) Query(sql string, vars any) (any, error) {
 	return resp, err
 }
 
-func Connect() Client {
+func Connect(envCfg *utils.Config) Client {
 	db := surgo.MustConnect(
-		os.Getenv("db_host"),
-		surgo.Password(os.Getenv("db_pwd")),
-		surgo.User(os.Getenv("db_user")),
-		surgo.Database(os.Getenv("db_name")),
-		surgo.Namespace(os.Getenv("db_namespace")),
+		envCfg.DBHost,
+		surgo.User(envCfg.DBUser),
+		surgo.Password(envCfg.DBPwd),
+		surgo.Database(envCfg.DBName),
+		surgo.Namespace(envCfg.DBNamespace),
 	)
 
 	cfg := config.Configuration{

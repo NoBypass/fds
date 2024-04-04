@@ -32,14 +32,14 @@ Backend API for all FDS services written in ` + consts.WhiteOnCyan.Sprint(" GO "
 ________________________________________________
 `)
 
-	config := utils.ReadConfig()
+	cfg := utils.ReadConfig()
 
-	db := database.Connect()
+	db := database.Connect(cfg)
 	cache := mincache.New()
-	hypixelClient := hypixel.NewAPIClient(e, cache)
+	hypixelClient := hypixel.NewAPIClient(e, cache, cfg.HypixelAPIKey)
 
-	authService := auth.NewService(config.JWTSecret)
-	discordSvc := service.NewDiscordService(config, hypixelClient, db)
+	authService := auth.NewService(cfg.JWTSecret)
+	discordSvc := service.NewDiscordService(cfg, hypixelClient, db)
 
 	discordController := controller.NewDiscordController(discordSvc)
 
@@ -47,7 +47,7 @@ ________________________________________________
 	e.Use(middleware.Timeout())
 	e.Use(middleware.Trace())
 	e.Use(middleware.Logger())
-	e.Use(middleware.Prepare(config))
+	e.Use(middleware.Prepare(cfg))
 
 	discord := e.Group("/discord")
 	discord.Use(authService.DiscordAuthMiddleware())

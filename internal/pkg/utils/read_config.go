@@ -19,24 +19,19 @@ type Config struct {
 }
 
 func ReadConfig() *Config {
-	port, err := strconv.Atoi(os.Getenv("port"))
+	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
 		port = 8080
 	}
-	dbPort, err := strconv.Atoi(os.Getenv("db_port"))
-	if err != nil {
-		dbPort = 8000
-	}
 	return &Config{
-		HypixelAPIKey: os.Getenv("hypixel_api_key"),
-		DBNamespace:   os.Getenv("db_namespace"),
-		JWTSecret:     os.Getenv("jwt_secret"),
-		DBHost:        os.Getenv("db_host"),
-		DBUser:        os.Getenv("db_user"),
-		DBName:        os.Getenv("db_name"),
-		BotPwd:        os.Getenv("bot_pwd"),
-		DBPwd:         os.Getenv("db_pwd"),
+		HypixelAPIKey: os.Getenv("HYPIXEL_API_KEY"),
+		DBNamespace:   os.Getenv("DB_NAMESPACE"),
+		JWTSecret:     os.Getenv("JWT_SECRET"),
+		DBHost:        os.Getenv("DB_HOST"),
+		DBUser:        os.Getenv("DB_USER"),
+		DBName:        os.Getenv("DB_NAME"),
+		BotPwd:        os.Getenv("BOT_PWD"),
+		DBPwd:         os.Getenv("DB_PWD"),
 		Port:          port,
-		DBPort:        dbPort,
 	}
 }

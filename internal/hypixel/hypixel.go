@@ -9,7 +9,6 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"io"
 	"net/http"
-	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -24,15 +23,14 @@ type APIClient struct {
 	resetAt   time.Time
 }
 
-func NewAPIClient(e *echo.Echo, cache *mincache.Cache) *APIClient {
-	key := os.Getenv("HYPIXEL_API_KEY")
+func NewAPIClient(e *echo.Echo, cache *mincache.Cache, key string) *APIClient {
 	if key == "" {
 		panic("hypixel: missing api key")
 	}
 
 	client := &APIClient{
 		cache:  cache,
-		apiKey: os.Getenv("HYPIXEL_API_KEY"),
+		apiKey: key,
 	}
 
 	_, err := client.Request("/status?uuid=b876ec32e396476ba1158438d83c67d4", nil)
