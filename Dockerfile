@@ -1,4 +1,4 @@
-FROM golang:1.21.5-alpine
+FROM golang:1.22.1-alpine
 LABEL authors="NoBypass"
 
 WORKDIR /app
