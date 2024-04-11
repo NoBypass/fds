@@ -32,19 +32,19 @@ ________________________________________________
 
 	closer := middleware.StartTracer(VERSION)
 	defer closer.Close()
-	e.Logger.Info("✓ Started tracer")
+	e.Logger.Print("✓ Started tracer")
 
 	cfg := utils.ReadConfig()
-	e.Logger.Infof("✓ Loaded config %+v", cfg)
+	e.Logger.Printf("✓ Loaded config %+v", cfg)
 
 	db := database.Connect(cfg)
-	e.Logger.Info("✓ Connected to SurrealDB")
+	e.Logger.Print("✓ Connected to SurrealDB")
 
 	cache := mincache.New()
-	e.Logger.Info("✓ Started cache")
+	e.Logger.Print("✓ Started cache")
 
 	hypixelClient := hypixel.NewAPIClient(cache, cfg.HypixelAPIKey)
-	e.Logger.Info("✓ Connected to Hypixel API")
+	e.Logger.Print("✓ Connected to Hypixel API")
 
 	authService := auth.NewService(cfg.JWTSecret)
 	discordSvc := service.NewDiscordService(cfg, hypixelClient, db)

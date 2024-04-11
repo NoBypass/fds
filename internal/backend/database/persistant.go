@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/surgo"
+	"github.com/labstack/gommon/log"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/surrealdb/surrealdb.go"
@@ -48,13 +49,16 @@ func (qa *Agent) Query(sql string, vars any) (any, error) {
 }
 
 func Connect(envCfg *utils.Config) Client {
-	db := surgo.MustConnect(
+	db, err := surgo.Connect(
 		envCfg.DBHost,
 		surgo.User(envCfg.DBUser),
 		surgo.Password(envCfg.DBPwd),
 		surgo.Database(envCfg.DBName),
 		surgo.Namespace(envCfg.DBNamespace),
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	cfg := config.Configuration{
 		ServiceName: "SurrealDB",
@@ -69,7 +73,7 @@ func Connect(envCfg *utils.Config) Client {
 
 	tracer, _, err := cfg.NewTracer()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	db = &surgo.DB{
@@ -79,7 +83,6 @@ func Connect(envCfg *utils.Config) Client {
 		},
 	}
 
-	println("✓ Connected to SurrealDB")
 	return Client{db}
 }
 

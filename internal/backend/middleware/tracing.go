@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/uber/jaeger-client-go"
@@ -25,7 +26,7 @@ func StartTracer(v string) io.Closer {
 	}
 	tracer, closer, err := cfg.NewTracer()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	opentracing.SetGlobalTracer(tracer)
 	return closer
