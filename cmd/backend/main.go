@@ -7,36 +7,44 @@ import (
 	"github.com/NoBypass/fds/internal/backend/middleware"
 	"github.com/NoBypass/fds/internal/backend/service"
 	"github.com/NoBypass/fds/internal/hypixel"
-	"github.com/NoBypass/fds/internal/pkg/consts"
 	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/mincache"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/color"
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "v0.5.2"
+const VERSION = "v0.5.3"
 
 func main() {
 	e := echo.New()
 	e.HideBanner = true
 	e.Logger.SetLevel(log.INFO)
-	closer := middleware.StartTracer(VERSION)
-	defer closer.Close()
 
-	println(`
+	e.Logger.Print(`:
    _______  ____  ____
   / __/ _ \/ __/ / __/__ _____  _____ ____
  / _// // /\ \  _\ \/ -_) __/ |/ / -_) __/
-/_/ /____/___/ /___/\__/_/  |___/\__/_/   ` + consts.Purple.Sprint(VERSION) + `
-Backend API for all FDS services written in ` + consts.WhiteOnCyan.Sprint(" GO ") + `
+/_/ /____/___/ /___/\__/_/  |___/\__/_/   ` + color.Magenta(VERSION) + `
+Backend API for all FDS services written in ` + color.CyanBg(color.White(" GO ")) + `
 ________________________________________________
 `)
 
+	closer := middleware.StartTracer(VERSION)
+	defer closer.Close()
+	e.Logger.Info("✓ Started tracer")
+
 	cfg := utils.ReadConfig()
+	e.Logger.Infof("✓ Loaded config %+v", cfg)
 
 	db := database.Connect(cfg)
+	e.Logger.Info("✓ Connected to SurrealDB")
+
 	cache := mincache.New()
-	hypixelClient := hypixel.NewAPIClient(e, cache, cfg.HypixelAPIKey)
+	e.Logger.Info("✓ Started cache")
+
+	hypixelClient := hypixel.NewAPIClient(cache, cfg.HypixelAPIKey)
+	e.Logger.Info("✓ Connected to Hypixel API")
 
 	authService := auth.NewService(cfg.JWTSecret)
 	discordSvc := service.NewDiscordService(cfg, hypixelClient, db)

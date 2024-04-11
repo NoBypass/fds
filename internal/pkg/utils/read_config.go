@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 )
@@ -15,7 +14,6 @@ type Config struct {
 	DBHost         string
 	DBUser         string
 	DBName         string
-	DBPort         int
 	DBPwd          string
 	Port           int
 }
@@ -25,7 +23,7 @@ func ReadConfig() *Config {
 	if err != nil {
 		port = 8080
 	}
-	cfg := &Config{
+	return &Config{
 		JaegerEndpoint: os.Getenv("JAEGER_ENDPOINT"),
 		HypixelAPIKey:  os.Getenv("HYPIXEL_API_KEY"),
 		DBNamespace:    os.Getenv("DB_NAMESPACE"),
@@ -37,7 +35,4 @@ func ReadConfig() *Config {
 		DBPwd:          os.Getenv("DB_PWD"),
 		Port:           port,
 	}
-
-	fmt.Printf("Starting with config: %+v\n", cfg)
-	return cfg
 }

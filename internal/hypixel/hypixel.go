@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/mincache"
-	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
 	"io"
 	"net/http"
@@ -23,7 +22,7 @@ type APIClient struct {
 	resetAt   time.Time
 }
 
-func NewAPIClient(e *echo.Echo, cache *mincache.Cache, key string) *APIClient {
+func NewAPIClient(cache *mincache.Cache, key string) *APIClient {
 	if key == "" {
 		panic("hypixel: missing api key")
 	}
@@ -38,7 +37,6 @@ func NewAPIClient(e *echo.Echo, cache *mincache.Cache, key string) *APIClient {
 		panic(fmt.Errorf("unable to initialize hypixel client: %s", err))
 	}
 
-	e.Logger.Info("✓ Connected to Hypixel API")
 	return client
 }
 
