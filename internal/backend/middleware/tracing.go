@@ -11,19 +11,23 @@ import (
 	config2 "github.com/uber/jaeger-client-go/config"
 	"io"
 	"net/http"
+	"os"
 )
 
 func StartTracer(v string) io.Closer {
+	endpoint := os.Getenv("JAEGER_ENDPOINT")
 	cfg := config2.Configuration{
 		ServiceName: fmt.Sprintf("FDS backend %s", v),
 		Reporter: &config2.ReporterConfig{
-			LogSpans: true,
+			LogSpans:          true,
+			CollectorEndpoint: endpoint,
 		},
 		Sampler: &config2.SamplerConfig{
 			Type:  jaeger.SamplerTypeConst,
 			Param: 1,
 		},
 	}
+
 	tracer, closer, err := cfg.NewTracer()
 	if err != nil {
 		log.Fatal(err)

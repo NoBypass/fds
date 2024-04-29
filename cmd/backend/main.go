@@ -14,7 +14,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const VERSION = "v0.5.3"
+const VERSION = "v0.5.4"
 
 func main() {
 	e := echo.New()
@@ -32,19 +32,19 @@ ________________________________________________
 
 	closer := middleware.StartTracer(VERSION)
 	defer closer.Close()
-	e.Logger.Print("✓ Started tracer")
+	e.Logger.Info("✓ Started tracer")
 
 	cfg := utils.ReadConfig()
-	e.Logger.Printf("✓ Loaded config %+v", cfg)
+	e.Logger.Info("✓ Loaded config")
 
 	db := database.Connect(cfg)
-	e.Logger.Print("✓ Connected to SurrealDB")
+	e.Logger.Info("✓ Connected to SurrealDB")
 
 	cache := mincache.New()
-	e.Logger.Print("✓ Started cache")
+	e.Logger.Info("✓ Started cache")
 
 	hypixelClient := hypixel.NewAPIClient(cache, cfg.HypixelAPIKey)
-	e.Logger.Print("✓ Connected to Hypixel API")
+	e.Logger.Info("✓ Connected to Hypixel API")
 
 	authService := auth.NewService(cfg.JWTSecret)
 	discordSvc := service.NewDiscordService(cfg, hypixelClient, db)
