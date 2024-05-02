@@ -1,4 +1,4 @@
-package hypixel
+package external
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type APIClient struct {
+type HypixelAPIClient struct {
 	sync.Mutex
 	cache     *mincache.Cache
 	apiKey    string
@@ -23,12 +23,12 @@ type APIClient struct {
 	resetAt   time.Time
 }
 
-func NewAPIClient(cache *mincache.Cache, key string) *APIClient {
+func NewHypixelAPIClient(cache *mincache.Cache, key string) *HypixelAPIClient {
 	if key == "" {
 		log.Fatal("hypixel: missing api key")
 	}
 
-	client := &APIClient{
+	client := &HypixelAPIClient{
 		cache:  cache,
 		apiKey: key,
 	}
@@ -41,7 +41,7 @@ func NewAPIClient(cache *mincache.Cache, key string) *APIClient {
 	return client
 }
 
-func (c *APIClient) Request(url string, sp opentracing.Span) (io.ReadCloser, error) {
+func (c *HypixelAPIClient) Request(url string, sp opentracing.Span) (io.ReadCloser, error) {
 	var csp opentracing.Span
 	if sp != nil {
 		csp = opentracing.StartSpan("Hypixel API", opentracing.ChildOf(sp.Context()))
@@ -84,7 +84,7 @@ func (c *APIClient) Request(url string, sp opentracing.Span) (io.ReadCloser, err
 	return resp.Body, nil
 }
 
-func (c *APIClient) parseRateLimit(header http.Header) {
+func (c *HypixelAPIClient) parseRateLimit(header http.Header) {
 	rl, _ := strconv.Atoi(header.Get("RateLimit-Limit"))
 	r, _ := strconv.Atoi(header.Get("RateLimit-Remaining"))
 	reset, _ := strconv.Atoi(header.Get("RateLimit-Reset"))
@@ -93,4 +93,27 @@ func (c *APIClient) parseRateLimit(header http.Header) {
 	defer c.Unlock()
 
 	c.rateLimit, c.remaining, c.resetAt = rl, r, time.Now().Add(time.Duration(reset)*time.Second)
+}
+
+func (c *HypixelAPIClient) Player(name string, sp opentracing.Span) (*model.HypixelPlayerResponse, error) {
+	url := "/player?name=" + name
+
+	cached, ok := c.cache.Get(url)
+	if ok {
+		return cached.(*model.HypixelPlayerResponse), nil
+	}
+
+	body, err := c.Request(url, sp)
+	if err != nil {
+		return nil, err
+	}
+
+	var player model.HypixelPlayerResponse
+	err = json.NewDecoder(body).Decode(&player)
+	if err != nil {
+		return nil, err
+	}
+
+	c.cache.Set(url, &player, 3*time.Minute)
+	return &player, nil
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/NoBypass/fds/internal/backend/database"
 	"github.com/NoBypass/fds/internal/backend/middleware"
 	"github.com/NoBypass/fds/internal/backend/service"
-	"github.com/NoBypass/fds/internal/hypixel"
+	"github.com/NoBypass/fds/internal/external"
 	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/mincache"
 	"github.com/labstack/echo/v4"
@@ -43,7 +43,7 @@ ________________________________________________
 	cache := mincache.New()
 	e.Logger.Info("✓ Started cache")
 
-	hypixelClient := hypixel.NewAPIClient(cache, cfg.HypixelAPIKey)
+	hypixelClient := external.NewHypixelAPIClient(cache, cfg.HypixelAPIKey)
 	e.Logger.Info("✓ Connected to Hypixel API")
 
 	authService := auth.NewService(cfg.JWTSecret)

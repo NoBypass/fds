@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"github.com/NoBypass/fds/internal/backend/database"
-	"github.com/NoBypass/fds/internal/hypixel"
+	"github.com/NoBypass/fds/internal/external"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/mincache"
@@ -40,13 +40,13 @@ type DiscordService interface {
 type discordService struct {
 	service
 	config        *utils.Config
-	hypixelClient *hypixel.APIClient
+	hypixelClient *external.HypixelAPIClient
 	cache         *mincache.Cache
 	db            *surgo.DB
 	database.Client
 }
 
-func NewDiscordService(config *utils.Config, hypixelClient *hypixel.APIClient, db database.Client) DiscordService {
+func NewDiscordService(config *utils.Config, hypixelClient *external.HypixelAPIClient, db database.Client) DiscordService {
 	return &discordService{
 		hypixelClient: hypixelClient,
 		config:        config,
