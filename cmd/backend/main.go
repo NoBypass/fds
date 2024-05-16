@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/NoBypass/fds/internal/backend/auth"
 	"github.com/NoBypass/fds/internal/backend/controller"
 	"github.com/NoBypass/fds/internal/backend/database"
 	"github.com/NoBypass/fds/internal/backend/middleware"
@@ -46,25 +45,30 @@ ________________________________________________
 	hypixelClient := external.NewHypixelAPIClient(cache, cfg.HypixelAPIKey)
 	e.Logger.Info("✓ Connected to Hypixel API")
 
-	authService := auth.NewService(cfg.JWTSecret)
 	discordSvc := service.NewDiscordService(cfg, hypixelClient, db)
+	scrimsSvc := service.NewScrimsService(db, cache)
 
 	discordController := controller.NewDiscordController(discordSvc)
+	scrimsController := controller.NewScrimsController(scrimsSvc)
 
-	e.Use(middleware.Recover())
 	e.Use(middleware.Timeout())
 	e.Use(middleware.Trace())
 	e.Use(middleware.Logger())
 	e.Use(middleware.Prepare(cfg))
+	e.Use(middleware.Auth(cfg.JWTSecret))
 
 	discord := e.Group("/discord")
-	discord.Use(authService.DiscordAuthMiddleware())
 	discord.POST("/verify", discordController.Verify)
 	discord.GET("/member/:id", discordController.Member)
 	discord.PATCH("/daily/:id", discordController.Daily)
 	discord.POST("/bot-login", discordController.BotLogin)
 	discord.DELETE("/revoke/:id", discordController.Revoke)
 	discord.GET("/leaderboard/:page", discordController.Leaderboard)
+
+	scrims := e.Group("/scrims")
+	scrims.GET("/leaderboard/:page", scrimsController.Leaderboard)
+	scrims.GET("/player/:name", scrimsController.Player)
+	// scrims.GET("/scrim", )
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

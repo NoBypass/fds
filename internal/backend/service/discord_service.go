@@ -42,7 +42,6 @@ type discordService struct {
 	config        *utils.Config
 	hypixelClient *external.HypixelAPIClient
 	cache         *mincache.Cache
-	db            *surgo.DB
 	database.Client
 }
 

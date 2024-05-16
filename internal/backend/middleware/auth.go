@@ -1,4 +1,4 @@
-package auth
+package middleware
 
 import (
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -6,9 +6,9 @@ import (
 	"net/http"
 )
 
-func (s *Service) DiscordAuthMiddleware() echo.MiddlewareFunc {
+func Auth(secret string) echo.MiddlewareFunc {
 	return echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte(s.secret),
+		SigningKey: []byte(secret),
 		Skipper: func(c echo.Context) bool {
 			path := c.Path()
 			if path == "/discord/bot-login" {
