@@ -9,6 +9,7 @@ type Config struct {
 	JaegerEndpoint string
 	HypixelAPIKey  string
 	DBNamespace    string
+	Development    string
 	JWTSecret      string
 	BotPwd         string
 	DBHost         string
@@ -27,6 +28,7 @@ func ReadConfig() *Config {
 		JaegerEndpoint: os.Getenv("JAEGER_ENDPOINT"),
 		HypixelAPIKey:  os.Getenv("HYPIXEL_API_KEY"),
 		DBNamespace:    os.Getenv("DB_NAMESPACE"),
+		Development:    os.Getenv("DEVELOPMENT"),
 		JWTSecret:      os.Getenv("JWT_SECRET"),
 		DBHost:         os.Getenv("DB_HOST"),
 		DBUser:         os.Getenv("DB_USER"),

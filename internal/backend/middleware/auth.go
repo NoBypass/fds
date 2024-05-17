@@ -16,7 +16,7 @@ func Restrict(to model.AuthRole) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "no token provided")
 			}
 
-			claims := token.(*jwt.Token).Claims.(jwt.MapClaims)
+			claims := token.(*jwt.Token).Claims.(*jwt.RegisteredClaims)
 			aud, err := claims.GetAudience()
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, "invalid token")
@@ -27,7 +27,7 @@ func Restrict(to model.AuthRole) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "invalid role")
 			}
 
-			if role < to {
+			if role > to {
 				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 			}
 			return next(c)
@@ -43,8 +43,8 @@ func Auth(secret string) echo.MiddlewareFunc {
 				return next(c)
 			}
 
-			var claims jwt.MapClaims
-			token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (any, error) {
+			var claims jwt.RegisteredClaims
+			token, err := jwt.ParseWithClaims(tokenStr, &claims, func(token *jwt.Token) (any, error) {
 				return []byte(secret), nil
 			})
 			if err != nil {

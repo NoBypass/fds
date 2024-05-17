@@ -73,7 +73,6 @@ func (s *authService) BotClaims(sub string) <-chan *model.JWTClaims {
 		claims := &model.JWTClaims{
 			Sub: sub,
 			Aud: []model.AuthRole{model.RoleBot},
-			Exp: time.Now().Add(time.Hour),
 		}
 
 		out <- claims

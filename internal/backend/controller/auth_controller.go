@@ -22,7 +22,7 @@ func NewAuthController(svc service.AuthService) AuthController {
 }
 
 func (c authController) Bot(ctx echo.Context) error {
-	c.service.Request(ctx)
+	errCh := c.service.Request(ctx)
 
 	var input model.DiscordBotLoginRequest
 	err := ctx.Bind(&input)
@@ -38,7 +38,7 @@ func (c authController) Bot(ctx echo.Context) error {
 	token := c.service.SignJWT(claimsCh)
 
 	select {
-	case err := <-c.service.Error():
+	case err := <-errCh:
 		return err
 	case token := <-token:
 		return ctx.JSON(http.StatusOK, model.DiscordBotLoginResponse{

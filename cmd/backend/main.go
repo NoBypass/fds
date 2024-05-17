@@ -44,6 +44,8 @@ ________________________________________________
 	hypixelClient := external.NewHypixelAPIClient(cache, cfg.HypixelAPIKey)
 	e.Logger.Info("✓ Connected to Hypixel API")
 
+	e.Debug = cfg.Development != ""
+
 	discordSvc := service.NewDiscordService(cfg, hypixelClient, db)
 	scrimsSvc := service.NewScrimsService(db, cache)
 	authSvc := service.NewAuthService(cfg)
@@ -70,7 +72,7 @@ ________________________________________________
 	auth.POST("/bot", authController.Bot)
 
 	scrims := e.Group("/scrims")
-	scrims.Use(middleware.Restrict(model.RoleMember))
+	//scrims.Use(middleware.Restrict(model.RoleMember))
 	scrims.GET("/leaderboard/:page", scrimsController.Leaderboard)
 	scrims.GET("/player/:name", scrimsController.Player)
 	// scrims.GET("/scrim", )

@@ -12,8 +12,7 @@ import (
 )
 
 type Service interface {
-	Request(echo.Context)
-	Error() <-chan error
+	Request(echo.Context) <-chan error
 }
 
 type service struct {
@@ -21,11 +20,9 @@ type service struct {
 	c     echo.Context
 }
 
-func (s *service) Request(c echo.Context) {
+func (s *service) Request(c echo.Context) <-chan error {
 	s.c = c
-}
-
-func (s *service) Error() <-chan error {
+	s.errCh = make(chan error, 32)
 	return s.errCh
 }
 
@@ -56,9 +53,6 @@ func (s *service) Pipeline(fn func(startTrace func() opentracing.Span) error, th
 				msg := fmt.Sprintf("[PANIC RECOVER] %v %s\n", err, stack[:length])
 				s.c.Logger().Error(msg)
 
-				if s.errCh == nil {
-					s.errCh = make(chan error, 64)
-				}
 				s.errCh <- echo.ErrInternalServerError
 				ext.LogError(sp, r.(error))
 			}

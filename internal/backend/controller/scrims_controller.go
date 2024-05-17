@@ -4,6 +4,7 @@ import (
 	"github.com/NoBypass/fds/internal/backend/service"
 	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/labstack/echo/v4"
+	"net/http"
 )
 
 type ScrimsController interface {
@@ -27,20 +28,22 @@ func (c scrimsController) Leaderboard(ctx echo.Context) error {
 }
 
 func (c scrimsController) Player(ctx echo.Context) error {
+	errCh := c.service.Request(ctx)
+
 	name := ctx.Param("name")
 	conn := utils.NewSSEConn(ctx.Response())
 
 	for {
 		select {
-		case err := <-c.service.Error():
-			return err
-		case player := <-c.service.PlayerFromDB(name):
-			err := conn.Send(player)
-			if err != nil {
-				return err
-			}
+		case err := <-errCh:
+			return conn.Err(err, ctx)
+		//case player := <-c.service.PlayerFromDB(name):
+		//	err := conn.Send(http.StatusOK, player)
+		//	if err != nil {
+		//		return err
+		//	}
 		case player := <-c.service.PlayerFromAPI(name):
-			return conn.Send(player)
+			return conn.Send(http.StatusOK, player)
 		}
 	}
 }

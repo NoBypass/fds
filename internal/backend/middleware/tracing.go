@@ -104,3 +104,9 @@ func (d *responseDumper) Write(b []byte) (int, error) {
 func (d *responseDumper) GetResponse() string {
 	return d.buf.String()
 }
+
+func (d *responseDumper) Flush() {
+	if f, ok := d.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}

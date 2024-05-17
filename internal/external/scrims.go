@@ -48,7 +48,7 @@ func (c *ScrimsAPIClient) Request(url string, sp opentracing.Span) (io.ReadClose
 }
 
 func (c *ScrimsAPIClient) Player(name string, sp opentracing.Span) (*model.ScrimsPlayer, error) {
-	url := "/player?name=" + name
+	url := "/user?username=" + name
 
 	cached, ok := c.cache.Get(url)
 	if ok {
