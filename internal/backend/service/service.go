@@ -12,7 +12,7 @@ import (
 )
 
 type Service interface {
-	Request(echo.Context) <-chan error
+	Request(echo.Context)
 	Error() <-chan error
 }
 
@@ -21,11 +21,8 @@ type service struct {
 	c     echo.Context
 }
 
-func (s *service) Request(c echo.Context) <-chan error {
+func (s *service) Request(c echo.Context) {
 	s.c = c
-	ch := make(chan error, 64)
-	s.errCh = ch
-	return ch
 }
 
 func (s *service) Error() <-chan error {

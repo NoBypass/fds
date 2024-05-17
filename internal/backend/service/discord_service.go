@@ -8,7 +8,6 @@ import (
 	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/mincache"
 	"github.com/NoBypass/surgo"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -30,7 +29,6 @@ type DiscordService interface {
 	VerifyHypixelSocials(<-chan model.DiscordMember, <-chan model.HypixelPlayerResponse) (*utils.Broadcaster[model.HypixelPlayer], <-chan struct{})
 	FetchHypixelPlayer(*model.DiscordVerifyRequest) (<-chan model.HypixelPlayerResponse, *utils.Broadcaster[model.DiscordMember])
 	GiveDaily(<-chan model.DiscordMember) <-chan model.DiscordMember
-	GetJWT(*model.DiscordBotLoginRequest) <-chan string
 	GetMember(id string) <-chan model.DiscordMember
 	StrToInt(string) <-chan int
 	GetLeaderboard(page <-chan int) <-chan []model.DiscordLeaderboardEntry
@@ -108,36 +106,6 @@ func (s *discordService) GiveDaily(memberCh <-chan model.DiscordMember) <-chan m
 	}, s.GiveDaily)
 
 	return out
-}
-
-func (s *discordService) GetJWT(input *model.DiscordBotLoginRequest) <-chan string {
-	tokenCh := make(chan string)
-
-	s.Pipeline(func(start func() opentracing.Span) error {
-		start()
-
-		if input.Pwd == s.config.BotPwd {
-			claims := jwt.RegisteredClaims{
-				Issuer:   "fds",
-				Subject:  "bot",
-				Audience: []string{"bot"},
-				IssuedAt: jwt.NewNumericDate(time.Now()),
-			}
-			token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-			signedToken, err := token.SignedString([]byte(s.config.JWTSecret))
-			if err != nil {
-				return err
-			}
-			tokenCh <- signedToken
-		} else {
-			return echo.NewHTTPError(http.StatusUnauthorized, "invalid password")
-		}
-
-		close(tokenCh)
-		return nil
-	}, s.GetJWT)
-
-	return tokenCh
 }
 
 func (s *discordService) FetchHypixelPlayer(input *model.DiscordVerifyRequest) (<-chan model.HypixelPlayerResponse, *utils.Broadcaster[model.DiscordMember]) {

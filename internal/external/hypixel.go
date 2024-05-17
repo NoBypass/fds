@@ -7,6 +7,7 @@ import (
 	"github.com/NoBypass/mincache"
 	"github.com/labstack/gommon/log"
 	"github.com/opentracing/opentracing-go"
+	"golang.org/x/time/rate"
 	"io"
 	"net/http"
 	"strconv"
@@ -17,6 +18,7 @@ import (
 type HypixelAPIClient struct {
 	sync.Mutex
 	cache     *mincache.Cache
+	limiter   *rate.Limiter
 	apiKey    string
 	rateLimit int
 	remaining int

@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"fmt"
+	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"github.com/opentracing/opentracing-go"
@@ -14,10 +15,10 @@ import (
 	"os"
 )
 
-func StartTracer(v string) io.Closer {
+func StartTracer() io.Closer {
 	endpoint := os.Getenv("JAEGER_ENDPOINT")
 	cfg := config2.Configuration{
-		ServiceName: fmt.Sprintf("FDS backend %s", v),
+		ServiceName: fmt.Sprintf("FDS backend %s", utils.VERSION),
 		Reporter: &config2.ReporterConfig{
 			LogSpans:          true,
 			CollectorEndpoint: endpoint,

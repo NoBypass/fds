@@ -52,6 +52,7 @@ type (
 	}
 
 	DiscordBotLoginRequest struct {
+		Sub string `json:"sub" query:"sub"`
 		Pwd string `json:"pwd" query:"pwd"`
 	}
 )

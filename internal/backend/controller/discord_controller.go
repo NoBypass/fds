@@ -12,7 +12,6 @@ type DiscordController interface {
 	Daily(c echo.Context) error
 	Member(c echo.Context) error
 	Revoke(c echo.Context) error
-	BotLogin(c echo.Context) error
 	Leaderboard(c echo.Context) error
 }
 
@@ -27,14 +26,14 @@ func NewDiscordController(svc service.DiscordService) DiscordController {
 }
 
 func (c discordController) Member(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
+	c.service.Request(ctx)
 
 	id := ctx.Param("id")
 
 	memberCh := c.service.GetMember(id)
 
 	select {
-	case err := <-errCh:
+	case err := <-c.service.Error():
 		return err
 	case member := <-memberCh:
 		return ctx.JSON(http.StatusOK, member)
@@ -42,7 +41,7 @@ func (c discordController) Member(ctx echo.Context) error {
 }
 
 func (c discordController) Verify(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
+	c.service.Request(ctx)
 
 	var input model.DiscordVerifyRequest
 	err := ctx.Bind(&input)
@@ -57,7 +56,7 @@ func (c discordController) Verify(ctx echo.Context) error {
 	c.service.RelateMemberToPlayer(memberBc.Attach(), playerBc.Attach())
 
 	select {
-	case err := <-errCh:
+	case err := <-c.service.Error():
 		return err
 	case actual := <-playerBc.Attach():
 		return ctx.JSON(http.StatusOK, model.DiscordVerifyResponse{
@@ -67,14 +66,14 @@ func (c discordController) Verify(ctx echo.Context) error {
 }
 
 func (c discordController) Revoke(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
+	c.service.Request(ctx)
 
 	id := ctx.Param("id")
 
 	revokeCh := c.service.Revoke(id)
 
 	select {
-	case err := <-errCh:
+	case err := <-c.service.Error():
 		return err
 	case revokedMember := <-revokeCh:
 		return ctx.JSON(http.StatusOK, revokedMember)
@@ -82,7 +81,7 @@ func (c discordController) Revoke(ctx echo.Context) error {
 }
 
 func (c discordController) Daily(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
+	c.service.Request(ctx)
 
 	id := ctx.Param("id")
 
@@ -90,7 +89,7 @@ func (c discordController) Daily(ctx echo.Context) error {
 	updatedMemberCh := c.service.GiveDaily(memberCh)
 
 	select {
-	case err := <-errCh:
+	case err := <-c.service.Error():
 		return err
 	case member := <-updatedMemberCh:
 		return ctx.JSON(http.StatusOK, member)
@@ -98,7 +97,7 @@ func (c discordController) Daily(ctx echo.Context) error {
 }
 
 func (c discordController) Leaderboard(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
+	c.service.Request(ctx)
 
 	page := ctx.Param("page")
 
@@ -106,30 +105,9 @@ func (c discordController) Leaderboard(ctx echo.Context) error {
 	leaderboardCh := c.service.GetLeaderboard(pageInt)
 
 	select {
-	case err := <-errCh:
+	case err := <-c.service.Error():
 		return err
 	case leaderboard := <-leaderboardCh:
 		return ctx.JSON(http.StatusOK, leaderboard)
-	}
-}
-
-func (c discordController) BotLogin(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
-
-	var input model.DiscordBotLoginRequest
-	err := ctx.Bind(&input)
-	if err != nil {
-		return err
-	}
-
-	tokenCh := c.service.GetJWT(&input)
-
-	select {
-	case err := <-errCh:
-		return err
-	case token := <-tokenCh:
-		return ctx.JSON(http.StatusOK, model.DiscordBotLoginResponse{
-			Token: token,
-		})
 	}
 }
