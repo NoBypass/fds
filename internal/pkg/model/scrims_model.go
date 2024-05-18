@@ -1,19 +1,18 @@
 package model
 
 type ScrimsPlayerData struct {
+	UUID       string   `json:"_id"`
 	Cages      []string `json:"cages"`
 	LastLogin  int      `json:"lastLogin"`
 	LastLogout int      `json:"lastLogout"`
 	Playtime   int      `json:"playtime"`
 	Username   string   `json:"username"`
 	DiscordID  string   `json:"discordId"`
-	Ranked     struct {
-		S1 struct {
-			Elo    int `json:"elo"`
-			Games  int `json:"games"`
-			Losses int `json:"losses"`
-			Wins   int `json:"wins"`
-		} `json:"s1"`
+	Ranked     map[string]struct {
+		Elo    float64 `json:"elo"`
+		Games  int     `json:"games"`
+		Losses int     `json:"losses"`
+		Wins   int     `json:"wins"`
 	} `json:"ranked"`
 	Stats struct {
 		Bridge struct {

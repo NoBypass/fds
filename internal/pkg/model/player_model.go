@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type Player struct {
 	Name        string
 	UUID        string
@@ -8,7 +10,6 @@ type Player struct {
 }
 
 type ScrimsPlayer struct {
+	Date time.Time
 	Data *ScrimsPlayerData `json:"user_data"`
-	Date string            `json:"date"`
-	UUID string            `json:"uuid"`
 }

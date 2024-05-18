@@ -73,9 +73,9 @@ ________________________________________________
 	auth.POST("/bot", authController.Bot)
 
 	scrims := e.Group("/scrims")
-	scrims.GET("/leaderboard/:page", scrimsController.Leaderboard)
+	//scrims.GET("/leaderboard/:page", scrimsController.Leaderboard)
 	scrims.GET("/player/:name", scrimsController.Player)
-	// scrims.GET("/scrim", )
+	//scrims.GET("/scrim", )
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

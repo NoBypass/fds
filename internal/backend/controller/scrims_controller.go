@@ -45,12 +45,7 @@ func (c scrimsController) Player(ctx echo.Context) error {
 	if err != nil {
 		return err
 	} else if dbPlayer == nil || dbPlayer.UUID == "" {
-		player, err := c.mojangSvc.PlayerFromAPI(name)
-		if err != nil {
-			return err
-		}
-
-		dbPlayer, err = c.mojangSvc.PersistPlayer(player)
+		dbPlayer, err = c.service.PersistPlayer(rawPlayer)
 		if err != nil {
 			return err
 		}

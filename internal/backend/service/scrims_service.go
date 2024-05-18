@@ -14,6 +14,7 @@ import (
 type ScrimsService interface {
 	Service
 	PersistScrimsPlayer(*model.ScrimsPlayerResponse, *model.Player) (*model.ScrimsPlayerData, error)
+	PersistPlayer(*model.ScrimsPlayerResponse) (*model.Player, error)
 
 	PlayerFromDB(string) (*model.ScrimsPlayerResponse, error)
 	PlayerFromAPI(string) (*model.ScrimsPlayerResponse, error)
@@ -68,16 +69,11 @@ func (s *scrimsService) PersistScrimsPlayer(playerResp *model.ScrimsPlayerRespon
 	scrimsPlayerID := surgo.ID{dbPlayer.UUID, today}
 
 	var err error
-	givenDate, err := time.Parse(time.RFC3339, dbPlayer.ScrimsData.Date)
-	if err != nil {
-		ext.LogError(sp, err)
-		return nil, err
-	}
-
-	if dbPlayer.ScrimsData == nil || givenDate.Equal(today) {
-		_, err = s.DB(sp).Exec("CREATE scrims_player:$ CONTENT {data: $1}",
+	if dbPlayer.ScrimsData == nil || !dbPlayer.ScrimsData.Date.Equal(today) {
+		_, err = s.DB(sp).Exec("CREATE scrims_player:$ CONTENT {data: $1, date: $2}",
 			scrimsPlayerID,
-			playerResp.Data)
+			playerResp.Data,
+			today)
 	} else {
 		_, err = s.DB(sp).Exec("UPDATE scrims_player:$ SET scrims_data=$1", scrimsPlayerID, playerResp.Data)
 	}
@@ -87,11 +83,35 @@ func (s *scrimsService) PersistScrimsPlayer(playerResp *model.ScrimsPlayerRespon
 		return nil, err
 	}
 
-	_, err = s.DB(sp).Exec("UPDATE player:$ SET scrims_data=scrims_player:$", playerID, scrimsPlayerID)
+	if !dbPlayer.ScrimsData.Date.Equal(today) {
+		_, err = s.DB(sp).Exec("UPDATE player:$ SET scrims_data=scrims_player:$", playerID, scrimsPlayerID)
+		if err != nil {
+			ext.LogError(sp, err)
+			return nil, err
+		}
+	}
+
+	return playerResp.Data, nil
+}
+
+func (s *scrimsService) PersistPlayer(player *model.ScrimsPlayerResponse) (*model.Player, error) {
+	end, sp := s.Trace(s.PersistPlayer)
+	defer end()
+
+	name := strings.ToLower(player.Data.Username)
+	playerID := surgo.ID{name}
+
+	newPlayer := new(model.Player)
+	err := s.DB(sp).Scan(newPlayer, `
+	CREATE ONLY player:$ CONTENT {
+		name: $1,
+		uuid: $2,
+		display_name: $3,
+	}`, playerID, name, player.Data.UUID, player.Data.Username)
 	if err != nil {
 		ext.LogError(sp, err)
 		return nil, err
 	}
 
-	return playerResp.Data, nil
+	return newPlayer, nil
 }

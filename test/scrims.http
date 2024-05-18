@@ -1,3 +1,3 @@
 ### GET scrims player
-GET http://localhost:8080/scrims/player/nobypass
+GET http://localhost:8080/scrims/player/vetune
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmZHMgY29yZSB2MC42LjAiLCJzdWIiOiJib3QiLCJhdWQiOlsiMSJdLCJpYXQiOjE3MTU5NTM2MTh9.A86aQykxUxKKCNsZx2YjWQdsx8VNiBTDdu5-ioJe0tw
