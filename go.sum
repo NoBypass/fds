@@ -4,6 +4,14 @@ github.com/NoBypass/mincache v0.3.0 h1:to71e5gP1KN+MFvsb66KV53CthLYpNbPQG01SHa3c
 github.com/NoBypass/mincache v0.3.0/go.mod h1:HaFloHIK7qrA/w1sEPZeSSmCpDKXVXVaxXGgYvGeREs=
 github.com/NoBypass/surgo v1.3.1 h1:Cj55rTPM8LiMi60GrZ2SlSovvKZvAI4zaF0W5L/ZZ94=
 github.com/NoBypass/surgo v1.3.1/go.mod h1:VesGp3yMw4xTtfGfYOh2WcI4No7NCMyvaX5aU3DnXwE=
+github.com/NoBypass/surgo v1.3.2 h1:2qf8BZROXQK7i3GNCDm+TBtZx4xfrDkIyG4zNIQzy0g=
+github.com/NoBypass/surgo v1.3.2/go.mod h1:VesGp3yMw4xTtfGfYOh2WcI4No7NCMyvaX5aU3DnXwE=
+github.com/NoBypass/surgo v1.3.3 h1:291QvHH7xAOtTtnVo2nsTE1clDXYbdYslwvNnP8UnPE=
+github.com/NoBypass/surgo v1.3.3/go.mod h1:VesGp3yMw4xTtfGfYOh2WcI4No7NCMyvaX5aU3DnXwE=
+github.com/NoBypass/surgo v1.4.0 h1:SdsCPkX05H8JgESxqw4jWkEDVS5t6ebrnakUFrtPcXc=
+github.com/NoBypass/surgo v1.4.0/go.mod h1:VesGp3yMw4xTtfGfYOh2WcI4No7NCMyvaX5aU3DnXwE=
+github.com/NoBypass/surgo v1.5.0 h1:GEuDAgjgkU0jAV1uCkcyBczR64z/UFkCCKi/R8tsg/Y=
+github.com/NoBypass/surgo v1.5.0/go.mod h1:VesGp3yMw4xTtfGfYOh2WcI4No7NCMyvaX5aU3DnXwE=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

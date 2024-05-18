@@ -1,36 +1,38 @@
 package model
 
-type ScrimsPlayer struct {
-	Success bool `json:"success"`
-	Data    struct {
-		Cages      []string `json:"cages"`
-		LastLogin  int      `json:"lastLogin"`
-		LastLogout int      `json:"lastLogout"`
-		Playtime   int      `json:"playtime"`
-		Username   string   `json:"username"`
-		DiscordID  string   `json:"discordId"`
-		Ranked     struct {
-			S1 struct {
-				Elo    int `json:"elo"`
-				Games  int `json:"games"`
-				Losses int `json:"losses"`
-				Wins   int `json:"wins"`
-			} `json:"s1"`
-		} `json:"ranked"`
-		Stats struct {
-			Bridge struct {
-				Casual  map[string]mode `json:"casual"`
-				Duel    map[string]mode `json:"duel"`
-				Ranked  map[string]mode `json:"ranked"`
-				Private map[string]mode `json:"private"`
-				Overall overall         `json:"overall"`
-			} `json:"bridge"`
-			Tow struct {
-				Duel map[string]mode `json:"duel"`
-			} `json:"tow"`
-			Overall overall `json:"overall"`
-		} `json:"stats"`
-	} `json:"user_data"`
+type ScrimsPlayerData struct {
+	Cages      []string `json:"cages"`
+	LastLogin  int      `json:"lastLogin"`
+	LastLogout int      `json:"lastLogout"`
+	Playtime   int      `json:"playtime"`
+	Username   string   `json:"username"`
+	DiscordID  string   `json:"discordId"`
+	Ranked     struct {
+		S1 struct {
+			Elo    int `json:"elo"`
+			Games  int `json:"games"`
+			Losses int `json:"losses"`
+			Wins   int `json:"wins"`
+		} `json:"s1"`
+	} `json:"ranked"`
+	Stats struct {
+		Bridge struct {
+			Casual  map[string]mode `json:"casual"`
+			Duel    map[string]mode `json:"duel"`
+			Ranked  map[string]mode `json:"ranked"`
+			Private map[string]mode `json:"private"`
+			Overall overall         `json:"overall"`
+		} `json:"bridge"`
+		Tow struct {
+			Duel map[string]mode `json:"duel"`
+		} `json:"tow"`
+		Overall overall `json:"overall"`
+	} `json:"stats"`
+}
+
+type ScrimsPlayerResponse struct {
+	Success bool              `json:"success"`
+	Data    *ScrimsPlayerData `json:"user_data"`
 }
 
 type overall struct {

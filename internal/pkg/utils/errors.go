@@ -3,7 +3,6 @@ package utils
 import (
 	"github.com/NoBypass/surgo"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 func Error(res []surgo.Result) error {
@@ -15,6 +14,10 @@ func Error(res []surgo.Result) error {
 	return nil
 }
 
-func ChannelNotOkError() error {
-	return echo.NewHTTPError(http.StatusInternalServerError, "unexpectedly closed channel without having an error")
+type (
+	ErrMojangAPINotFound echo.HTTPError
+)
+
+func (e ErrMojangAPINotFound) Error() string {
+	return e.Message.(string)
 }

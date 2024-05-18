@@ -6,7 +6,7 @@ toolchain go1.22.1
 
 require (
 	github.com/NoBypass/mincache v0.3.0
-	github.com/NoBypass/surgo v1.3.1
+	github.com/NoBypass/surgo v1.5.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/labstack/echo-contrib v0.16.0
 	github.com/labstack/echo-jwt/v4 v4.2.0

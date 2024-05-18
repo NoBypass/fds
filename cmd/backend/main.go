@@ -48,10 +48,11 @@ ________________________________________________
 
 	discordSvc := service.NewDiscordService(cfg, hypixelClient, db)
 	scrimsSvc := service.NewScrimsService(db, cache)
+	mojangSvc := service.NewMojangService(db, cache)
 	authSvc := service.NewAuthService(cfg)
 
+	scrimsController := controller.NewScrimsController(scrimsSvc, mojangSvc)
 	discordController := controller.NewDiscordController(discordSvc)
-	scrimsController := controller.NewScrimsController(scrimsSvc)
 	authController := controller.NewAuthController(authSvc)
 
 	e.Use(middleware.Timeout())
@@ -72,7 +73,6 @@ ________________________________________________
 	auth.POST("/bot", authController.Bot)
 
 	scrims := e.Group("/scrims")
-	//scrims.Use(middleware.Restrict(model.RoleMember))
 	scrims.GET("/leaderboard/:page", scrimsController.Leaderboard)
 	scrims.GET("/player/:name", scrimsController.Player)
 	// scrims.GET("/scrim", )

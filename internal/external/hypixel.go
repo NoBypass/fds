@@ -100,7 +100,7 @@ func (c *HypixelAPIClient) parseRateLimit(header http.Header) {
 func (c *HypixelAPIClient) Player(name string, sp opentracing.Span) (*model.HypixelPlayerResponse, error) {
 	url := "/player?name=" + name
 
-	cached, ok := c.cache.Get(url)
+	cached, ok := c.cache.Get("hypixel:" + url)
 	if ok {
 		return cached.(*model.HypixelPlayerResponse), nil
 	}
@@ -116,6 +116,6 @@ func (c *HypixelAPIClient) Player(name string, sp opentracing.Span) (*model.Hypi
 		return nil, err
 	}
 
-	c.cache.Set(url, &player, 3*time.Minute)
+	c.cache.Set(url, &player, 5*time.Minute)
 	return &player, nil
 }

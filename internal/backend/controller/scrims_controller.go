@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/NoBypass/fds/internal/backend/service"
-	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -13,12 +12,14 @@ type ScrimsController interface {
 }
 
 type scrimsController struct {
-	service service.ScrimsService
+	service   service.ScrimsService
+	mojangSvc service.MojangService
 }
 
-func NewScrimsController(svc service.ScrimsService) ScrimsController {
+func NewScrimsController(svc service.ScrimsService, mojangSvc service.MojangService) ScrimsController {
 	return &scrimsController{
-		service: svc,
+		mojangSvc: mojangSvc,
+		service:   svc,
 	}
 }
 
@@ -28,22 +29,37 @@ func (c scrimsController) Leaderboard(ctx echo.Context) error {
 }
 
 func (c scrimsController) Player(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
+	c.service.Setup(ctx)
+	c.mojangSvc.Setup(ctx)
 
 	name := ctx.Param("name")
-	conn := utils.NewSSEConn(ctx.Response())
 
-	for {
-		select {
-		case err := <-errCh:
-			return conn.Err(err, ctx)
-		//case player := <-c.service.PlayerFromDB(name):
-		//	err := conn.Send(http.StatusOK, player)
-		//	if err != nil {
-		//		return err
-		//	}
-		case player := <-c.service.PlayerFromAPI(name):
-			return conn.Send(http.StatusOK, player)
+	rawPlayer, err := c.service.PlayerFromAPI(name)
+	if err != nil {
+		return err
+	} else if rawPlayer.Data == nil {
+		return echo.NewHTTPError(http.StatusNotFound, "scrims network: player not found")
+	}
+
+	dbPlayer, err := c.mojangSvc.PlayerFromDB(name, "scrims_data.date", "uuid")
+	if err != nil {
+		return err
+	} else if dbPlayer == nil || dbPlayer.UUID == "" {
+		player, err := c.mojangSvc.PlayerFromAPI(name)
+		if err != nil {
+			return err
+		}
+
+		dbPlayer, err = c.mojangSvc.PersistPlayer(player)
+		if err != nil {
+			return err
 		}
 	}
+
+	player, err := c.service.PersistScrimsPlayer(rawPlayer, dbPlayer)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(http.StatusOK, player)
 }
