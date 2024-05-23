@@ -60,6 +60,7 @@ ________________________________________________
 	e.Use(middleware.Logger())
 	e.Use(middleware.Prepare(cfg))
 	e.Use(middleware.Auth(cfg.JWTSecret))
+	e.Use(middleware.AllowOrigin(cfg))
 
 	discord := e.Group("/discord")
 	discord.Use(middleware.Restrict(model.RoleBot))
