@@ -49,9 +49,11 @@ ________________________________________________
 	discordSvc := service.NewDiscordService(cfg, hypixelClient, db)
 	scrimsSvc := service.NewScrimsService(db, cache)
 	mojangSvc := service.NewMojangService(db, cache)
+	playerSvc := service.NewPlayerService(db)
 	authSvc := service.NewAuthService(cfg)
 
 	scrimsController := controller.NewScrimsController(scrimsSvc, mojangSvc)
+	playerController := controller.NewPlayerController(playerSvc, scrimsSvc)
 	discordController := controller.NewDiscordController(discordSvc)
 	authController := controller.NewAuthController(authSvc)
 
@@ -73,9 +75,12 @@ ________________________________________________
 	auth := e.Group("/auth")
 	auth.POST("/bot", authController.Bot)
 
-	scrims := e.Group("/scrims")
+	player := e.Group("/player")
+	player.GET("/exists/:name", playerController.Exists)
+
+	scrims := player.Group("/scrims")
+	scrims.GET("/:name", scrimsController.Player)
 	//scrims.GET("/leaderboard/:page", scrimsController.Leaderboard)
-	scrims.GET("/player/:name", scrimsController.Player)
 	//scrims.GET("/scrim", )
 
 	e.Logger.Fatal(e.Start(":8080"))

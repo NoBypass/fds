@@ -36,8 +36,16 @@ func (s *service) Trace(this any) (func(), opentracing.Span) {
 	name = name[strings.LastIndex(name, ".")+1:]
 	name = name[:len(name)-3]
 
+	if s.c == nil {
+		s.c.Logger().Fatal("context is nil")
+	}
+
 	var sp opentracing.Span
 	sp = jaegertracing.CreateChildSpan(s.c, name)
+	if sp == nil {
+		s.c.Logger().Fatalf("couldn't create span %s", name)
+	}
+
 	endFn := func() {
 		sp.Finish()
 

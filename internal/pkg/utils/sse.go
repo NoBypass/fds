@@ -23,6 +23,10 @@ func NewSSEConn(resp *echo.Response) *SSEConn {
 
 func (s *SSEConn) Send(status int, data any) error {
 	s.resp.WriteHeader(status)
+	return s.Info(data)
+}
+
+func (s *SSEConn) Info(data any) error {
 	err := s.encoder.Encode(data)
 	if err != nil {
 		return err
