@@ -29,6 +29,7 @@ func (c playerController) Exists(ctx echo.Context) error {
 
 	name := ctx.Param("name")
 
+	var actual string
 	player, err := c.svc.FromDB(name)
 	if err != nil {
 		return err
@@ -39,7 +40,11 @@ func (c playerController) Exists(ctx echo.Context) error {
 		} else if player.Data == nil {
 			return echo.NewHTTPError(http.StatusNotFound, "scrims network: player not found")
 		}
+		actual = player.Data.Username
+		go c.scrimsSvc.PersistPlayer(player)
+	} else {
+		actual = player.DisplayName
 	}
 
-	return ctx.NoContent(200)
+	return ctx.String(http.StatusOK, actual)
 }
