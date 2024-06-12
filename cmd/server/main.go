@@ -6,6 +6,7 @@ import (
 	"github.com/NoBypass/fds/internal/backend/middleware"
 	"github.com/NoBypass/fds/internal/backend/service"
 	"github.com/NoBypass/fds/internal/external"
+	"github.com/NoBypass/fds/internal/frontend/renderer"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/mincache"
@@ -46,6 +47,9 @@ ________________________________________________
 
 	e.Debug = cfg.Development != ""
 
+	static := renderer.New()
+	e.Renderer = static
+
 	discordSvc := service.NewDiscordService(cfg, hypixelClient, db)
 	scrimsSvc := service.NewScrimsService(db, cache)
 	mojangSvc := service.NewMojangService(db, cache)
@@ -64,6 +68,12 @@ ________________________________________________
 	e.Use(middleware.Auth(cfg.JWTSecret))
 	e.Use(middleware.AllowOrigin(cfg))
 
+	e.GET("/", static.Index)
+	e.File("/style", "tmp/output.css")
+	e.File("/wasm_exec", "tmp/wasm_exec.js")
+	e.File("/wasm", "tmp/app.wasm")
+
+	//
 	discord := e.Group("/discord")
 	discord.Use(middleware.Restrict(model.RoleBot))
 	discord.POST("/verify", discordController.Verify)
