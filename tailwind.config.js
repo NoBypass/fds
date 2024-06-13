@@ -1,6 +1,6 @@
 module.exports = {
-  purge: ['./internal/frontend/**/*.{gohtml, js, go}'],
-  darkMode: false,
+  content: ['./internal/frontend/**/*.{gohtml, js, go}'],
+  darkMode: 'selector',
   theme: {
     extend: {},
   },

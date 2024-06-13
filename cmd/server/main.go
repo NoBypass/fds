@@ -69,7 +69,7 @@ ________________________________________________
 	e.Use(middleware.AllowOrigin(cfg))
 
 	e.GET("/", static.Index)
-	e.File("/style", "tmp/output.css")
+	e.File("/style", "tmp/tailwind.css")
 	e.File("/wasm_exec", "tmp/wasm_exec.js")
 	e.File("/wasm", "tmp/app.wasm")
 
