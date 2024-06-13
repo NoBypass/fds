@@ -3,16 +3,21 @@
     <meta charset="UTF-8">
     <title>FDS</title>
     <link rel="stylesheet" href="/style">
+    <script src="/wasm_exec"></script>
+    <script>
+        const go = new Go();
+        WebAssembly.instantiateStreaming(fetch("/wasm"), go.importObject).then((result) => {
+            go.run(result.instance);
+        });
+    </script>
 
     <style>
         ::selection {
-            background-color: rgb(79 70 229 / 0.5);
-            color: white;
+            @apply bg-indigo-500/50 text-white;
         }
 
         ::-moz-selection {
-            background-color: rgb(79 70 229 / 0.5);
-            color: white;
+            @apply bg-indigo-500/50 text-white;
         }
     </style>
 </head>

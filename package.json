@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"build:css": "postcss internal/frontend/css/style.css -o tmp/tailwind.css"
+		"build:css": "postcss internal/frontend/css/style.css -o tmp/tailwind.css",
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.4.19",

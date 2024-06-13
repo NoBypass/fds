@@ -3,9 +3,14 @@ testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
-  args_bin = []
   bin = "./tmp/main"
-  cmd = "./build.sh"
+  cmd = "go build -o tmp/main cmd/server/main.go"
+  post_cmd = [
+    "pnpm run build:css",
+    "GOOS=js GOARCH=wasm go build -o tmp/app.wasm cmd/wasm/main.go",
+    "cp \"$(go env GOROOT)/misc/wasm/wasm_exec.js\" tmp/",
+  ]
+  args_bin = []
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
@@ -20,7 +25,6 @@ tmp_dir = "tmp"
   log = "build-errors.log"
   poll = false
   poll_interval = 0
-  post_cmd = []
   pre_cmd = []
   rerun = false
   rerun_delay = 500

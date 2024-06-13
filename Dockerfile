@@ -5,8 +5,14 @@ WORKDIR /app
 
 COPY . .
 
+RUN apk add --no-cache curl
+RUN curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64
+RUN chmod +x tailwindcss-linux-x64
+RUN mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss
+
 RUN go mod download
 
-RUN go build -o backend ./cmd/backend/main.go
+RUN chmod +x ./build.sh
+RUN ./build.sh
 
-ENTRYPOINT ["/app/backend"]
+ENTRYPOINT ["/app/main"]
