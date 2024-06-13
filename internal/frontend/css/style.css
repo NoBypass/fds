@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@tailwind variants;
+
+::selection {
+    @apply bg-indigo-500/50 text-white;
+}
+
+::-moz-selection {
+    @apply bg-indigo-500/50 text-white;
+}
