@@ -1,5 +1,10 @@
 # FDS Core
 
+## TODO
+- Migrate `/discord` endpoints to not use pipelines
+- Migrate api to `/api/*`
+- Actually write the app
+
 ## Environment Variables
 - `JAEGER_ENDPOINT` - The endpoint of the Jaeger agent
 - `HYPIXEL_API_KEY` - The Hypixel API key
