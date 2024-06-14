@@ -1,8 +1,11 @@
 package main
 
-import "syscall/js"
+import (
+	"github.com/NoBypass/fds/internal/frontend/client"
+)
 
 func main() {
-	js.Global().Get("console").Call("log", "Hello, WebAssembly!")
+	go client.HandleIndex()
+
 	select {}
 }

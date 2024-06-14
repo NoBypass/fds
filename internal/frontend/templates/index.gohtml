@@ -5,6 +5,13 @@
     <link rel="stylesheet" href="/style">
     <script src="/wasm_exec"></script>
     <script>
+        window.measureValWith = function(text) {
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            ctx.font = getComputedStyle(document.getElementById("cursor")).font
+            return ctx.measureText(text).width
+        }
+
         const go = new Go();
         WebAssembly.instantiateStreaming(fetch("/wasm"), go.importObject).then((result) => {
             go.run(result.instance);
@@ -12,6 +19,38 @@
     </script>
 </head>
 <body class="bg-neutral-900 text-white h-full">
-    <p>test</p>
+    <main>
+        <section class="w-full h-screen grid place-content-center gap-28">
+            <h1 class="text-center text-5xl font-bolder">
+                The <p class="inline text-indigo-500">modern</p>
+                way<br /> to view Bridge stats
+            </h1>
+            <div class="lg:w-[35vw]">
+                <!-- TODO: dynamic outline color -->
+                <div class="cursor-text flex border px-3 rounded-lg has-[:focus]:outline has-[:focus]:outline-offset-2 outline-offset-0 duration-150 outline-1 transition-all has-[:focus]:animate-bump {colors[color]}">
+                    <!-- TODO: animated cursor  {cd ? '' : 'animate-blink'} -->
+                    <span id="cursor"
+                          class="animate-blink hidden translate-y-[8px] -translate-x-[3px] peer-focus:block absolute bg-white ml-1 w-px h-5 transition-all duration-150"></span>
+                    <input id="main-input"
+                           type="text"
+                           placeholder="Name"
+                           class="peer placeholder:text-neutral-400 py-1.5 caret-transparent w-full bg-transparent color-neutral-100 focus:outline-none">
+                    <!-- TODO: dynamic symbol -->
+                    <!-- TODO: dynamic link -->
+                    <a id="player-stats-link"
+                       href="/stats"
+                       class="translate-x-2 h-full w-10 grid place-content-center cursor-pointer duration-300 text-emerald-500/50 hover:text-emerald-500/80">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                             stroke="currentColor"
+                             class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
+                        </svg>
+                    </a>
+                </div>
+                <p class="mt-1 text-white text-xs mb-1">Enter any Minecraft username</p>
+            </div>
+        </section>
+    </main>
 </body>
 </html>
