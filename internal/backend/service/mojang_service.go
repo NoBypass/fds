@@ -53,7 +53,7 @@ func (s *mojangService) PlayerFromDB(name string, fields ...string) (*model.Play
 	player := new(model.Player)
 	err := s.DB(sp).Scan(player,
 		fmt.Sprintf("SELECT %s FROM ONLY player:$", fieldsStr.String()),
-		surgo.ID{name})
+		surgo.ID{strings.ToLower(name)})
 
 	if err != nil {
 		ext.LogError(sp, err)

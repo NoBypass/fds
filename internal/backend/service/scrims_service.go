@@ -40,7 +40,6 @@ func (s *scrimsService) PlayerFromDB(name string) (*model.ScrimsPlayerResponse, 
 	player := new(model.ScrimsPlayerResponse)
 	err := s.DB(sp).Scan(player, "SELECT scrims_data FROM ONLY player:$", surgo.ID{strings.ToLower(name)})
 	if err != nil {
-		ext.LogError(sp, err)
 		return nil, err
 	}
 
@@ -53,7 +52,6 @@ func (s *scrimsService) PlayerFromAPI(name string) (*model.ScrimsPlayerResponse,
 
 	player, err := s.apiClient.Player(name, sp)
 	if err != nil {
-		ext.LogError(sp, err)
 		return nil, err
 	}
 
@@ -86,7 +84,6 @@ func (s *scrimsService) PersistScrimsPlayer(playerResp *model.ScrimsPlayerRespon
 	if !dbPlayer.ScrimsData.Date.Equal(today) {
 		_, err = s.DB(sp).Exec("UPDATE player:$ SET scrims_data=scrims_player:$", playerID, scrimsPlayerID)
 		if err != nil {
-			ext.LogError(sp, err)
 			return nil, err
 		}
 	}
@@ -109,7 +106,6 @@ func (s *scrimsService) PersistPlayer(player *model.ScrimsPlayerResponse) (*mode
 		display_name: $3,
 	}`, playerID, name, player.Data.UUID, player.Data.Username)
 	if err != nil {
-		ext.LogError(sp, err)
 		return nil, err
 	}
 
