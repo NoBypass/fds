@@ -27,14 +27,15 @@
             </h1>
             <div class="lg:w-[35vw]">
                 <!-- TODO: dynamic outline color -->
-                <div class="cursor-text flex border px-3 rounded-lg has-[:focus]:outline has-[:focus]:outline-offset-2 outline-offset-0 duration-150 outline-1 transition-all has-[:focus]:animate-bump {colors[color]}">
-                    <!-- TODO: animated cursor  {cd ? '' : 'animate-blink'} -->
+                <!-- class="border-neutral-600 has-[:focus]:border-indigo-500 outline-indigo-900 border-emerald-600 has-[:focus]:border-emerald-500 outline-emerald-900 border-rose-600 has-[:focus]:border-rose-500 outline-rose-900" -->
+                <div id="input-wrapper"
+                     class="border-neutral-600 cursor-text flex border px-3 rounded-lg has-[:focus]:outline has-[:focus]:outline-offset-2 outline-offset-0 duration-150 outline-1 transition-all has-[:focus]:animate-bump">
                     <span id="cursor"
-                          class="animate-blink hidden translate-y-[8px] -translate-x-[3px] peer-focus:block absolute bg-white ml-1 w-px h-5 transition-all duration-150"></span>
+                          class="animate-blink hidden translate-y-[8px] -translate-x-[3px] absolute bg-white ml-1 w-px h-5 transition-all duration-150"></span>
                     <input id="main-input"
                            type="text"
                            placeholder="Name"
-                           class="peer placeholder:text-neutral-400 py-1.5 caret-transparent w-full bg-transparent color-neutral-100 focus:outline-none">
+                           class="placeholder:text-neutral-400 py-1.5 caret-transparent w-full bg-transparent color-neutral-100 focus:outline-none">
                     <!-- TODO: dynamic symbol -->
                     <!-- TODO: dynamic link -->
                     <a id="player-stats-link"
@@ -48,7 +49,7 @@
                         </svg>
                     </a>
                 </div>
-                <p class="mt-1 text-white text-xs mb-1">Enter any Minecraft username</p>
+                <p class="mt-1 text-xs mb-1 text-neutral-400">Enter any Minecraft username</p>
             </div>
         </section>
     </main>
