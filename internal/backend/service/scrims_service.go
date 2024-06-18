@@ -13,11 +13,14 @@ import (
 
 type ScrimsService interface {
 	Service
-	PersistScrimsPlayer(*model.ScrimsPlayerResponse, *model.Player) (*model.ScrimsPlayerData, error)
-	PersistPlayer(*model.ScrimsPlayerResponse) (*model.Player, error)
+	AllPlayerTimes(string) ([]*model.ScrimsPlayerTimes, error)
+	PlayerByDate(string, time.Time) (*model.ScrimsPlayer, error)
 
-	PlayerFromDB(string) (*model.ScrimsPlayerResponse, error)
-	PlayerFromAPI(string) (*model.ScrimsPlayerResponse, error)
+	PersistScrimsPlayer(*model.ScrimsPlayerAPIResponse, *model.Player) (*model.ScrimsPlayerData, error)
+	PersistPlayer(*model.ScrimsPlayerAPIResponse) (*model.Player, error)
+
+	PlayerFromDB(string) (*model.ScrimsPlayerAPIResponse, error)
+	PlayerFromAPI(string) (*model.ScrimsPlayerAPIResponse, error)
 }
 
 type scrimsService struct {
@@ -33,11 +36,41 @@ func NewScrimsService(db database.Client, cache *mincache.Cache) ScrimsService {
 	}
 }
 
-func (s *scrimsService) PlayerFromDB(name string) (*model.ScrimsPlayerResponse, error) {
+func (s *scrimsService) AllPlayerTimes(name string) ([]*model.ScrimsPlayerTimes, error) {
+	end, sp := s.Trace(s.AllPlayerTimes)
+	defer end()
+
+	entries := make([]*model.ScrimsPlayerTimes, 0)
+	err := s.DB(sp).Scan(&entries, `
+	LET $uuid = (SELECT uuid FROM ONLY player:$).uuid;
+	SELECT date, data.playtime AS playtime, data.lastLogin AS last_login, data.lastLogout AS last_logout FROM scrims_player:[$uuid, NONE]..[$uuid, time::now()];
+	`, surgo.ID{strings.ToLower(name)})
+	if err != nil {
+		return nil, err
+	}
+
+	return entries, nil
+}
+
+func (s *scrimsService) PlayerByDate(name string, date time.Time) (*model.ScrimsPlayer, error) {
+	end, sp := s.Trace(s.PlayerByDate)
+	defer end()
+
+	entry := new(model.ScrimsPlayer)
+	err := s.DB(sp).Scan(entry, `
+	SELECT * FROM ONLY scrims_player:[(SELECT uuid FROM ONLY player:$).uuid, $1]`, surgo.ID{strings.ToLower(name)}, date)
+	if err != nil {
+		return nil, err
+	}
+
+	return entry, nil
+}
+
+func (s *scrimsService) PlayerFromDB(name string) (*model.ScrimsPlayerAPIResponse, error) {
 	end, sp := s.Trace(s.PlayerFromDB)
 	defer end()
 
-	player := new(model.ScrimsPlayerResponse)
+	player := new(model.ScrimsPlayerAPIResponse)
 	err := s.DB(sp).Scan(player, "SELECT scrims_data FROM ONLY player:$", surgo.ID{strings.ToLower(name)})
 	if err != nil {
 		return nil, err
@@ -46,7 +79,7 @@ func (s *scrimsService) PlayerFromDB(name string) (*model.ScrimsPlayerResponse, 
 	return player, nil
 }
 
-func (s *scrimsService) PlayerFromAPI(name string) (*model.ScrimsPlayerResponse, error) {
+func (s *scrimsService) PlayerFromAPI(name string) (*model.ScrimsPlayerAPIResponse, error) {
 	end, sp := s.Trace(s.PlayerFromAPI)
 	defer end()
 
@@ -58,7 +91,7 @@ func (s *scrimsService) PlayerFromAPI(name string) (*model.ScrimsPlayerResponse,
 	return player, nil
 }
 
-func (s *scrimsService) PersistScrimsPlayer(playerResp *model.ScrimsPlayerResponse, dbPlayer *model.Player) (*model.ScrimsPlayerData, error) {
+func (s *scrimsService) PersistScrimsPlayer(playerResp *model.ScrimsPlayerAPIResponse, dbPlayer *model.Player) (*model.ScrimsPlayerData, error) {
 	end, sp := s.Trace(s.PersistScrimsPlayer)
 	defer end()
 
@@ -91,7 +124,7 @@ func (s *scrimsService) PersistScrimsPlayer(playerResp *model.ScrimsPlayerRespon
 	return playerResp.Data, nil
 }
 
-func (s *scrimsService) PersistPlayer(player *model.ScrimsPlayerResponse) (*model.Player, error) {
+func (s *scrimsService) PersistPlayer(player *model.ScrimsPlayerAPIResponse) (*model.Player, error) {
 	end, sp := s.Trace(s.PersistPlayer)
 	defer end()
 

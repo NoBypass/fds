@@ -38,7 +38,7 @@ func (c scrimsController) Player(ctx echo.Context) error {
 	if err != nil {
 		return err
 	} else if rawPlayer.Data == nil {
-		return echo.NewHTTPError(http.StatusNotFound, "scrims network: player not found")
+		return echo.NewHTTPError(http.StatusNotFound, "scrims network: playerTimes not found")
 	}
 
 	dbPlayer, err := c.mojangSvc.PlayerFromDB(name, "scrims_data.date", "uuid")
@@ -51,10 +51,23 @@ func (c scrimsController) Player(ctx echo.Context) error {
 		}
 	}
 
-	player, err := c.service.PersistScrimsPlayer(rawPlayer, dbPlayer)
+	_, err = c.service.PersistScrimsPlayer(rawPlayer, dbPlayer)
 	if err != nil {
 		return err
 	}
 
-	return ctx.JSON(http.StatusOK, player)
+	playerTimes, err := c.service.AllPlayerTimes(name)
+	if err != nil {
+		return err
+	}
+
+	player, err := c.service.PlayerByDate(name, playerTimes[0].Date)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(http.StatusOK, map[string]any{
+		"player": player.Data,
+		"times":  playerTimes,
+	})
 }

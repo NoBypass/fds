@@ -1,13 +1,15 @@
 package model
 
+import "time"
+
 type ScrimsPlayerData struct {
 	UUID       string   `json:"_id"`
 	Cages      []string `json:"cages"`
-	LastLogin  int      `json:"lastLogin"`
-	LastLogout int      `json:"lastLogout"`
+	LastLogin  int      `json:"lastLogin" db:"lastLogin"`
+	LastLogout int      `json:"lastLogout" db:"lastLogout"`
 	Playtime   int      `json:"playtime"`
 	Username   string   `json:"username"`
-	DiscordID  string   `json:"discordId"`
+	DiscordID  string   `json:"discordId" db:"discordId"`
 	Ranked     map[string]struct {
 		Elo    float64 `json:"elo"`
 		Games  int     `json:"games"`
@@ -29,9 +31,16 @@ type ScrimsPlayerData struct {
 	} `json:"stats"`
 }
 
-type ScrimsPlayerResponse struct {
+type ScrimsPlayerAPIResponse struct {
 	Success bool              `json:"success"`
 	Data    *ScrimsPlayerData `json:"user_data"`
+}
+
+type ScrimsPlayerTimes struct {
+	Date       time.Time `json:"date"`
+	LastLogin  int       `json:"lastLogin" db:"last_login"`
+	LastLogout int       `json:"lastLogout" db:"last_logout"`
+	Playtime   int       `json:"playtime"`
 }
 
 type overall struct {
@@ -48,16 +57,16 @@ type mode struct {
 	Draws               int     `json:"draws"`
 	Losses              int     `json:"losses"`
 	Deaths              int     `json:"deaths"`
-	ArrowsHit           int     `json:"arrowsHit"`
-	HitsGiven           int     `json:"hitsGiven"`
-	HitsTaken           int     `json:"hitsTaken"`
-	ArrowsShot          int     `json:"arrowsShot"`
-	HitsBlocked         int     `json:"hitsBlocked"`
-	BlocksPlaced        int     `json:"blocksPlaced"`
-	BlocksBroken        int     `json:"blocksBroken"`
-	GapplesEaten        int     `json:"gapplesEaten"`
-	PlayerCausedDeaths  int     `json:"playerCausedDeaths"`
-	YLevelSum           float64 `json:"yLevelSum"`
-	DamageDealt         float64 `json:"damageDealt"`
-	SecondsSpentPlaying float64 `json:"secondsSpentPlaying"`
+	ArrowsHit           int     `json:"arrowsHit" db:"arrowsHit"`
+	HitsGiven           int     `json:"hitsGiven" db:"hitsGiven"`
+	HitsTaken           int     `json:"hitsTaken" db:"hitsTaken"`
+	ArrowsShot          int     `json:"arrowsShot" db:"arrowsShot"`
+	HitsBlocked         int     `json:"hitsBlocked" db:"hitsBlocked"`
+	BlocksPlaced        int     `json:"blocksPlaced" db:"blocksPlaced"`
+	BlocksBroken        int     `json:"blocksBroken" db:"blocksBroken"`
+	GapplesEaten        int     `json:"gapplesEaten" db:"gapplesEaten"`
+	PlayerCausedDeaths  int     `json:"playerCausedDeaths" db:"playerCausedDeaths"`
+	YLevelSum           float64 `json:"yLevelSum" db:"yLevelSum"`
+	DamageDealt         float64 `json:"damageDealt" db:"damageDealt"`
+	SecondsSpentPlaying float64 `json:"secondsSpentPlaying" db:"secondsSpentPlaying"`
 }

@@ -10,6 +10,6 @@ type Player struct {
 }
 
 type ScrimsPlayer struct {
-	Date time.Time
-	Data *ScrimsPlayerData `json:"user_data"`
+	Date time.Time         `json:"date"`
+	Data *ScrimsPlayerData `json:"data"`
 }

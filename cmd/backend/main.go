@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/color"
 	"github.com/labstack/gommon/log"
+	"time"
 )
 
 func main() {
@@ -57,6 +58,8 @@ ________________________________________________
 	discordController := controller.NewDiscordController(discordSvc)
 	authController := controller.NewAuthController(authSvc)
 
+	mwc := middleware.NewCacheMiddleware(cache)
+
 	e.Use(middleware.Timeout())
 	e.Use(middleware.Trace())
 	e.Use(middleware.Logger())
@@ -65,8 +68,7 @@ ________________________________________________
 	e.Use(middleware.AllowOrigin(cfg))
 	e.Use(middleware.Error())
 
-	discord := e.Group("/discord")
-	discord.Use(middleware.Restrict(model.RoleBot))
+	discord := e.Group("/discord", middleware.Restrict(model.RoleBot))
 	discord.POST("/verify", discordController.Verify)
 	discord.GET("/member/:id", discordController.Member)
 	discord.PATCH("/daily/:id", discordController.Daily)
@@ -79,7 +81,7 @@ ________________________________________________
 	player := e.Group("/player")
 	player.GET("/exists/:name", playerController.Exists)
 
-	scrims := player.Group("/scrims")
+	scrims := player.Group("/scrims", mwc.Cache(5*time.Minute))
 	scrims.GET("/:name", scrimsController.Player)
 	//scrims.GET("/leaderboard/:page", scrimsController.Leaderboard)
 	//scrims.GET("/scrim", )

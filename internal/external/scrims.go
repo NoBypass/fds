@@ -47,12 +47,12 @@ func (c *ScrimsAPIClient) Request(url string, sp opentracing.Span) (io.ReadClose
 	return resp.Body, nil
 }
 
-func (c *ScrimsAPIClient) Player(name string, sp opentracing.Span) (*model.ScrimsPlayerResponse, error) {
+func (c *ScrimsAPIClient) Player(name string, sp opentracing.Span) (*model.ScrimsPlayerAPIResponse, error) {
 	url := "/user?username=" + name
 
 	cached, ok := c.cache.Get("scrims:" + url)
 	if ok {
-		return cached.(*model.ScrimsPlayerResponse), nil
+		return cached.(*model.ScrimsPlayerAPIResponse), nil
 	}
 
 	body, err := c.Request(url, sp)
@@ -60,7 +60,7 @@ func (c *ScrimsAPIClient) Player(name string, sp opentracing.Span) (*model.Scrim
 		return nil, err
 	}
 
-	var player model.ScrimsPlayerResponse
+	var player model.ScrimsPlayerAPIResponse
 	err = json.NewDecoder(body).Decode(&player)
 	if err != nil {
 		return nil, err
