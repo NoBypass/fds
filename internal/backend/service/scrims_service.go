@@ -42,7 +42,7 @@ func (s *scrimsService) AllPlayerTimes(name string) ([]*model.ScrimsPlayerTimes,
 
 	entries := make([]*model.ScrimsPlayerTimes, 0)
 	err := s.DB(sp).Scan(&entries, `
-	LET $uuid = (SELECT uuid FROM ONLY player:$).uuid;
+	LET $uuid = <uuid>(SELECT uuid FROM ONLY player:$).uuid;
 	SELECT date, data.playtime AS playtime, data.lastLogin AS last_login, data.lastLogout AS last_logout FROM scrims_player:[$uuid, NONE]..[$uuid, time::now()];
 	`, surgo.ID{strings.ToLower(name)})
 	if err != nil {
@@ -58,7 +58,7 @@ func (s *scrimsService) PlayerByDate(name string, date time.Time) (*model.Scrims
 
 	entry := new(model.ScrimsPlayer)
 	err := s.DB(sp).Scan(entry, `
-	SELECT * FROM ONLY scrims_player:[(SELECT uuid FROM ONLY player:$).uuid, $1]`, surgo.ID{strings.ToLower(name)}, date)
+	SELECT * FROM ONLY scrims_player:[<uuid>(SELECT uuid FROM ONLY player:$).uuid, $1]`, surgo.ID{strings.ToLower(name)}, date)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +135,7 @@ func (s *scrimsService) PersistPlayer(player *model.ScrimsPlayerAPIResponse) (*m
 	err := s.DB(sp).Scan(newPlayer, `
 	CREATE ONLY player:$ CONTENT {
 		name: $1,
-		uuid: $2,
+		uuid: <uuid>$2,
 		display_name: $3,
 	}`, playerID, name, player.Data.UUID, player.Data.Username)
 	if err != nil {

@@ -41,7 +41,11 @@ func (c playerController) Exists(ctx echo.Context) error {
 			return echo.NewHTTPError(http.StatusNotFound, "scrims network: player not found")
 		}
 		actual = player.Data.Username
-		go c.scrimsSvc.PersistPlayer(player)
+
+		_, err = c.scrimsSvc.PersistPlayer(player)
+		if err != nil {
+			return err
+		}
 	} else {
 		actual = player.DisplayName
 	}
