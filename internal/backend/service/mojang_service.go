@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"github.com/NoBypass/fds/internal/backend/database"
 	"github.com/NoBypass/fds/internal/external"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/mincache"
@@ -22,14 +21,15 @@ type MojangService interface {
 
 type mojangService struct {
 	service
+	DatabaseService
+
 	apiClient *external.MojangAPIClient
-	database.Client
 }
 
-func NewMojangService(db database.Client, cache *mincache.Cache) MojangService {
+func NewMojangService(db DatabaseService, cache *mincache.Cache) MojangService {
 	return &mojangService{
-		apiClient: external.NewMojangAPIClient(cache),
-		Client:    db,
+		apiClient:       external.NewMojangAPIClient(cache),
+		DatabaseService: db,
 	}
 }
 

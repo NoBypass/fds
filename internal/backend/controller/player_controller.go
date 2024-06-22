@@ -25,7 +25,6 @@ func NewPlayerController(svc service.PlayerService, scrimsSvc service.ScrimsServ
 
 func (c playerController) Exists(ctx echo.Context) error {
 	c.svc.Setup(ctx)
-	c.scrimsSvc.Setup(ctx)
 
 	name := ctx.Param("name")
 

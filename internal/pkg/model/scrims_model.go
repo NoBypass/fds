@@ -18,14 +18,14 @@ type ScrimsPlayerData struct {
 	} `json:"ranked"`
 	Stats struct {
 		Bridge struct {
-			Casual  map[string]mode `json:"casual"`
-			Duel    map[string]mode `json:"duel"`
-			Ranked  map[string]mode `json:"ranked"`
-			Private map[string]mode `json:"private"`
-			Overall overall         `json:"overall"`
+			Casual  map[string]ScrimsMode `json:"casual"`
+			Duel    map[string]ScrimsMode `json:"duel"`
+			Ranked  map[string]ScrimsMode `json:"ranked"`
+			Private map[string]ScrimsMode `json:"private"`
+			Overall overall               `json:"overall"`
 		} `json:"bridge"`
 		Tow struct {
-			Duel map[string]mode `json:"duel"`
+			Duel map[string]ScrimsMode `json:"duel"`
 		} `json:"tow"`
 		Overall overall `json:"overall"`
 	} `json:"stats"`
@@ -49,24 +49,24 @@ type overall struct {
 	LifetimeWinstreak int `json:"lifetimeWinstreak"`
 }
 
-type mode struct {
-	Wins                int     `json:"wins"`
-	Games               int     `json:"games"`
-	Kills               int     `json:"kills"`
-	Goals               int     `json:"goals"`
-	Draws               int     `json:"draws"`
-	Losses              int     `json:"losses"`
-	Deaths              int     `json:"deaths"`
-	ArrowsHit           int     `json:"arrowsHit" db:"arrowsHit"`
-	HitsGiven           int     `json:"hitsGiven" db:"hitsGiven"`
-	HitsTaken           int     `json:"hitsTaken" db:"hitsTaken"`
-	ArrowsShot          int     `json:"arrowsShot" db:"arrowsShot"`
-	HitsBlocked         int     `json:"hitsBlocked" db:"hitsBlocked"`
-	BlocksPlaced        int     `json:"blocksPlaced" db:"blocksPlaced"`
-	BlocksBroken        int     `json:"blocksBroken" db:"blocksBroken"`
-	GapplesEaten        int     `json:"gapplesEaten" db:"gapplesEaten"`
-	PlayerCausedDeaths  int     `json:"playerCausedDeaths" db:"playerCausedDeaths"`
-	YLevelSum           float64 `json:"yLevelSum" db:"yLevelSum"`
-	DamageDealt         float64 `json:"damageDealt" db:"damageDealt"`
-	SecondsSpentPlaying float64 `json:"secondsSpentPlaying" db:"secondsSpentPlaying"`
+type ScrimsMode struct {
+	Wins               int     `json:"wins"`
+	Games              int     `json:"games"`
+	Kills              int     `json:"kills"`
+	Goals              int     `json:"goals"`
+	Draws              int     `json:"draws"`
+	Losses             int     `json:"losses"`
+	Deaths             int     `json:"deaths"`
+	ArrowsHit          int     `json:"arrowsHit" db:"arrowsHit"`
+	HitsGiven          int     `json:"hitsGiven" db:"hitsGiven"`
+	HitsTaken          int     `json:"hitsTaken" db:"hitsTaken"`
+	ArrowsShot         int     `json:"arrowsShot" db:"arrowsShot"`
+	HitsBlocked        int     `json:"hitsBlocked" db:"hitsBlocked"`
+	BlocksPlaced       int     `json:"blocksPlaced" db:"blocksPlaced"`
+	BlocksBroken       int     `json:"blocksBroken" db:"blocksBroken"`
+	GapplesEaten       int     `json:"gapplesEaten" db:"gapplesEaten"`
+	PlayerCausedDeaths int     `json:"playerCausedDeaths" db:"playerCausedDeaths"`
+	YLevelSum          float64 `json:"yLevelSum" db:"yLevelSum"`
+	DamageDealt        float64 `json:"damageDealt" db:"damageDealt"`
+	IGT                float64 `json:"secondsSpentPlaying" db:"secondsSpentPlaying"`
 }

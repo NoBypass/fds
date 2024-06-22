@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/NoBypass/fds/internal/backend/database"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/surgo"
 	"github.com/opentracing/opentracing-go/ext"
@@ -15,12 +14,12 @@ type PlayerService interface {
 
 type playerService struct {
 	service
-	database.Client
+	DatabaseService
 }
 
-func NewPlayerService(db database.Client) PlayerService {
+func NewPlayerService(db DatabaseService) PlayerService {
 	return &playerService{
-		Client: db,
+		DatabaseService: db,
 	}
 }
 

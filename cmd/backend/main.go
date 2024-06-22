@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/NoBypass/fds/internal/backend/controller"
-	"github.com/NoBypass/fds/internal/backend/database"
 	"github.com/NoBypass/fds/internal/backend/middleware"
 	"github.com/NoBypass/fds/internal/backend/service"
 	"github.com/NoBypass/fds/internal/external"
@@ -36,9 +35,6 @@ ________________________________________________
 	cfg := utils.ReadConfig()
 	e.Logger.Info("✓ Loaded config")
 
-	db := database.Connect(cfg)
-	e.Logger.Info("✓ Connected to SurrealDB")
-
 	cache := mincache.New()
 	e.Logger.Info("✓ Started cache")
 
@@ -47,13 +43,15 @@ ________________________________________________
 
 	e.Debug = cfg.Development != ""
 
-	discordSvc := service.NewDiscordService(cfg, hypixelClient, db)
-	scrimsSvc := service.NewScrimsService(db, cache)
-	mojangSvc := service.NewMojangService(db, cache)
-	playerSvc := service.NewPlayerService(db)
+	databaseSvc := service.NewDatabaseService(cfg)
+	discordSvc := service.NewDiscordService(cfg, hypixelClient, databaseSvc)
+	scrimsSvc := service.NewScrimsService(databaseSvc, cache)
+	mojangSvc := service.NewMojangService(databaseSvc, cache)
+	playerSvc := service.NewPlayerService(databaseSvc)
 	authSvc := service.NewAuthService(cfg)
+	minecraftSvc := service.NewMinecraftService(databaseSvc, scrimsSvc)
 
-	scrimsController := controller.NewScrimsController(scrimsSvc, mojangSvc)
+	scrimsController := controller.NewScrimsController(scrimsSvc, mojangSvc, minecraftSvc)
 	playerController := controller.NewPlayerController(playerSvc, scrimsSvc)
 	discordController := controller.NewDiscordController(discordSvc)
 	authController := controller.NewAuthController(authSvc)
@@ -61,12 +59,13 @@ ________________________________________________
 	mwc := middleware.NewCacheMiddleware(cache)
 
 	e.Use(middleware.Timeout())
-	e.Use(middleware.Trace())
 	e.Use(middleware.Logger())
 	e.Use(middleware.Prepare(cfg))
 	e.Use(middleware.Auth(cfg.JWTSecret))
 	e.Use(middleware.AllowOrigin(cfg))
+	e.Use(middleware.Trace())
 	e.Use(middleware.Error())
+	e.Use(middleware.Recover())
 
 	discord := e.Group("/discord", middleware.Restrict(model.RoleBot))
 	discord.POST("/verify", discordController.Verify)
@@ -83,6 +82,7 @@ ________________________________________________
 
 	scrims := player.Group("/scrims", mwc.Cache(5*time.Minute))
 	scrims.GET("/:name", scrimsController.Player)
+	scrims.GET("/:name/overview", scrimsController.Overview)
 	//scrims.GET("/leaderboard/:page", scrimsController.Leaderboard)
 	//scrims.GET("/scrim", )
 

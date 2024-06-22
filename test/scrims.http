@@ -4,3 +4,6 @@ Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmZHMgY29yZSB2MC42
 
 ### Check if player exists
 GET http://localhost:8080/player/exists/nobypass
+
+### GET scrims player overview
+GET http://localhost:8080/player/scrims/nobypass/overview
