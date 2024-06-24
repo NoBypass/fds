@@ -5,6 +5,7 @@ import (
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strconv"
 )
 
 type DiscordController interface {
@@ -25,89 +26,100 @@ func NewDiscordController(svc service.DiscordService) DiscordController {
 	}
 }
 
-func (c discordController) Member(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
+func (ct discordController) Member(c echo.Context) error {
+	id := c.Param("id")
 
-	id := ctx.Param("id")
-
-	memberCh := c.service.GetMember(id)
-
-	select {
-	case err := <-errCh:
-		return err
-	case member := <-memberCh:
-		return ctx.JSON(http.StatusOK, member)
-	}
-}
-
-func (c discordController) Verify(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
-
-	var input model.DiscordVerifyRequest
-	err := ctx.Bind(&input)
+	memberCh, err := ct.service.GetMember(c.Request().Context(), id)
 	if err != nil {
 		return err
 	}
 
-	playerResCh, memberBc := c.service.FetchHypixelPlayer(&input)
-	playerBc, awaitVerify := c.service.VerifyHypixelSocials(memberBc.Attach(), playerResCh)
-	c.service.PersistPlayer(playerBc.Attach())
-	c.service.PersistMember(memberBc.Attach(), awaitVerify)
-	c.service.RelateMemberToPlayer(memberBc.Attach(), playerBc.Attach())
-
-	select {
-	case err := <-errCh:
-		return err
-	case actual := <-playerBc.Attach():
-		return ctx.JSON(http.StatusOK, model.DiscordVerifyResponse{
-			Actual: actual.Name,
-		})
-	}
+	return c.JSON(http.StatusOK, memberCh)
 }
 
-func (c discordController) Revoke(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
+func (ct discordController) Verify(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	id := ctx.Param("id")
-
-	revokeCh := c.service.Revoke(id)
-
-	select {
-	case err := <-errCh:
-		return err
-	case revokedMember := <-revokeCh:
-		return ctx.JSON(http.StatusOK, revokedMember)
+	var input model.DiscordVerifyRequest
+	err := c.Bind(&input)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request")
 	}
+
+	playerRes, member, err := ct.service.FetchHypixelPlayer(ctx, &input)
+	if err != nil {
+		return err
+	}
+
+	// TODO check socials with db and scrims as well
+	player, err := ct.service.VerifyHypixelSocials(ctx, member, playerRes)
+	if err != nil {
+		return err
+	}
+
+	// TODO implement already exists check
+	err = ct.service.PersistPlayer(ctx, player)
+	if err != nil {
+		return err
+	}
+
+	// TODO parallelize
+	err = ct.service.PersistMember(ctx, member)
+	if err != nil {
+		return err
+	}
+
+	err = ct.service.RelateMemberToPlayer(ctx, member, player)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, map[string]any{
+		"actual": player.Name,
+	})
 }
 
-func (c discordController) Daily(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
+func (ct discordController) Revoke(c echo.Context) error {
+	id := c.Param("id")
 
-	id := ctx.Param("id")
-
-	memberCh := c.service.GetMember(id)
-	updatedMemberCh := c.service.GiveDaily(memberCh)
-
-	select {
-	case err := <-errCh:
+	member, err := ct.service.Revoke(c.Request().Context(), id)
+	if err != nil {
 		return err
-	case member := <-updatedMemberCh:
-		return ctx.JSON(http.StatusOK, member)
 	}
+
+	return c.JSON(http.StatusOK, member)
 }
 
-func (c discordController) Leaderboard(ctx echo.Context) error {
-	errCh := c.service.Request(ctx)
+func (ct discordController) Daily(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	page := ctx.Param("page")
+	id := c.Param("id")
 
-	pageInt := c.service.StrToInt(page)
-	leaderboardCh := c.service.GetLeaderboard(pageInt)
-
-	select {
-	case err := <-errCh:
+	member, err := ct.service.GetMember(ctx, id)
+	if err != nil {
 		return err
-	case leaderboard := <-leaderboardCh:
-		return ctx.JSON(http.StatusOK, leaderboard)
 	}
+
+	err = ct.service.GiveDaily(ctx, member)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, member)
+}
+
+func (ct discordController) Leaderboard(c echo.Context) error {
+	page := c.Param("page")
+
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid page number")
+	}
+
+	member, err := ct.service.GetLeaderboard(c.Request().Context(), pageInt)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, member)
 }
