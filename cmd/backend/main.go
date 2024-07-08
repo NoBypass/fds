@@ -4,7 +4,6 @@ import (
 	"github.com/NoBypass/fds/internal/backend/controller"
 	"github.com/NoBypass/fds/internal/backend/middleware"
 	"github.com/NoBypass/fds/internal/backend/service"
-	"github.com/NoBypass/fds/internal/external"
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/mincache"
@@ -38,13 +37,14 @@ ________________________________________________
 	cache := mincache.New()
 	e.Logger.Info("✓ Started cache")
 
-	hypixelClient := external.NewHypixelAPIClient(cache, cfg.HypixelAPIKey)
-	e.Logger.Info("✓ Connected to Hypixel API")
+	//hypixelClient := external.NewHypixelAPIClient(cache, cfg.HypixelAPIKey)
+	//e.Logger.Info("✓ Connected to Hypixel API")
 
 	e.Debug = cfg.Development != ""
 
 	databaseSvc := service.NewDatabaseService(cfg)
-	discordSvc := service.NewDiscordService(cfg, hypixelClient, databaseSvc)
+	//discordSvc := service.NewDiscordService(cfg, hypixelClient, databaseSvc)
+	discordSvc := service.NewDiscordService(cfg, nil, databaseSvc)
 	scrimsSvc := service.NewScrimsService(databaseSvc, cache)
 	mojangSvc := service.NewMojangService(databaseSvc, cache)
 	playerSvc := service.NewPlayerService(databaseSvc)
@@ -58,11 +58,11 @@ ________________________________________________
 
 	mwc := middleware.NewCacheMiddleware(cache)
 
+	e.Use(middleware.AllowOrigin(cfg))
 	e.Use(middleware.Timeout())
 	e.Use(middleware.Logger())
 	e.Use(middleware.Prepare(cfg))
 	e.Use(middleware.Auth(cfg.JWTSecret))
-	e.Use(middleware.AllowOrigin(cfg))
 	e.Use(middleware.Trace())
 	e.Use(middleware.Error())
 	e.Use(middleware.Recover())

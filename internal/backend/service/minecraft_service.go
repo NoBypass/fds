@@ -6,6 +6,8 @@ import (
 	"github.com/NoBypass/fds/internal/pkg/model"
 	"github.com/NoBypass/fds/internal/pkg/utils"
 	"github.com/NoBypass/surgo"
+	"github.com/labstack/echo/v4"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -63,6 +65,10 @@ func (s *minecraftService) RemoteScrimsStats(ctx context.Context, name string) (
 	player, err := s.scrimsSvc.PlayerByName(ctx, name)
 	if err != nil {
 		return nil, err
+	}
+
+	if player.Data == nil {
+		return nil, echo.NewHTTPError(http.StatusNotFound, "scrims network: player not found")
 	}
 
 	_, err = s.DB(sp).Exec(`

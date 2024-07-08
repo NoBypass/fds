@@ -44,6 +44,7 @@ func (s *scrimsService) PlayerByName(ctx context.Context, name string) (*model.S
 	sp, ctx := s.StartSpan(ctx, s.PlayerByName)
 	defer sp.Finish()
 
+	// TODO handle `octoberWins` field (example: bdamja)
 	player := new(model.ScrimsPlayerAPIResponse)
 	_, err := s.api.Request(ctx, "user?username="+name, time.Minute*5, player)
 	return player, err

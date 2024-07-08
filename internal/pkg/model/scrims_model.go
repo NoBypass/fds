@@ -49,6 +49,14 @@ type overall struct {
 	LifetimeWinstreak int `json:"lifetimeWinstreak"`
 }
 
+type ScrimsModeCollection struct {
+	Solos   ScrimsMode `json:"1v1"`
+	Doubles ScrimsMode `json:"2v2"`
+	Threes  ScrimsMode `json:"3v3"`
+	Fours   ScrimsMode `json:"4v4"`
+	Other   ScrimsMode `json:"other"`
+}
+
 type ScrimsMode struct {
 	Wins               int     `json:"wins"`
 	Games              int     `json:"games"`
