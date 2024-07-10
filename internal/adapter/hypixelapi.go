@@ -1,0 +1,78 @@
+package adapter
+
+import (
+	"context"
+	"fmt"
+	"github.com/NoBypass/fds/internal/common"
+	"github.com/NoBypass/mincache"
+	"github.com/labstack/gommon/log"
+	"golang.org/x/time/rate"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
+)
+
+type HypixelAPI struct {
+	sync.Mutex
+
+	cache *mincache.Cache
+	api   *common.ExternalClient
+
+	apiKey    string
+	limiter   *rate.Limiter
+	rateLimit int
+	remaining int
+	resetAt   time.Time
+}
+
+func NewHypixelAPIClient(cache *mincache.Cache, key string) *HypixelAPI {
+	client := &HypixelAPI{
+		cache:  cache,
+		apiKey: key,
+		api:    common.NewExternalClient(cache, "https://api.hypixel.net", "Hypixel API"),
+	}
+
+	// TODO: replace with better ping request
+	err := client.request(nil, "/status?uuid=b876ec32e396476ba1158438d83c67d4", nil)
+	if err != nil {
+		log.Fatalf("unable to initialize hypixel client: %s", err)
+	}
+
+	return client
+}
+
+func (c *HypixelAPI) request(ctx context.Context, url string, decode any) error {
+	if c.remaining > 0 && c.remaining < 10 {
+		return fmt.Errorf("hypixel: rate limited, reset in %s", c.resetAt)
+	}
+
+	header, err := c.api.Request(ctx, url, time.Minute*5, decode)
+	rlErr := c.parseRateLimit(header)
+	if rlErr != nil || err != nil {
+		return fmt.Errorf("hypixel: %w", err)
+	}
+
+	return nil
+}
+
+func (c *HypixelAPI) parseRateLimit(header *http.Header) error {
+	rl, err := strconv.Atoi(header.Get("RateLimit-Limit"))
+	if err != nil {
+		return err
+	}
+	r, err := strconv.Atoi(header.Get("RateLimit-Remaining"))
+	if err != nil {
+		return err
+	}
+	reset, err := strconv.Atoi(header.Get("RateLimit-Reset"))
+	if err != nil {
+		return err
+	}
+
+	c.Lock()
+	defer c.Unlock()
+
+	c.rateLimit, c.remaining, c.resetAt = rl, r, time.Now().Add(time.Duration(reset)*time.Second)
+	return nil
+}

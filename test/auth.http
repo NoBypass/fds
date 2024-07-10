@@ -1,8 +1,0 @@
-### Login as bot
-POST http://localhost:8080/auth/bot
-Content-Type: application/json
-
-{
-    "sub": "bot",
-    "pwd": "1234"
-}
