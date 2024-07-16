@@ -21,6 +21,7 @@ func main() {
 
 	go port.RunAPI(e, cfg, &port.Controllers{
 		Scrims: initScrimsController(db, nil),
+		Player: initPlayerController(db, nil),
 	})
 
 	select {}

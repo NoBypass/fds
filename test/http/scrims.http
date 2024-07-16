@@ -1,0 +1,2 @@
+### GET scrims player overview
+GET http://localhost:8080/scrims/technoblade/overview

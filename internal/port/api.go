@@ -25,7 +25,7 @@ func RunAPI(e *echo.Echo, cfg *env.Env, controllers *Controllers) {
 	e.Use(middleware.Recover())
 
 	player := e.Group("/player")
-	player.GET("/exists/:name", playerController.Exists)
+	player.GET("/:name", controllers.Player.Profile)
 
 	scrims := player.Group("/scrims", mwc.Cache(5*time.Minute))
 	scrims.GET("/:name/overview", controllers.Scrims.Player)
@@ -35,4 +35,5 @@ func RunAPI(e *echo.Echo, cfg *env.Env, controllers *Controllers) {
 
 type Controllers struct {
 	Scrims *controller.ScrimsController
+	Player *controller.PlayerController
 }

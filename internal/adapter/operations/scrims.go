@@ -34,7 +34,7 @@ func (r *ScrimsRepository) GetPlayer(ctx context.Context, name string) (*domain.
 	return player.Data, player.Date, err
 }
 
-func (r *ScrimsRepository) UpsertPlayer(ctx context.Context, player *domain.ScrimsPlayerData) error {
+func (r *ScrimsRepository) UpsertScrimsPlayer(ctx context.Context, player *domain.ScrimsPlayerData) error {
 	_, err := r.DB(ctx).Exec(`
 		LET $new = (UPSERT ONLY player:$ CONTENT {
 			display_name: $displayName,
@@ -54,5 +54,21 @@ func (r *ScrimsRepository) UpsertPlayer(ctx context.Context, player *domain.Scri
 		"uuid":         player.UUID,
 		"data":         player,
 	})
+	return err
+}
+
+func (r *ScrimsRepository) UpsertPlayer(ctx context.Context, player *domain.MojangProfile) error {
+	_, err := r.DB(ctx).Exec(`
+		UPSERT ONLY player:$ CONTENT {
+			uuid: $uuid,
+			name: $name,
+			display_name: $name,
+		};
+	`, surgo.ID{strings.ToLower(player.Name)}, map[string]any{
+		"uuid":         player.UUID,
+		"name":         strings.ToLower(player.Name),
+		"display_name": player.Name,
+	})
+
 	return err
 }

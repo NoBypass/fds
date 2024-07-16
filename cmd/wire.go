@@ -15,10 +15,27 @@ import (
 func initScrimsController(db adapter.Database, cache *mincache.Cache) *controller.ScrimsController {
 	wire.Build(
 		wire.Bind(new(app.MinecraftRepository), new(*operations.ScrimsRepository)),
-		wire.Bind(new(app.MinecraftService), new(*adapter.ScrimsAPI)),
+		wire.Bind(new(app.ScrimsService), new(*adapter.ScrimsAPI)),
+		wire.Bind(new(app.MojangService), new(*adapter.MojangAPI)),
+
 		controller.NewScrimsController,
 		app.NewMinecraftUseCase,
 		operations.NewScrimsRepository,
+		adapter.NewMojangAPI,
+		adapter.NewScrimsAPI)
+	return nil
+}
+
+func initPlayerController(db adapter.Database, cache *mincache.Cache) *controller.PlayerController {
+	wire.Build(
+		wire.Bind(new(app.MinecraftRepository), new(*operations.ScrimsRepository)),
+		wire.Bind(new(app.ScrimsService), new(*adapter.ScrimsAPI)),
+		wire.Bind(new(app.MojangService), new(*adapter.MojangAPI)),
+
+		controller.NewPlayerController,
+		app.NewMinecraftUseCase,
+		operations.NewScrimsRepository,
+		adapter.NewMojangAPI,
 		adapter.NewScrimsAPI)
 	return nil
 }

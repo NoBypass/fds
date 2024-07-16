@@ -9,25 +9,34 @@ import (
 
 type MinecraftRepository interface {
 	GetPlayer(ctx context.Context, name string) (*domain.ScrimsPlayerData, time.Time, error)
-	UpsertPlayer(ctx context.Context, player *domain.ScrimsPlayerData) error
+	UpsertScrimsPlayer(ctx context.Context, player *domain.ScrimsPlayerData) error
 }
 
-type MinecraftService interface {
+type ScrimsService interface {
 	PlayerByName(ctx context.Context, name string) (*domain.ScrimsPlayerData, error)
+}
+
+type MojangService interface {
+	ProfileByName(ctx context.Context, name string) (*domain.MojangProfile, error)
 }
 
 type MinecraftUseCase struct {
 	trace.Tracable
 
-	repo    MinecraftRepository
-	service MinecraftService
+	repo   MinecraftRepository
+	scrims ScrimsService
+	mojang MojangService
 }
 
-func NewMinecraftUseCase(repo MinecraftRepository, service MinecraftService) *MinecraftUseCase {
+func NewMinecraftUseCase(
+	repo MinecraftRepository,
+	scrims ScrimsService,
+	mojang MojangService) *MinecraftUseCase {
 	return &MinecraftUseCase{
 		Tracable: trace.NewTracable(),
-		service:  service,
 		repo:     repo,
+		scrims:   scrims,
+		mojang:   mojang,
 	}
 }
 
@@ -35,15 +44,27 @@ func (uc *MinecraftUseCase) GetScrimsPlayer(ctx context.Context, name string) (*
 	sp, ctx := uc.StartSpan(ctx, uc.GetScrimsPlayer)
 	defer sp.Finish()
 
-	player, err := uc.service.PlayerByName(ctx, name)
+	player, err := uc.scrims.PlayerByName(ctx, name)
 	if err != nil {
 		return nil, err
 	}
 
-	err = uc.repo.UpsertPlayer(ctx, player)
+	err = uc.repo.UpsertScrimsPlayer(ctx, player)
 	if err != nil {
 		return nil, err
 	}
 
 	return player, nil
+}
+
+func (uc *MinecraftUseCase) GetMojangProfile(ctx context.Context, name string) (*domain.MojangProfile, error) {
+	sp, ctx := uc.StartSpan(ctx, uc.GetMojangProfile)
+	defer sp.Finish()
+
+	profile, err := uc.mojang.ProfileByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return profile, nil
 }

@@ -2,14 +2,13 @@ package middleware
 
 import (
 	"github.com/NoBypass/fds/internal/common/env"
-	"github.com/NoBypass/fds/internal/pkg/model"
+	"github.com/NoBypass/fds/internal/domain"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"strconv"
 )
 
-func Restrict(to model.AuthRole) echo.MiddlewareFunc {
+func Restrict(to domain.AuthRole) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			token := c.Get("jwt")
@@ -23,7 +22,7 @@ func Restrict(to model.AuthRole) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "invalid token")
 			}
 
-			role, err := parseAudience(aud)
+			role, err := domain.ParseAudience(aud)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, "invalid role")
 			}
@@ -57,24 +56,4 @@ func Auth(secret *env.Env) echo.MiddlewareFunc {
 			return next(c)
 		}
 	}
-}
-
-func parseAudience(aud []string) (model.AuthRole, error) {
-	roles := make([]int, len(aud))
-	for i, r := range aud {
-		n, err := strconv.Atoi(r)
-		if err != nil {
-			return 0, err
-		}
-
-		roles[i] = n
-	}
-
-	smallest := roles[0]
-	for _, r := range roles {
-		if r < smallest {
-			smallest = r
-		}
-	}
-	return model.AuthRole(smallest), nil
 }

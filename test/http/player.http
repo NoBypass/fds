@@ -1,0 +1,2 @@
+### GET player
+GET http://localhost:8080/player/technoblade
