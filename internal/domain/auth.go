@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/golang-jwt/jwt/v5"
 	"strconv"
 	"time"
 )
@@ -14,28 +15,47 @@ const (
 	RoleMember
 )
 
-type JWTClaims struct {
-	Aud []AuthRole
-	Sub string
-	Exp time.Time
+type JWTSigner struct {
+	Secret        []byte
+	DefaultClaims jwt.RegisteredClaims
 }
 
-func ParseAudience(aud []string) (AuthRole, error) {
-	roles := make([]int, len(aud))
-	for i, r := range aud {
-		n, err := strconv.Atoi(r)
-		if err != nil {
-			return 0, err
-		}
-
-		roles[i] = n
+func NewJWTSigner(secret string) *JWTSigner {
+	return &JWTSigner{
+		Secret: []byte(secret),
+		DefaultClaims: jwt.RegisteredClaims{
+			Issuer: "fds",
+		},
 	}
+}
 
-	smallest := roles[0]
-	for _, r := range roles {
-		if r < smallest {
-			smallest = r
-		}
+func (s JWTSigner) NewJWT(to string, role AuthRole) string {
+	s.DefaultClaims.ExpiresAt = expireAt(role)
+	s.DefaultClaims.Audience = role.toAud()
+	s.DefaultClaims.Subject = to
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, s.DefaultClaims)
+	signed, _ := token.SignedString(s.Secret)
+	return signed
+}
+
+func expireAt(role AuthRole) *jwt.NumericDate {
+	switch role {
+	case RoleBot:
+		return nil
+	default:
+		return jwt.NewNumericDate(time.Now().Add(24 * 7 * time.Hour))
 	}
-	return AuthRole(smallest), nil
+}
+
+func (r *AuthRole) toAud() []string {
+	return []string{strconv.Itoa(int(*r))}
+}
+
+func CanAccess(aud []string, to AuthRole) bool {
+	n, err := strconv.Atoi(aud[0])
+	if err != nil {
+		return false
+	}
+	return n <= int(to)
 }

@@ -1,0 +1,7 @@
+### POST discord auth
+POST http://localhost:8080/discord/auth
+Content-Type: application/json
+
+{
+  "pwd": "1234"
+}

@@ -22,12 +22,8 @@ func Restrict(to domain.AuthRole) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "invalid token")
 			}
 
-			role, err := domain.ParseAudience(aud)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, "invalid role")
-			}
-
-			if role > to {
+			can := domain.CanAccess(aud, to)
+			if !can {
 				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 			}
 			return next(c)

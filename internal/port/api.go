@@ -24,6 +24,9 @@ func RunAPI(e *echo.Echo, cfg *env.Env, controllers *Controllers) {
 	e.Use(middleware.Error())
 	e.Use(middleware.Recover())
 
+	discord := e.Group("/discord")
+	discord.POST("/auth", controllers.Discord.Auth)
+
 	player := e.Group("/player")
 	player.GET("/:name", controllers.Player.Profile)
 
@@ -34,6 +37,7 @@ func RunAPI(e *echo.Echo, cfg *env.Env, controllers *Controllers) {
 }
 
 type Controllers struct {
-	Scrims *controller.ScrimsController
-	Player *controller.PlayerController
+	Scrims  *controller.ScrimsController
+	Player  *controller.PlayerController
+	Discord *controller.DiscordController
 }

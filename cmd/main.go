@@ -24,8 +24,9 @@ func main() {
 	db := adapter.ConnectSurreal(cfg)
 
 	go port.RunAPI(e, cfg, &port.Controllers{
-		Scrims: initScrimsController(db, nil),
-		Player: initPlayerController(db, nil),
+		Scrims:  initScrimsController(db, nil),
+		Player:  initPlayerController(db, nil),
+		Discord: initDiscordController(cfg.JwtSecret, cfg.BotPassword),
 	})
 
 	select {}
