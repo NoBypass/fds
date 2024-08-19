@@ -32,7 +32,7 @@ func ConnectSurreal(cfg *env.Env) Database {
 		surgo.Namespace(cfg.SurrealNamespace),
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("couldn't connect to SurrealDB: %s", err)
 	}
 
 	svc := Database{

@@ -27,7 +27,7 @@ func Read() *Env {
 	var cfg Env
 	err := cleanenv.ReadEnv(&cfg)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error reading evironnement variables: %s", err)
 	}
 	return &cfg
 }

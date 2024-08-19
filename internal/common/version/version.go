@@ -1,4 +1,4 @@
-package common
+package version
 
 import "github.com/labstack/gommon/color"
 
