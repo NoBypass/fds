@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"github.com/NoBypass/fds/internal/common/env"
 	"github.com/NoBypass/fds/internal/common/trace"
-	"github.com/NoBypass/surgo"
+	"github.com/NoBypass/surgo/v2"
 	"github.com/labstack/gommon/log"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
-	"github.com/surrealdb/surrealdb.go"
 )
 
 type Database struct {
@@ -18,30 +17,25 @@ type Database struct {
 }
 
 type database struct {
-	*surrealdb.DB
 	trace.Tracable
+	db  surgo.DBConn
 	ctx context.Context
 }
 
 func ConnectSurreal(cfg *env.Env) Database {
-	db, err := surgo.Connect(
-		cfg.SurrealHost,
-		surgo.User(cfg.SurrealUser),
-		surgo.Password(cfg.SurrealPwd),
-		surgo.Database(cfg.SurrealDB),
-		surgo.Namespace(cfg.SurrealNamespace),
-	)
+	db, err := surgo.Connect(cfg.SurrealHost, &surgo.Credentials{
+		Username:  cfg.SurrealUser,
+		Password:  cfg.SurrealPwd,
+		Database:  cfg.SurrealDB,
+		Namespace: cfg.SurrealNamespace,
+	})
 	if err != nil {
 		log.Fatalf("couldn't connect to SurrealDB: %s", err)
 	}
 
 	svc := Database{
 		Tracable: trace.NewTracable("SurrealDB"),
-		db: &surgo.DB{
-			DB: &database{
-				DB: db.DB.(*surrealdb.DB),
-			},
-		},
+		db:       db,
 	}
 
 	return svc
@@ -62,7 +56,7 @@ func (qa *database) Query(sql string, vars any) (any, error) {
 		}
 	}
 
-	resp, err := qa.DB.Query(sql, vars)
+	resp, err := qa.db.Query(sql, vars)
 	if err != nil && sp != nil {
 		ext.LogError(sp, err)
 	} else if sp != nil {
@@ -77,11 +71,15 @@ func (qa *database) Query(sql string, vars any) (any, error) {
 	return resp, err
 }
 
+func (qa *database) Close() error {
+	return qa.db.Close()
+}
+
 func (c Database) DB(ctx context.Context) *surgo.DB {
 	return &surgo.DB{
-		DB: &database{
-			DB:       c.db.DB.(*database).DB,
-			Tracable: c.db.DB.(*database).Tracable,
+		Conn: &database{
+			Tracable: c.Tracable,
+			db:       c.db.Conn,
 			ctx:      ctx,
 		},
 	}

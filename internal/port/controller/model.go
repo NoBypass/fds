@@ -11,6 +11,11 @@ type (
 		Pwd string `json:"pwd"`
 	}
 
+	inputVerify struct {
+		DiscordID string `param:"discord_id"`
+		IGN       string `param:"ign"`
+	}
+
 	// TODO: replace any with actual types
 	scrimsPlayer struct {
 		Player *domain.ScrimsPlayerData `json:"player"`

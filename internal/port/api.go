@@ -26,6 +26,10 @@ func RunAPI(e *echo.Echo, cfg *env.Env, controllers *Controllers) {
 
 	discord := e.Group("/discord")
 	discord.POST("/auth", controllers.Discord.Auth)
+	discord.GET("/daily", controllers.Discord.Daily)
+	discord.GET("/leaderboard", controllers.Discord.Leaderboard)
+	discord.POST("/verify", controllers.Discord.Verify)
+	discord.DELETE("/revoke", controllers.Discord.Revoke)
 
 	player := e.Group("/player")
 	player.GET("/:name", controllers.Player.Profile)

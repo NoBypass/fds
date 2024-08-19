@@ -2,11 +2,11 @@ package operations
 
 import (
 	"context"
+	"fmt"
 	"github.com/NoBypass/fds/internal/adapter"
 	"github.com/NoBypass/fds/internal/common"
 	"github.com/NoBypass/fds/internal/common/trace"
 	"github.com/NoBypass/fds/internal/domain"
-	"github.com/NoBypass/surgo"
 	"strings"
 	"time"
 )
@@ -30,13 +30,15 @@ func NewScrimsRepository(db adapter.Database) *ScrimsRepository {
 
 func (r *ScrimsRepository) GetPlayer(ctx context.Context, name string) (*domain.ScrimsPlayerData, time.Time, error) {
 	var player scrimsPlayer
-	err := r.DB(ctx).Scan(&player, "SELECT * FROM player:$", surgo.ID{strings.ToLower(name)})
+	err := r.DB(ctx).Scan(&player, "SELECT * FROM $player", map[string]any{
+		"player": fmt.Sprintf("player:%s", strings.ToLower(name)),
+	})
 	return player.Data, player.Date, err
 }
 
 func (r *ScrimsRepository) UpsertScrimsPlayer(ctx context.Context, player *domain.ScrimsPlayerData) error {
-	_, err := r.DB(ctx).Exec(`
-		LET $new = (UPSERT ONLY player:$ CONTENT {
+	_, err := r.DB(ctx).Query(`
+		LET $new = (UPSERT ONLY $player CONTENT {
 			display_name: $displayName,
 			name: $name,
 			uuid: $uuid
@@ -47,7 +49,8 @@ func (r *ScrimsRepository) UpsertScrimsPlayer(ctx context.Context, player *domai
 			uuid: $uuid
 		};
 		UPDATE $new SET scrims_data=scrims_player:[$new.uuid, $today];
-	`, surgo.ID{strings.ToLower(player.Username)}, map[string]any{
+	`, map[string]any{
+		"player":       fmt.Sprintf("player:%s", strings.ToLower(player.Username)),
 		"name":         strings.ToLower(player.Username),
 		"today":        common.Today(),
 		"display_name": player.Username,
@@ -58,13 +61,14 @@ func (r *ScrimsRepository) UpsertScrimsPlayer(ctx context.Context, player *domai
 }
 
 func (r *ScrimsRepository) UpsertPlayer(ctx context.Context, player *domain.MojangProfile) error {
-	_, err := r.DB(ctx).Exec(`
-		UPSERT ONLY player:$ CONTENT {
+	_, err := r.DB(ctx).Query(`
+		UPSERT ONLY $player CONTENT {
 			uuid: $uuid,
 			name: $name,
 			display_name: $name,
 		};
-	`, surgo.ID{strings.ToLower(player.Name)}, map[string]any{
+	`, map[string]any{
+		"player":       fmt.Sprintf("player:%s", strings.ToLower(player.Name)),
 		"uuid":         player.UUID,
 		"name":         strings.ToLower(player.Name),
 		"display_name": player.Name,
