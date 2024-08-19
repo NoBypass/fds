@@ -7,6 +7,6 @@ COPY . .
 
 RUN go mod download
 
-RUN go build -o backend ./cmd/main.go
+RUN go build -o backend ./cmd
 
 ENTRYPOINT ["/app/backend"]
