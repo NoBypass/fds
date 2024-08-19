@@ -10,14 +10,12 @@ import (
 )
 
 type ScrimsAPI struct {
-	cache *mincache.Cache
-	api   *common.ExternalClient
+	api *common.ExternalClient
 }
 
 func NewScrimsAPI(cache *mincache.Cache) *ScrimsAPI {
 	return &ScrimsAPI{
-		cache: cache,
-		api:   common.NewExternalClient(cache, "https://api.scrims.network/v1", "Scrims API"),
+		api: common.NewExternalClient(cache, "https://api.scrims.network/v1", "Scrims API"),
 	}
 }
 

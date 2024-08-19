@@ -40,7 +40,7 @@ func NewExternalClient(cache *mincache.Cache, baseURL, name string) *ExternalCli
 	}
 }
 
-func (c *ExternalClient) Request(ctx context.Context, url string, lifetime time.Duration, decode any) (*http.Header, error) {
+func (c *ExternalClient) Request(ctx context.Context, url string, lifetime time.Duration, decode any, headers ...string) (*http.Header, error) {
 	var sp opentracing.Span
 	if ctx != nil {
 		sp, ctx = c.StartSpan(ctx, url)
@@ -65,6 +65,10 @@ func (c *ExternalClient) Request(ctx context.Context, url string, lifetime time.
 	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	for i := 0; i < len(headers); i += 2 {
+		req.Header.Add(headers[i], headers[i+1])
 	}
 
 	resp, err := http.DefaultClient.Do(req)

@@ -1,0 +1,2 @@
+### GET all current skyblock auctions
+GET http://localhost:8080/skyblock/auctions/overview

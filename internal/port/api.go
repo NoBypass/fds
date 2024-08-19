@@ -30,10 +30,14 @@ func RunAPI(e *echo.Echo, cfg *env.Env, controllers *Controllers) {
 	scrims := player.Group("/scrims", mwc.Cache(5*time.Minute))
 	scrims.GET("/:name/overview", controllers.Scrims.Player)
 
+	skyblock := e.Group("/skyblock")
+	skyblock.GET("/auctions/overview", controllers.Skyblock.AuctionsOverview)
+
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", cfg.Port)))
 }
 
 type Controllers struct {
-	Scrims *controller.ScrimsController
-	Player *controller.PlayerController
+	Scrims   *controller.ScrimsController
+	Player   *controller.PlayerController
+	Skyblock *controller.SkyblockController
 }

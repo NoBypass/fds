@@ -33,3 +33,11 @@ func initPlayerController(db adapter.Database, cache *mincache.Cache) *controlle
 	playerController := controller.NewPlayerController(minecraftUseCase)
 	return playerController
 }
+
+func initSkyblockController(db adapter.Database, cache *mincache.Cache, key string) *controller.SkyblockController {
+	skyblockRepository := operations.NewSkyblockRepository(db)
+	hypixelApi := adapter.NewHypixelAPI(cache, key)
+	skyblockUseCase := app.NewSkyblockUseCase(skyblockRepository, hypixelApi)
+	skyblockController := controller.NewSkyblockController(skyblockUseCase)
+	return skyblockController
+}

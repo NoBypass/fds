@@ -9,14 +9,12 @@ import (
 )
 
 type MojangAPI struct {
-	cache *mincache.Cache
-	api   *common.ExternalClient
+	api *common.ExternalClient
 }
 
 func NewMojangAPI(cache *mincache.Cache) *MojangAPI {
 	return &MojangAPI{
-		cache: cache,
-		api:   common.NewExternalClient(cache, "https://api.mojang.com", "Mojang API"),
+		api: common.NewExternalClient(cache, "https://api.mojang.com", "Mojang API"),
 	}
 }
 
