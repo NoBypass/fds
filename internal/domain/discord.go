@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -20,8 +19,6 @@ type DiscordMember struct {
 	Level       int       `json:"level"`
 	Streak      int       `json:"streak"`
 }
-
-var ErrAlreadyClaimed = fmt.Errorf("daily reward already claimed")
 
 func (m *DiscordMember) CanClaimDaily() bool {
 	return m.LastDailyAt.After(time.Now().Truncate(time.Hour * 24))

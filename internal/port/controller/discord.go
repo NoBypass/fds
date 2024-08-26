@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"errors"
 	"github.com/NoBypass/fds/internal/app"
+	"github.com/NoBypass/fds/internal/common/errs"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
@@ -35,7 +37,11 @@ func (ct *DiscordController) Daily(ctx echo.Context) error {
 	id := ctx.Param("id")
 
 	daily, err := ct.uc.Daily(ctx.Request().Context(), id)
-	if err != nil {
+	if errors.Is(err, errs.NotFound) {
+		return echo.ErrNotFound
+	} else if errors.Is(err, errs.AlreadyClaimed) {
+		return echo.ErrConflict
+	} else if err != nil {
 		return err
 	}
 

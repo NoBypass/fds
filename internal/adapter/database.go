@@ -3,6 +3,7 @@ package adapter
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/NoBypass/fds/internal/common/env"
 	"github.com/NoBypass/fds/internal/common/trace"
 	"github.com/NoBypass/surgo/v2"
@@ -30,7 +31,7 @@ func ConnectSurreal(cfg *env.Env) Database {
 		Namespace: cfg.SurrealNamespace,
 	})
 	if err != nil {
-		log.Fatalf("couldn't connect to SurrealDB: %s", err)
+		log.Fatalf("couldn't connect to SurrealDB: %s", errors.Unwrap(err))
 	}
 
 	svc := Database{

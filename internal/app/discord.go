@@ -59,7 +59,7 @@ func (uc *DiscordUseCase) Daily(ctx context.Context, id string) (*domain.Discord
 	}
 
 	if !member.CanClaimDaily() {
-		return nil, domain.ErrAlreadyClaimed
+		return nil, errs.AlreadyClaimed
 	}
 
 	member.ClaimDaily()
