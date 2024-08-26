@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/NoBypass/fds/internal/common"
+	"github.com/NoBypass/fds/internal/domain"
 	"github.com/NoBypass/mincache"
 	"github.com/labstack/gommon/log"
 	"golang.org/x/time/rate"
@@ -26,7 +27,7 @@ type HypixelAPI struct {
 	resetAt   time.Time
 }
 
-func NewHypixelAPIClient(cache *mincache.Cache, key string) *HypixelAPI {
+func NewHypixelAPI(cache *mincache.Cache, key string) *HypixelAPI {
 	client := &HypixelAPI{
 		cache:  cache,
 		apiKey: key,
@@ -75,4 +76,10 @@ func (c *HypixelAPI) parseRateLimit(header *http.Header) error {
 
 	c.rateLimit, c.remaining, c.resetAt = rl, r, time.Now().Add(time.Duration(reset)*time.Second)
 	return nil
+}
+
+func (c *HypixelAPI) PlayerByName(ctx context.Context, name string) (*domain.HypixelPlayerResp, error) {
+	var player domain.HypixelPlayerResp
+	err := c.request(ctx, fmt.Sprintf("/player?name=%s", name), &player)
+	return &player, err
 }

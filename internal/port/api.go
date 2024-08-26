@@ -3,6 +3,7 @@ package port
 import (
 	"fmt"
 	"github.com/NoBypass/fds/internal/common/env"
+	"github.com/NoBypass/fds/internal/domain"
 	"github.com/NoBypass/fds/internal/port/controller"
 	"github.com/NoBypass/fds/internal/port/middleware"
 	"github.com/NoBypass/mincache"
@@ -26,10 +27,11 @@ func RunAPI(e *echo.Echo, cfg *env.Env, controllers *Controllers) {
 
 	discord := e.Group("/discord")
 	discord.POST("/auth", controllers.Discord.Auth)
-	discord.GET("/daily", controllers.Discord.Daily)
-	discord.GET("/leaderboard", controllers.Discord.Leaderboard)
-	discord.POST("/verify", controllers.Discord.Verify)
-	discord.DELETE("/revoke", controllers.Discord.Revoke)
+	discord.GET("/daily", controllers.Discord.Daily, middleware.Restrict(domain.RoleBot))
+	discord.GET("/leaderboard", controllers.Discord.Leaderboard, middleware.Restrict(domain.RoleBot))
+	discord.POST("/verify", controllers.Discord.Verify, middleware.Restrict(domain.RoleBot))
+	discord.DELETE("/revoke", controllers.Discord.Revoke, middleware.Restrict(domain.RoleBot))
+	discord.PUT("/givexp", controllers.Discord.GiveXP, middleware.Restrict(domain.RoleBot))
 
 	player := e.Group("/player")
 	player.GET("/:name", controllers.Player.Profile)

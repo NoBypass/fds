@@ -63,11 +63,39 @@ func (ct *DiscordController) Verify(ctx echo.Context) error {
 		return err
 	}
 
-	ok, err := ct.uc.Verify(ctx.Request().Context(), input.DiscordID, input.IGN)
+	actual, err := ct.uc.Verify(ctx.Request().Context(), input.DiscordID, input.DiscordName, input.IGN)
 	if err != nil {
 		return err
-	} else if !ok {
+	} else if actual == "" {
 		return echo.ErrUnauthorized
+	}
+
+	return ctx.String(http.StatusOK, actual)
+}
+
+func (ct *DiscordController) Revoke(ctx echo.Context) error {
+	var input inputRevoke
+	if err := ctx.Bind(&input); err != nil {
+		return err
+	}
+
+	err := ct.uc.Revoke(ctx.Request().Context(), input.DiscordID)
+	if err != nil {
+		return err
+	}
+
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (ct *DiscordController) GiveXP(ctx echo.Context) error {
+	var input inputXP
+	if err := ctx.Bind(&input); err != nil {
+		return err
+	}
+
+	err := ct.uc.GiveXP(ctx.Request().Context(), input.DiscordID, input.Amount)
+	if err != nil {
+		return err
 	}
 
 	return ctx.NoContent(http.StatusOK)

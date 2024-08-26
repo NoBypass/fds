@@ -5,3 +5,14 @@ Content-Type: application/json
 {
   "pwd": "1234"
 }
+
+### POST verify
+POST http://localhost:8080/discord/verify
+Content-Type: application/json
+Authorization:
+
+{
+  "discord_id": "672835870080106509",
+  "discord_name": "nobypass",
+  "ign": "nobypass"
+}

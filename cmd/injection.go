@@ -26,8 +26,10 @@ func initScrimsController(db adapter.Database, cache *mincache.Cache) *controlle
 	return scrimsController
 }
 
-func initDiscordController(jwtSecret, pwd string) *controller.DiscordController {
-	discordUseCase := app.NewDiscordUseCase(jwtSecret, pwd)
+func initDiscordController(db adapter.Database, cache *mincache.Cache, jwtSecret, pwd, hypixelKey string) *controller.DiscordController {
+	discordRepository := operations.NewDiscordRepository(db)
+	hypixelAPI := adapter.NewHypixelAPI(cache, hypixelKey)
+	discordUseCase := app.NewDiscordUseCase(discordRepository, hypixelAPI, jwtSecret, pwd)
 	discordController := controller.NewDiscordController(discordUseCase)
 	return discordController
 }

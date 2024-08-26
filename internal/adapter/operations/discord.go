@@ -46,9 +46,16 @@ func (r *DiscordRepository) CreateMember(ctx context.Context, member *domain.Dis
 
 func (r *DiscordRepository) GetLeaderboard(ctx context.Context, page int) (*domain.Leaderboard, error) {
 	var leaderboard domain.Leaderboard
-	err := r.DB(ctx).Scan(&leaderboard, "SELECT * FROM discord_member LIMIT $limit START $start", map[string]any{
+	err := r.DB(ctx).Scan(&leaderboard, "SELECT * FROM discord_member ORDER BY level DESC, xp DESC LIMIT $limit START $start", map[string]any{
 		"limit": 10,
 		"start": page * 10,
 	})
 	return &leaderboard, err
+}
+
+func (r *DiscordRepository) RemoveMember(ctx context.Context, id string) error {
+	_, err := r.DB(ctx).Query("DELETE ONLY $discord_member", map[string]any{
+		"discord_member": fmt.Sprintf("discord_member:%s", id),
+	})
+	return err
 }

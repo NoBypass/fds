@@ -12,8 +12,18 @@ type (
 	}
 
 	inputVerify struct {
+		DiscordName string `param:"discord_name"`
+		DiscordID   string `param:"discord_id"`
+		IGN         string `param:"ign"`
+	}
+
+	inputRevoke struct {
 		DiscordID string `param:"discord_id"`
-		IGN       string `param:"ign"`
+	}
+
+	inputXP struct {
+		DiscordID string `json:"discord_id"`
+		Amount    int    `json:"amount"`
 	}
 
 	// TODO: replace any with actual types

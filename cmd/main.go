@@ -6,6 +6,7 @@ import (
 	"github.com/NoBypass/fds/internal/common/trace"
 	"github.com/NoBypass/fds/internal/common/version"
 	"github.com/NoBypass/fds/internal/port"
+	"github.com/NoBypass/mincache"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
@@ -21,12 +22,14 @@ func main() {
 	c := trace.SetupTracer(cfg)
 	defer c.Close()
 
+	cache := mincache.New()
+
 	db := adapter.ConnectSurreal(cfg)
 
 	go port.RunAPI(e, cfg, &port.Controllers{
-		Scrims:  initScrimsController(db, nil),
-		Player:  initPlayerController(db, nil),
-		Discord: initDiscordController(cfg.JwtSecret, cfg.BotPassword),
+		Scrims:  initScrimsController(db, cache),
+		Player:  initPlayerController(db, cache),
+		Discord: initDiscordController(db, cache, cfg.JwtSecret, cfg.BotPassword, cfg.HypixelAPIKey),
 	})
 
 	select {}
