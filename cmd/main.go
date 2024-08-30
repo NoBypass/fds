@@ -32,5 +32,7 @@ func main() {
 		Discord: initDiscordController(db, cache, cfg.JwtSecret, cfg.BotPassword, cfg.HypixelAPIKey),
 	})
 
+	port.RunBot(cfg, cache)
+
 	select {}
 }

@@ -47,13 +47,15 @@ func (c *ExternalClient) Request(ctx context.Context, url string, lifetime time.
 		defer sp.Finish()
 	}
 
-	if reflect.TypeOf(decode).Kind() != reflect.Ptr {
+	if decode != nil && reflect.TypeOf(decode).Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("decode must be a pointer")
 	}
 
 	val, ok := c.cache.Get(fmt.Sprintf("%s:%s", c.baseURL, url))
 	if ok {
-		reflect.ValueOf(decode).Elem().Set(reflect.ValueOf(val.(*Response).Body).Elem())
+		if decode != nil {
+			reflect.ValueOf(decode).Elem().Set(reflect.ValueOf(val.(*Response).Body).Elem())
+		}
 		return val.(*Response).Header, nil
 	}
 
@@ -88,9 +90,11 @@ func (c *ExternalClient) Request(ctx context.Context, url string, lifetime time.
 		return nil, msg
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(decode)
-	if err != nil {
-		return nil, err
+	if decode != nil {
+		err = json.NewDecoder(resp.Body).Decode(decode)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	r := &Response{
@@ -99,9 +103,11 @@ func (c *ExternalClient) Request(ctx context.Context, url string, lifetime time.
 	}
 
 	if sp != nil {
-		body, _ := json.Marshal(decode)
+		if decode != nil {
+			body, _ := json.Marshal(decode)
+			sp.LogKV("response", string(body))
+		}
 		header, _ := json.Marshal(r.Header)
-		sp.LogKV("response", string(body))
 		sp.LogKV("header", string(header))
 	}
 	c.cache.Set(fmt.Sprintf("%s:%s", c.baseURL, url), r, lifetime)

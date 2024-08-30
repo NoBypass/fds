@@ -6,7 +6,6 @@ import (
 	"github.com/NoBypass/fds/internal/common"
 	"github.com/NoBypass/fds/internal/domain"
 	"github.com/NoBypass/mincache"
-	"github.com/labstack/gommon/log"
 	"golang.org/x/time/rate"
 	"net/http"
 	"strconv"
@@ -32,12 +31,6 @@ func NewHypixelAPI(cache *mincache.Cache, key string) *HypixelAPI {
 		cache:  cache,
 		apiKey: key,
 		api:    common.NewExternalClient(cache, "https://api.hypixel.net", "Hypixel API"),
-	}
-
-	// TODO: replace with better ping request
-	err := client.request(nil, "/status?uuid=b876ec32e396476ba1158438d83c67d4", nil)
-	if err != nil {
-		log.Fatalf("unable to initialize hypixel client: %s", err)
 	}
 
 	return client

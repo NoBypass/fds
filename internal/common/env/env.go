@@ -10,9 +10,10 @@ type Env struct {
 
 	HypixelAPIKey string `env:"HYPIXEL_API_KEY" env-required`
 
-	BotPassword string `env:"BOT_PASSWORD"`
-	JwtSecret   string `emv:"JWT_SECRET"`
-	Port        string `env:"PORT" env-default:"1234"`
+	DiscordToken string `env:"DISCORD_TOKEN" env-required`
+	BotPassword  string `env:"BOT_PASSWORD"`
+	JwtSecret    string `emv:"JWT_SECRET"`
+	Port         string `env:"PORT" env-default:"1234"`
 
 	SurrealPwd       string `env:"SURREAL_PWD" env-required`
 	SurrealUser      string `env:"SURREAL_USER" env-required`
